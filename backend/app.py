@@ -1,250 +1,63 @@
-<!DOCTYPE html>
-<html>
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+import os
 
-<head>
+from backend.search_ai import search_knowledge, get_recommendations
 
-<title>AI Fitness Platform</title>
+app = Flask(__name__)
+CORS(app)
 
-<script src="https://cdn.tailwindcss.com"></script>
 
-</head>
+# Serve frontend
+@app.route("/")
+def home():
+    return send_from_directory("../frontend", "index.html")
 
-<body class="bg-slate-900 text-white">
 
-<div class="max-w-6xl mx-auto mt-10">
+# Search API
+@app.route("/search", methods=["POST"])
+def search():
 
-<h1 class="text-3xl font-bold mb-6">
-AI Fitness Platform
-</h1>
+    data = request.json
+    query = data.get("query", "")
 
-<!-- User -->
+    results = search_knowledge(query)
+    recommendations = get_recommendations([query])
 
-<div id="user" class="mb-6"></div>
+    return jsonify({
+        "results": results,
+        "recommendations": recommendations
+    })
 
-<!-- Search -->
 
-<div class="bg-slate-800 p-4 rounded">
+# Save (basic version)
+saved = []
 
-<input
-id="searchInput"
-class="w-full p-3 text-black rounded"
-placeholder="Search supplements, fitness, diet..."
->
+@app.route("/save", methods=["POST"])
+def save():
 
-<button
-onclick="search()"
-class="bg-blue-600 px-4 py-2 mt-3 rounded"
->
-Search
-</button>
+    data = request.json
+    saved.append({
+        "item_name": data.get("name")
+    })
 
-</div>
+    return jsonify({"status": "saved"})
 
-<!-- Premium -->
 
-<div id="premium" class="mt-4"></div>
+@app.route("/saved")
+def get_saved():
+    return jsonify(saved)
 
-<!-- Recommendations -->
 
-<div id="recommendations" class="mt-6"></div>
+@app.route("/tier")
+def tier():
+    return jsonify({"tier": "free"})
 
-<!-- Saved -->
 
-<div id="saved" class="mt-6"></div>
+@app.route("/upgrade", methods=["POST"])
+def upgrade():
+    return jsonify({"status": "upgraded"})
 
-<!-- Results -->
 
-<div id="results" class="mt-6"></div>
-
-</div>
-
-
-<script>
-
-async function search(){
-
-const query=document.getElementById("searchInput").value;
-
-document.getElementById("results").innerHTML="Searching...";
-
-const res=await fetch("/search",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-query
-})
-
-});
-
-const data=await res.json();
-
-renderResults(data.results);
-
-renderRecommendations(data.recommendations);
-
-}
-
-
-function renderResults(results){
-
-document.getElementById("results").innerHTML=
-
-results.map(r=>`
-
-<div class="bg-slate-800 p-4 rounded mb-3">
-
-<h3 class="font-bold">${r.title}</h3>
-
-<p>${r.summary}</p>
-
-<a href="${r.link}" target="_blank"
-class="text-blue-400">
-
-Source
-
-</a>
-
-<button
-onclick="save('${r.title}')"
-class="ml-3 bg-green-600 px-2 py-1 rounded"
->
-
-Save
-
-</button>
-
-</div>
-
-`).join("")
-
-}
-
-
-function renderRecommendations(recs){
-
-document.getElementById("recommendations").innerHTML=
-
-`<h2 class="font-bold mb-2">Recommended</h2>
-
-${recs.map(r=>`
-
-<div
-onclick="recommend('${r.title}')"
-class="cursor-pointer text-green-400"
->
-
-${r.title}
-
-</div>
-
-`).join("")}
-
-`;
-
-}
-
-
-function recommend(q){
-
-document.getElementById("searchInput").value=q;
-
-search();
-
-}
-
-
-async function save(name){
-
-await fetch("/save",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-name,
-type:"search"
-})
-
-});
-
-alert("Saved");
-
-}
-
-
-async function loadSaved(){
-
-const res=await fetch("/saved");
-
-const data=await res.json();
-
-document.getElementById("saved").innerHTML=
-
-`<h2 class="font-bold">Saved</h2>
-
-${data.map(i=>`
-
-<div>${i.item_name}</div>
-
-`).join("")}
-
-`;
-
-}
-
-
-async function checkPremium(){
-
-const res=await fetch("/tier");
-
-const data=await res.json();
-
-if(data.tier=="free"){
-
-document.getElementById("premium").innerHTML=
-
-`<div class="bg-yellow-600 p-3 rounded">
-
-Upgrade to Premium
-
-<button
-onclick="upgrade()"
-class="ml-3 bg-black px-3 py-1 rounded"
->
-
-Upgrade
-
-</button>
-
-</div>`
-
-}
-
-}
-
-
-async function upgrade(){
-
-await fetch("/upgrade",{method:"POST"});
-
-location.reload();
-
-}
-
-
-loadSaved();
-checkPremium();
-
-</script>
-
-</body>
-
-</html>
+if __name__ == "__main__":
+    app.run(debug=True)
