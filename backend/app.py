@@ -1,235 +1,250 @@
-from flask import Flask, request, jsonify, session, send_from_directory
-from flask_cors import CORS
-import sqlite3, os, hashlib, json, time, sys
-from functools import wraps
-from datetime import datetime
+<!DOCTYPE html>
+<html>
 
-# ── Project Directories ───────────────────────────────────────────────
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))       # backend/ directory
-BASE_DIR = os.path.dirname(CURRENT_DIR)                         # project root
-FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-DB_PATH = os.path.join(BASE_DIR, "database", "users.db")
+<head>
 
-# Ensure necessary directories exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+<title>AI Fitness Platform</title>
 
-# ── Fix module import path ────────────────────────────────────────────
-sys.path.append(CURRENT_DIR)
+<script src="https://cdn.tailwindcss.com"></script>
 
-# ── Backend module imports ───────────────────────────────────────────
-from backend.diet_ai import generate_diet
-from backend.calorie_ai import calculate_calories
-from backend.grocery_ai import grocery_list
-from backend.cycle_ai import generate_cycle
-from backend.medical_ai import analyze_medical
-from backend.search_ai import search_knowledge, get_recommendations
-from backend.supplement_ai import compare_supplements
+</head>
 
-# ── Flask App Setup ───────────────────────────────────────────────────
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production-please")
-CORS(app, supports_credentials=True)
+<body class="bg-slate-900 text-white">
 
-# ── Database Helpers ──────────────────────────────────────────────────
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+<div class="max-w-6xl mx-auto mt-10">
 
-def init_db():
-    try:
-        with get_db() as conn:
-            conn.executescript("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                experience_level TEXT DEFAULT 'beginner',
-                goal TEXT DEFAULT 'muscle_gain',
-                weight REAL,
-                height REAL,
-                age INTEGER,
-                tier TEXT DEFAULT 'free',
-                created_at TEXT DEFAULT (datetime('now'))
-            );
+<h1 class="text-3xl font-bold mb-6">
+AI Fitness Platform
+</h1>
 
-            CREATE TABLE IF NOT EXISTS search_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                query TEXT NOT NULL,
-                filters TEXT,
-                results_count INTEGER,
-                searched_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            );
+<!-- User -->
 
-            CREATE TABLE IF NOT EXISTS saved_items (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                item_type TEXT NOT NULL,
-                item_name TEXT NOT NULL,
-                item_data TEXT,
-                saved_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            );
+<div id="user" class="mb-6"></div>
 
-            CREATE TABLE IF NOT EXISTS diet_plans (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                plan_data TEXT NOT NULL,
-                goal TEXT,
-                calories INTEGER,
-                created_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            );
+<!-- Search -->
 
-            CREATE TABLE IF NOT EXISTS cycle_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                cycle_name TEXT,
-                cycle_data TEXT NOT NULL,
-                week_number INTEGER DEFAULT 1,
-                notes TEXT,
-                created_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            );
+<div class="bg-slate-800 p-4 rounded">
 
-            CREATE TABLE IF NOT EXISTS comparisons (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                compounds TEXT NOT NULL,
-                result_data TEXT NOT NULL,
-                created_at TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            );
-            """)
-    except sqlite3.DatabaseError:
-        print("Database corrupted. Recreating...")
-        if os.path.exists(DB_PATH):
-            os.remove(DB_PATH)
-        with get_db() as conn:
-            conn.executescript("""
-            CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                experience_level TEXT DEFAULT 'beginner',
-                goal TEXT DEFAULT 'muscle_gain',
-                weight REAL,
-                height REAL,
-                age INTEGER,
-                tier TEXT DEFAULT 'free',
-                created_at TEXT DEFAULT (datetime('now'))
-            );
-            """)
+<input
+id="searchInput"
+class="w-full p-3 text-black rounded"
+placeholder="Search supplements, fitness, diet..."
+>
 
-init_db()
+<button
+onclick="search()"
+class="bg-blue-600 px-4 py-2 mt-3 rounded"
+>
+Search
+</button>
 
-# ── Auth Helpers ───────────────────────────────────────────────────────
-def hash_password(pw):
-    return hashlib.sha256(pw.encode()).hexdigest()
+</div>
 
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if "user_id" not in session:
-            return jsonify({"error": "Authentication required"}), 401
-        return f(*args, **kwargs)
-    return decorated
+<!-- Premium -->
 
-def current_user_id():
-    return session.get("user_id")
+<div id="premium" class="mt-4"></div>
 
-# ── Frontend Routes ────────────────────────────────────────────────────
-@app.route("/")
-def home():
-    return send_from_directory(FRONTEND_DIR, "index.html")
+<!-- Recommendations -->
 
-@app.route("/<path:path>")
-def serve_static(path):
-    return send_from_directory(FRONTEND_DIR, path)
+<div id="recommendations" class="mt-6"></div>
 
-# ── Auth Routes ────────────────────────────────────────────────────────
-@app.route("/register", methods=["POST"])
-def register():
-    data = request.json or {}
-    required = ["name", "email", "password"]
-    if not all(k in data for k in required):
-        return jsonify({"error": "Name, email and password are required"}), 400
-    if len(data["password"]) < 6:
-        return jsonify({"error": "Password must be at least 6 characters"}), 400
-    try:
-        with get_db() as conn:
-            conn.execute(
-                "INSERT INTO users(name,email,password_hash,experience_level,goal,weight,height,age) VALUES (?,?,?,?,?,?,?,?)",
-                (
-                    data["name"], data["email"], hash_password(data["password"]),
-                    data.get("experience_level", "beginner"),
-                    data.get("goal", "muscle_gain"),
-                    data.get("weight"), data.get("height"), data.get("age")
-                )
-            )
-        return jsonify({"status": "registered", "message": "Account created successfully"})
-    except sqlite3.IntegrityError:
-        return jsonify({"error": "Email already registered"}), 409
+<!-- Saved -->
 
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.json or {}
-    if not data.get("email") or not data.get("password"):
-        return jsonify({"error": "Email and password required"}), 400
-    with get_db() as conn:
-        user = conn.execute(
-            "SELECT * FROM users WHERE email=? AND password_hash=?",
-            (data["email"], hash_password(data["password"]))
-        ).fetchone()
-    if user:
-        session["user_id"] = user["id"]
-        session["user_email"] = user["email"]
-        return jsonify({
-            "status": "success",
-            "user": {
-                "id": user["id"], "name": user["name"], "email": user["email"],
-                "experience_level": user["experience_level"], "goal": user["goal"],
-                "tier": user["tier"], "weight": user["weight"],
-                "height": user["height"], "age": user["age"]
-            }
-        })
-    return jsonify({"error": "Invalid email or password"}), 401
+<div id="saved" class="mt-6"></div>
 
-@app.route("/logout", methods=["POST"])
-def logout():
-    session.clear()
-    return jsonify({"status": "logged out"})
+<!-- Results -->
 
-@app.route("/me", methods=["GET"])
-@login_required
-def me():
-    with get_db() as conn:
-        user = conn.execute("SELECT * FROM users WHERE id=?", (current_user_id(),)).fetchone()
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    return jsonify(dict(user))
+<div id="results" class="mt-6"></div>
 
-@app.route("/profile", methods=["PUT"])
-@login_required
-def update_profile():
-    data = request.json or {}
-    allowed = ["name", "experience_level", "goal", "weight", "height", "age"]
-    updates = {k: v for k, v in data.items() if k in allowed}
-    if not updates:
-        return jsonify({"error": "No valid fields to update"}), 400
-    set_clause = ", ".join(f"{k}=?" for k in updates)
-    with get_db() as conn:
-        conn.execute(f"UPDATE users SET {set_clause} WHERE id=?", (*updates.values(), current_user_id()))
-    return jsonify({"status": "updated"})
+</div>
 
-# ── Search, Recommendations, Saved Items, Diet, Cycle, Compare, Uploads, Medical Routes ───────────────────────────────
-# [KEEP THE REST OF YOUR ROUTES FROM ORIGINAL APP.PY AS IS, USING THE CORRECT PATHS]
 
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+<script>
+
+async function search(){
+
+const query=document.getElementById("searchInput").value;
+
+document.getElementById("results").innerHTML="Searching...";
+
+const res=await fetch("/search",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+query
+})
+
+});
+
+const data=await res.json();
+
+renderResults(data.results);
+
+renderRecommendations(data.recommendations);
+
+}
+
+
+function renderResults(results){
+
+document.getElementById("results").innerHTML=
+
+results.map(r=>`
+
+<div class="bg-slate-800 p-4 rounded mb-3">
+
+<h3 class="font-bold">${r.title}</h3>
+
+<p>${r.summary}</p>
+
+<a href="${r.link}" target="_blank"
+class="text-blue-400">
+
+Source
+
+</a>
+
+<button
+onclick="save('${r.title}')"
+class="ml-3 bg-green-600 px-2 py-1 rounded"
+>
+
+Save
+
+</button>
+
+</div>
+
+`).join("")
+
+}
+
+
+function renderRecommendations(recs){
+
+document.getElementById("recommendations").innerHTML=
+
+`<h2 class="font-bold mb-2">Recommended</h2>
+
+${recs.map(r=>`
+
+<div
+onclick="recommend('${r.title}')"
+class="cursor-pointer text-green-400"
+>
+
+${r.title}
+
+</div>
+
+`).join("")}
+
+`;
+
+}
+
+
+function recommend(q){
+
+document.getElementById("searchInput").value=q;
+
+search();
+
+}
+
+
+async function save(name){
+
+await fetch("/save",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+name,
+type:"search"
+})
+
+});
+
+alert("Saved");
+
+}
+
+
+async function loadSaved(){
+
+const res=await fetch("/saved");
+
+const data=await res.json();
+
+document.getElementById("saved").innerHTML=
+
+`<h2 class="font-bold">Saved</h2>
+
+${data.map(i=>`
+
+<div>${i.item_name}</div>
+
+`).join("")}
+
+`;
+
+}
+
+
+async function checkPremium(){
+
+const res=await fetch("/tier");
+
+const data=await res.json();
+
+if(data.tier=="free"){
+
+document.getElementById("premium").innerHTML=
+
+`<div class="bg-yellow-600 p-3 rounded">
+
+Upgrade to Premium
+
+<button
+onclick="upgrade()"
+class="ml-3 bg-black px-3 py-1 rounded"
+>
+
+Upgrade
+
+</button>
+
+</div>`
+
+}
+
+}
+
+
+async function upgrade(){
+
+await fetch("/upgrade",{method:"POST"});
+
+location.reload();
+
+}
+
+
+loadSaved();
+checkPremium();
+
+</script>
+
+</body>
+
+</html>
