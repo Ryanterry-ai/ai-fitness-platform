@@ -1,5 +1,5 @@
 """supplement_ai.py — side-by-side compound comparison engine"""
-from search_ai import KNOWLEDGE_BASE
+from backend.search_ai import KNOWLEDGE_BASE
 
 COMPOUND_INDEX = {item["name"].lower(): item for item in KNOWLEDGE_BASE}
 # Also index by id
