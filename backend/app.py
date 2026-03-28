@@ -159,6 +159,10 @@ FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 def home():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory(FRONTEND_DIR, path)
+
 @app.route("/register", methods=["POST"])
 def register():
     data = request.json or {}
