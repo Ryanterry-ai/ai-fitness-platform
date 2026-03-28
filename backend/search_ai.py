@@ -6,40 +6,119 @@ from datetime import datetime
 SERP_API_KEY = os.getenv("SERP_API_KEY")
 
 
-# Evidence Knowledge Base
+# =========================================
+# Evidence Knowledge Base (Structured)
+# =========================================
+
 KNOWLEDGE_BASE = {
-    "whey protein": {
-        "title": "Whey Protein Benefits",
-        "summary": "Whey protein supports muscle growth, recovery, and strength development. Multiple clinical trials confirm its effectiveness for hypertrophy.",
-        "link": "https://pubmed.ncbi.nlm.nih.gov/",
-        "source": "PubMed"
-    },
 
     "creatine": {
-        "title": "Creatine Monohydrate Research",
-        "summary": "Creatine is the most researched supplement for strength and muscle growth. Studies show improved ATP regeneration and performance.",
-        "link": "https://examine.com/supplements/creatine/",
-        "source": "Examine.com"
+        "sections": [
+            {
+                "title": "What is Creatine",
+                "content": "Creatine is a naturally occurring compound that helps produce ATP energy during high intensity exercise."
+            },
+            {
+                "title": "How Creatine Works",
+                "content": "Creatine increases phosphocreatine stores allowing faster ATP regeneration and improved strength."
+            },
+            {
+                "title": "Dosage",
+                "content": "3-5g daily is recommended based on scientific research."
+            }
+        ],
+
+        "sources": [
+            {
+                "name": "PubMed Creatine Research",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/?term=creatine"
+            },
+            {
+                "name": "ISSN Creatine Position Stand",
+                "url": "https://jissn.biomedcentral.com/articles/10.1186/s12970-017-0173-z"
+            }
+        ],
+
+        "articles": [
+            {
+                "title": "ISSN Creatine Position Stand",
+                "why": "Most cited creatine research",
+                "sources": [
+                    {
+                        "name": "PubMed",
+                        "url": "https://pubmed.ncbi.nlm.nih.gov/28615996/"
+                    }
+                ]
+            }
+        ],
+
+        "books": [
+            {
+                "title": "Science and Development of Muscle Hypertrophy",
+                "author": "Brad Schoenfeld",
+                "links": [
+                    {
+                        "name": "Google Books",
+                        "url": "https://books.google.com/"
+                    }
+                ]
+            }
+        ],
+
+        "videos": [
+            {
+                "channel": "Jeff Nippard",
+                "title": "Creatine: Everything You Need To Know"
+            },
+            {
+                "channel": "Jeremy Ethier",
+                "title": "Creatine Explained"
+            }
+        ]
     },
 
-    "fat loss": {
-        "title": "Fat Loss Scientific Research",
-        "summary": "Fat loss occurs through caloric deficit, resistance training, and increased protein intake. Supported by multiple meta-analyses.",
-        "link": "https://pubmed.ncbi.nlm.nih.gov/",
-        "source": "NIH"
+
+    "whey protein": {
+
+        "sections": [
+            {
+                "title": "What is Whey Protein",
+                "content": "Whey protein is a fast digesting protein derived from milk used for muscle growth."
+            },
+            {
+                "title": "Benefits",
+                "content": "Supports muscle growth, recovery and fat loss."
+            }
+        ],
+
+        "sources": [
+            {
+                "name": "PubMed Whey Research",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/?term=whey+protein"
+            }
+        ],
+
+        "videos": [
+            {
+                "channel": "Jeff Nippard",
+                "title": "Best Protein for Muscle Growth"
+            }
+        ]
     }
+
 }
 
 
+# =========================================
 # Main Search
+# =========================================
+
 def search_knowledge(query, filters=None):
 
     filters = filters or []
-    results = []
+    query_lower = query.lower()
 
     try:
-
-        query_lower = query.lower()
 
         # Layer 1 — Knowledge Base
         for key in KNOWLEDGE_BASE:
@@ -48,18 +127,23 @@ def search_knowledge(query, filters=None):
 
                 data = KNOWLEDGE_BASE[key]
 
-                results.append({
-                    "title": data["title"],
-                    "summary": data["summary"],
-                    "link": data["link"],
-                    "source": data["source"],
-                    "evidence": "Scientific Research",
-                    "confidence": "High",
-                    "timestamp": datetime.utcnow().isoformat()
-                })
+                return {
+                    "query": query,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "sections": data.get("sections", []),
+                    "sources": data.get("sources", []),
+                    "articles": data.get("articles", []),
+                    "books": data.get("books", []),
+                    "videos": data.get("videos", []),
+                    "results": [],
+                    "recommendations": get_recommendations([query])
+                }
 
 
         # Layer 2 — SERP API Research
+
+        results = []
+
         if SERP_API_KEY:
 
             url = "https://serpapi.com/search.json"
@@ -84,19 +168,27 @@ def search_knowledge(query, filters=None):
                         "summary": r.get("snippet"),
                         "link": r.get("link"),
                         "source": r.get("displayed_link"),
-                        "evidence": "Google Research",
-                        "confidence": "High",
                         "timestamp": datetime.utcnow().isoformat()
                     })
 
 
-        # Layer 3 — AI Generated
-        if not results:
+        if results:
 
-            results = ai_generated_results(query)
+            return {
+                "query": query,
+                "timestamp": datetime.utcnow().isoformat(),
+                "sections": [],
+                "sources": [],
+                "articles": [],
+                "books": [],
+                "videos": [],
+                "results": results,
+                "recommendations": get_recommendations([query])
+            }
 
 
-        return results
+        # Layer 3 — AI fallback
+        return ai_generated_results(query)
 
 
     except Exception as e:
@@ -107,35 +199,43 @@ def search_knowledge(query, filters=None):
 
 
 
-# AI Generated Research
+# =========================================
+# AI Generated Results
+# =========================================
+
 def ai_generated_results(query):
 
-    return [
+    return {
+        "query": query,
+        "timestamp": datetime.utcnow().isoformat(),
 
-        {
-            "title": f"Scientific Overview: {query}",
-            "summary": f"{query} has been researched in sports science and medical literature. Evidence suggests measurable performance and health benefits depending on dosage and usage.",
-            "link": "https://scholar.google.com",
-            "source": "Google Scholar",
-            "evidence": "AI Research",
-            "confidence": "Medium",
-            "timestamp": datetime.utcnow().isoformat()
-        },
+        "sections": [
+            {
+                "title": f"Scientific Overview: {query}",
+                "content": f"{query} has been researched in sports science and medical literature."
+            }
+        ],
 
-        {
-            "title": f"Evidence Based Recommendation: {query}",
-            "summary": f"Clinical research indicates {query} may improve performance, recovery, or body composition.",
-            "link": "https://pubmed.ncbi.nlm.nih.gov/",
-            "source": "PubMed",
-            "evidence": "Peer Reviewed",
-            "confidence": "High",
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        "sources": [
+            {
+                "name": "Google Scholar",
+                "url": "https://scholar.google.com"
+            }
+        ],
 
-    ]
+        "articles": [],
+        "books": [],
+        "videos": [],
+        "results": [],
+        "recommendations": get_recommendations([query])
+    }
 
 
+
+# =========================================
 # Recommendations
+# =========================================
+
 def get_recommendations(queries, user=None):
 
     recommendations = []
@@ -144,25 +244,23 @@ def get_recommendations(queries, user=None):
 
         recommendations.append({
             "title": q,
-            "reason": "Based on your previous searches"
+            "reason": "Based on your search"
         })
 
-
-    # Trending Suggestions
     recommendations.extend([
+
         {
-            "title": "Creatine benefits",
+            "title": "Creatine Benefits",
             "reason": "Trending"
         },
         {
-            "title": "Best whey protein",
+            "title": "Best Whey Protein",
             "reason": "Trending"
         },
         {
-            "title": "Fat loss supplements",
+            "title": "Fat Loss Supplements",
             "reason": "Trending"
         }
     ])
-
 
     return recommendations
