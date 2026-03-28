@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
-import sqlite3, os, hashlib, json, time
+import sqlite3, os, hashlib, json, time, sys
 from functools import wraps
 from datetime import datetime
+
+# Fix module import path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from diet_ai import generate_diet
 from calorie_ai import calculate_calories
