@@ -1,8 +1,7 @@
 from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
-import sqlite3, os, hashlib, json, sys
+import sqlite3, os, hashlib, sys
 from functools import wraps
-from datetime import datetime
 
 # ── Project Directories ───────────────────────────────────────────────
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +23,7 @@ CORS(app, supports_credentials=True)
 
 
 # ── Database ──────────────────────────────────────────────────────────
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -31,37 +31,56 @@ def get_db():
 
 
 def init_db():
-    with get_db() as conn:
-        conn.executescript("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT UNIQUE,
-            password_hash TEXT,
-            tier TEXT DEFAULT 'free',
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        );
 
-        CREATE TABLE IF NOT EXISTS saved_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            item_name TEXT,
-            item_type TEXT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        );
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("SELECT 1")
 
-        CREATE TABLE IF NOT EXISTS search_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            query TEXT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        );
-        """)
+    except sqlite3.DatabaseError:
+
+        print("⚠️ Corrupted DB detected — recreating...")
+        try:
+            os.remove(DB_PATH)
+        except:
+            pass
+
+        conn = sqlite3.connect(DB_PATH)
+
+    conn.executescript("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT UNIQUE,
+        password_hash TEXT,
+        tier TEXT DEFAULT 'free',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS saved_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        item_name TEXT,
+        item_type TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS search_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        query TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    conn.commit()
+    conn.close()
+
 
 init_db()
 
 
 # ── Auth Helpers ──────────────────────────────────────────────────────
+
 def hash_password(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
 
@@ -80,6 +99,7 @@ def current_user_id():
 
 
 # ── Frontend ──────────────────────────────────────────────────────────
+
 @app.route("/")
 def home():
     return send_from_directory(FRONTEND_DIR, "index.html")
@@ -91,6 +111,7 @@ def static_files(path):
 
 
 # ── Register ──────────────────────────────────────────────────────────
+
 @app.route("/register", methods=["POST"])
 def register():
 
@@ -106,7 +127,7 @@ def register():
             conn.execute(
                 "INSERT INTO users(name,email,password_hash) VALUES (?,?,?)",
                 (
-                    data.get("name","User"),
+                    data.get("name", "User"),
                     data["email"],
                     hash_password(data["password"])
                 )
@@ -117,21 +138,19 @@ def register():
         })
 
     except sqlite3.IntegrityError:
-
         return jsonify({
             "error": "Already Signed up please login with your email and password"
         }), 409
 
     except Exception as e:
-
         print("Register Error:", e)
-
         return jsonify({
             "error": "Server error"
         }), 500
 
 
 # ── Login ─────────────────────────────────────────────────────────────
+
 @app.route("/login", methods=["POST"])
 def login():
 
@@ -140,7 +159,9 @@ def login():
         data = request.json or {}
 
         if not data.get("email") or not data.get("password"):
-            return jsonify({"error": "Email and password required"}), 400
+            return jsonify({
+                "error": "Email and password required"
+            }), 400
 
         with get_db() as conn:
 
@@ -167,15 +188,14 @@ def login():
         }), 401
 
     except Exception as e:
-
         print("Login Error:", e)
-
         return jsonify({
             "error": "Server error"
         }), 500
 
 
 # ── Logout ────────────────────────────────────────────────────────────
+
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
@@ -183,6 +203,7 @@ def logout():
 
 
 # ── Search ────────────────────────────────────────────────────────────
+
 @app.route("/search", methods=["POST"])
 def search():
 
@@ -194,7 +215,6 @@ def search():
         results = search_knowledge(query)
 
         if current_user_id():
-
             with get_db() as conn:
                 conn.execute(
                     "INSERT INTO search_history (user_id, query) VALUES (?,?)",
@@ -209,7 +229,6 @@ def search():
         })
 
     except Exception as e:
-
         print("Search Error:", e)
 
         return jsonify({
@@ -219,6 +238,7 @@ def search():
 
 
 # ── Save ──────────────────────────────────────────────────────────────
+
 @app.route("/save", methods=["POST"])
 def save():
 
@@ -237,7 +257,8 @@ def save():
     return jsonify({"status": "saved"})
 
 
-# ── Load Saved ────────────────────────────────────────────────────────
+# ── Saved Items ───────────────────────────────────────────────────────
+
 @app.route("/saved")
 def saved():
 
@@ -255,6 +276,7 @@ def saved():
 
 
 # ── Tier ──────────────────────────────────────────────────────────────
+
 @app.route("/tier")
 def tier():
 
@@ -272,6 +294,7 @@ def tier():
 
 
 # ── Upgrade ───────────────────────────────────────────────────────────
+
 @app.route("/upgrade", methods=["POST"])
 @login_required
 def upgrade():
@@ -286,5 +309,6 @@ def upgrade():
 
 
 # ── Run ───────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
