@@ -32,6 +32,14 @@ font-size:11px;
 background:#1e40af;
 }
 
+.save-btn{
+background:#10b981;
+padding:4px 10px;
+border-radius:6px;
+font-size:11px;
+cursor:pointer;
+}
+
 </style>
 
 </head>
@@ -85,9 +93,17 @@ Search
 
 <div id="dashboard" class="mt-6"></div>
 
+<!-- Recommendations -->
+
+<div id="recommendations" class="mt-6"></div>
+
 <!-- Saved Searches -->
 
 <div id="saved-searches" class="mt-6"></div>
+
+<!-- Saved Results -->
+
+<div id="saved-results" class="mt-6"></div>
 
 <!-- Results -->
 
@@ -100,32 +116,19 @@ Search
 
 let userHistory = [];
 let savedSearches = [];
+let savedResults = [];
+
+
+// Saved Searches
 
 function saveSearch(query){
-
 savedSearches.push(query);
-
 localStorage.setItem("savedSearches", JSON.stringify(savedSearches));
-
-renderSaved();
-
+renderSavedSearches();
 }
 
 
-function loadSaved(){
-
-const data = localStorage.getItem("savedSearches");
-
-if(data){
-savedSearches = JSON.parse(data);
-}
-
-renderSaved();
-
-}
-
-
-function renderSaved(){
+function renderSavedSearches(){
 
 document.getElementById("saved-searches").innerHTML = `
 
@@ -152,15 +155,93 @@ ${s}
 
 }
 
-
 function searchFromSaved(q){
-
 document.getElementById("searchInput").value = q;
-
 performSearch();
+}
+
+
+// Saved Results
+
+function saveResult(result){
+
+savedResults.push(result);
+
+localStorage.setItem("savedResults", JSON.stringify(savedResults));
+
+renderSavedResults();
 
 }
 
+
+function renderSavedResults(){
+
+document.getElementById("saved-results").innerHTML = `
+
+<div class="card">
+
+<h2 class="text-lg font-bold mb-2">
+Saved Results
+</h2>
+
+${savedResults.map(r => `
+
+<div style="margin-bottom:10px">
+
+<div style="font-weight:600">
+${r.title}
+</div>
+
+<div style="font-size:12px;color:#94a3b8">
+${r.summary}
+</div>
+
+</div>
+
+`).join("")}
+
+</div>
+
+`;
+
+}
+
+
+// Recommendation Engine
+
+function generateRecommendations(){
+
+const keywords = userHistory.slice(-5);
+
+document.getElementById("recommendations").innerHTML = `
+
+<div class="card">
+
+<h2 class="text-lg font-bold mb-2">
+Recommended Searches
+</h2>
+
+${keywords.map(k => `
+
+<div 
+style="cursor:pointer;color:#10b981"
+onclick="searchFromSaved('${k}')"
+>
+
+${k}
+
+</div>
+
+`).join("")}
+
+</div>
+
+`;
+
+}
+
+
+// Dashboard
 
 function renderDashboard(){
 
@@ -172,8 +253,6 @@ document.getElementById("dashboard").innerHTML = `
 User Dashboard
 </h2>
 
-<div>
-
 Recent Searches
 
 ${userHistory.slice(-5).map(h => `
@@ -182,12 +261,12 @@ ${userHistory.slice(-5).map(h => `
 
 </div>
 
-</div>
-
 `;
 
 }
 
+
+// Search
 
 async function performSearch(){
 
@@ -197,9 +276,11 @@ if(!query) return;
 
 userHistory.push(query);
 
+saveSearch(query);
+
 renderDashboard();
 
-saveSearch(query);
+generateRecommendations();
 
 document.getElementById("search-results").innerHTML =
 "Searching verified research...";
@@ -221,99 +302,76 @@ history:userHistory
 
 });
 
-const contentType = response.headers.get("content-type");
+const data = await response.json();
 
-let data;
-
-if(contentType && contentType.includes("application/json")){
-data = await response.json();
-}else{
-throw new Error("Invalid response");
-}
-
-renderSearchResults(data.results, query);
+renderSearchResults(data.results);
 
 }catch(e){
 
 document.getElementById("search-results").innerHTML =
-"<div style='color:red'>Search failed</div>";
+"Search Failed";
 
 }
 
 }
 
 
-function renderSearchResults(results, query){
+// Render Results
 
-if(!results || !results.length){
-
-document.getElementById("search-results").innerHTML =
-`No results for ${query}`;
-
-return;
-
-}
+function renderSearchResults(results){
 
 document.getElementById("search-results").innerHTML =
 
-`${results.map(r => `
+results.map(r => `
 
 <div class="card">
 
 <div style="display:flex;justify-content:space-between">
 
 <div style="font-weight:700">
-${r.title || "Research Result"}
+${r.title}
 </div>
 
-<span class="badge">
-${r.category || "Research"}
-</span>
+<div class="save-btn"
+onclick='saveResult(${JSON.stringify(r)})'>
+Save
+</div>
 
 </div>
 
-<p style="margin-top:8px">
-${r.summary || ""}
-</p>
+<p>${r.summary}</p>
 
 ${r.evidence ? `
-
-<div style="margin-top:8px;font-size:12px">
-<b>Evidence:</b> ${r.evidence}
+<div style="font-size:12px">
+Evidence: ${r.evidence}
 </div>
-
-` : ""}
-
-${r.sources ? `
-
-<div style="margin-top:8px;font-size:12px">
-
-${r.sources.map(s=>`
-
-<a href="${s.url}" target="_blank"
-style="display:block;color:#3b82f6">
-
-${s.title}
-
-</a>
-
-`).join("")}
-
-</div>
-
 ` : ""}
 
 </div>
 
-`).join("")}
+`).join("");
 
-`;
+}
+
+
+// Load Saved Data
+
+function loadSaved(){
+
+savedSearches = JSON.parse(localStorage.getItem("savedSearches")||"[]");
+
+savedResults = JSON.parse(localStorage.getItem("savedResults")||"[]");
+
+renderSavedSearches();
+
+renderSavedResults();
 
 }
 
 loadSaved();
 
 </script>
+
 
 
 <script type="module">
@@ -340,9 +398,7 @@ messagingSenderId: "450345763708",
 appId: "1:450345763708:web:e8967ea4b572a1f9da9af9"
 };
 
-
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 
 
@@ -359,7 +415,7 @@ showUser(result.user);
 
 window.phoneLogin = function(){
 
-const phone = prompt("Enter phone number");
+const phone = prompt("Enter phone");
 
 window.recaptcha = new RecaptchaVerifier(
 auth,
@@ -388,10 +444,6 @@ document.getElementById("user-info").innerHTML = `
 
 <div>${user.displayName || user.phoneNumber}</div>
 
-<div style="font-size:12px">
-${user.email || ""}
-</div>
-
 <button onclick="logout()"
 class="bg-red-500 px-3 py-1 mt-2 rounded">
 Logout
@@ -408,16 +460,13 @@ window.logout = function(){
 
 signOut(auth);
 
-document.getElementById("user-info").innerHTML = "";
+document.getElementById("user-info").innerHTML="";
 
 }
-
 
 onAuthStateChanged(auth, user=>{
 
-if(user){
-showUser(user);
-}
+if(user) showUser(user);
 
 });
 
