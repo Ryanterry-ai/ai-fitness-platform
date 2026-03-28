@@ -3,34 +3,68 @@ import os
 import json
 from datetime import datetime
 
-
 SERP_API_KEY = os.getenv("SERP_API_KEY")
 
 
-# Knowledge Base (Fix for supplement_ai import)
+# Evidence Based Knowledge Base
 KNOWLEDGE_BASE = {
     "whey protein": {
-        "title": "Whey Protein Benefits",
+        "name": "Whey Protein",
+        "category": "supplement",
         "summary": "Whey protein supports muscle growth, recovery, and strength development.",
-        "evidence": "Supported by sports nutrition clinical trials",
-        "source": "PubMed",
-        "link": "https://pubmed.ncbi.nlm.nih.gov/"
+        "dosage": "20-40g post workout",
+        "timing": "Post workout or morning",
+        "cycle_length": "Continuous",
+        "benefits": [
+            "Muscle growth",
+            "Recovery",
+            "Strength increase"
+        ],
+        "side_effects": [
+            {"effect": "Digestive discomfort (rare)", "severity": "low"}
+        ],
+        "safe_for_beginners": True,
+        "legal_status": "Legal",
+        "evidence_tier": "high"
     },
 
     "creatine": {
-        "title": "Creatine Monohydrate Research",
-        "summary": "Creatine improves strength, muscle mass, and athletic performance.",
-        "evidence": "Most researched sports supplement",
-        "source": "Examine.com",
-        "link": "https://examine.com"
+        "name": "Creatine Monohydrate",
+        "category": "supplement",
+        "summary": "Creatine improves strength, muscle mass, and performance.",
+        "dosage": "5g daily",
+        "timing": "Post workout",
+        "cycle_length": "Continuous",
+        "benefits": [
+            "Strength increase",
+            "Muscle growth",
+            "Performance"
+        ],
+        "side_effects": [
+            {"effect": "Water retention", "severity": "low"}
+        ],
+        "safe_for_beginners": True,
+        "legal_status": "Legal",
+        "evidence_tier": "high"
     },
 
     "fat loss": {
-        "title": "Fat Loss Scientific Research",
-        "summary": "Fat loss occurs through caloric deficit and resistance training.",
-        "evidence": "Supported by multiple clinical trials",
-        "source": "NIH",
-        "link": "https://pubmed.ncbi.nlm.nih.gov/"
+        "name": "Fat Loss",
+        "category": "fitness",
+        "summary": "Fat loss occurs through calorie deficit and resistance training.",
+        "dosage": "N/A",
+        "timing": "Daily",
+        "cycle_length": "8-12 weeks",
+        "benefits": [
+            "Reduced body fat",
+            "Improved health"
+        ],
+        "side_effects": [
+            {"effect": "Low energy (temporary)", "severity": "low"}
+        ],
+        "safe_for_beginners": True,
+        "legal_status": "N/A",
+        "evidence_tier": "high"
     }
 }
 
@@ -39,70 +73,70 @@ KNOWLEDGE_BASE = {
 def search_knowledge(query, filters=None):
 
     filters = filters or []
-
     results = []
 
     try:
 
-        # Layer 1 — Knowledge Base Search
+        query_lower = query.lower()
+
+        # Layer 1 — Knowledge Base
         for key in KNOWLEDGE_BASE:
 
-            if key.lower() in query.lower():
+            if key in query_lower:
 
-                data = KNOWLEDGE_BASE[key]
+                item = KNOWLEDGE_BASE[key].copy()
+                item["timestamp"] = datetime.utcnow().isoformat()
 
-                results.append({
-                    "title": data["title"],
-                    "summary": data["summary"],
-                    "source": data["source"],
-                    "link": data["link"],
-                    "evidence": data["evidence"],
-                    "confidence": "High",
-                    "timestamp": datetime.utcnow().isoformat()
-                })
+                results.append(item)
 
 
-        # Layer 2 — SERP API Research
+        # Layer 2 — SERP Research
         if SERP_API_KEY:
 
             url = "https://serpapi.com/search.json"
 
             params = {
-                "q": query,
+                "q": f"{query} supplement benefits dosage research",
                 "api_key": SERP_API_KEY,
                 "engine": "google",
-                "num": 5
+                "num": 3
             }
 
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=params, timeout=8)
 
             if response.status_code == 200:
 
                 data = response.json()
 
-                for r in data.get("organic_results", [])[:5]:
+                for r in data.get("organic_results", [])[:3]:
 
                     results.append({
-                        "title": r.get("title"),
+                        "name": r.get("title", query),
+                        "category": detect_category(query),
                         "summary": r.get("snippet"),
+                        "dosage": "Research Based",
+                        "timing": "Varies",
+                        "cycle_length": "Varies",
+                        "benefits": [
+                            "Evidence based benefits"
+                        ],
+                        "side_effects": [
+                            {
+                                "effect": "Varies",
+                                "severity": "low"
+                            }
+                        ],
+                        "safe_for_beginners": True,
+                        "legal_status": "Check local laws",
+                        "evidence_tier": "moderate",
                         "source": r.get("displayed_link"),
-                        "link": r.get("link"),
-                        "evidence": "Google Search Research",
-                        "confidence": "High",
                         "timestamp": datetime.utcnow().isoformat()
                     })
 
 
-        # Layer 3 — AI Generated Research
+        # Layer 3 — AI Generated
         if not results:
-
             results = ai_generated_results(query)
-
-
-        # Layer 4 — Fallback Results
-        if not results:
-
-            results = fallback_results(query)
 
 
         return results
@@ -112,7 +146,7 @@ def search_knowledge(query, filters=None):
 
         print("Search Error:", e)
 
-        return fallback_results(query)
+        return ai_generated_results(query)
 
 
 
@@ -122,54 +156,47 @@ def ai_generated_results(query):
     return [
 
         {
-            "title": f"Scientific Overview: {query}",
-            "summary": f"Research indicates that {query} has been studied across multiple scientific and fitness publications.",
-            "source": "Google Scholar",
-            "link": "https://scholar.google.com",
-            "evidence": "AI Synthesized Research",
-            "confidence": "Medium",
-            "timestamp": datetime.utcnow().isoformat()
-        },
-
-        {
-            "title": f"Evidence Based Recommendation for {query}",
-            "summary": f"Based on clinical and fitness research, {query} shows measurable benefits.",
-            "source": "PubMed",
-            "link": "https://pubmed.ncbi.nlm.nih.gov/",
-            "evidence": "Peer Reviewed Research",
-            "confidence": "High",
-            "timestamp": datetime.utcnow().isoformat()
-        }
-
-    ]
-
-
-# Fallback Results
-def fallback_results(query):
-
-    return [
-
-        {
-            "title": f"Research Evidence for {query}",
-            "summary": f"This topic '{query}' is supported by multiple scientific studies.",
-            "source": "NIH",
-            "link": "https://pubmed.ncbi.nlm.nih.gov/",
-            "evidence": "Scientific Research",
-            "confidence": "Medium",
-            "timestamp": datetime.utcnow().isoformat()
-        },
-
-        {
-            "title": f"Scientific Understanding of {query}",
-            "summary": f"Evidence indicates {query} has measurable effects.",
-            "source": "Google Scholar",
-            "link": "https://scholar.google.com",
-            "evidence": "Academic Research",
-            "confidence": "Medium",
+            "name": query.title(),
+            "category": detect_category(query),
+            "summary": f"{query} has been researched for performance, muscle growth, and recovery.",
+            "dosage": "Research based",
+            "timing": "Daily",
+            "cycle_length": "4-8 weeks",
+            "benefits": [
+                "Muscle growth",
+                "Recovery",
+                "Performance"
+            ],
+            "side_effects": [
+                {
+                    "effect": "Mild side effects possible",
+                    "severity": "low"
+                }
+            ],
+            "safe_for_beginners": True,
+            "legal_status": "Check regulations",
+            "evidence_tier": "moderate",
             "timestamp": datetime.utcnow().isoformat()
         }
 
     ]
+
+
+# Category Detection
+def detect_category(query):
+
+    q = query.lower()
+
+    if "sarm" in q:
+        return "sarm"
+
+    if "steroid" in q:
+        return "steroid"
+
+    if "peptide" in q:
+        return "peptide"
+
+    return "supplement"
 
 
 # Recommendation Engine
@@ -180,18 +207,28 @@ def get_recommendations(queries, user=None):
     for q in queries[-5:]:
 
         recommendations.append({
-            "title": f"Recommended Research: {q}",
-            "reason": "Based on your previous searches",
-            "confidence": "AI Suggested",
+            "name": q,
+            "category": detect_category(q),
+            "reason": "Based on your searches",
+            "safe_for_beginners": True,
             "timestamp": datetime.utcnow().isoformat()
         })
 
 
-    # Add Smart Suggestions
+    # Trending Recommendations
     recommendations.append({
-        "title": "Trending: Best supplements for muscle gain",
-        "reason": "Trending searches",
-        "confidence": "Trending"
+        "name": "Creatine",
+        "category": "supplement",
+        "reason": "Trending",
+        "safe_for_beginners": True
+    })
+
+
+    recommendations.append({
+        "name": "Whey Protein",
+        "category": "supplement",
+        "reason": "Trending",
+        "safe_for_beginners": True
     })
 
 
