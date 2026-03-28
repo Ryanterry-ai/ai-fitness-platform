@@ -1,11 +1,16 @@
 from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
-import sqlite3, os, hashlib, sys
+import sqlite3
+import os
+import hashlib
+import sys
 from functools import wraps
 
 # ── Project Directories ───────────────────────────────────────────────
+
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(CURRENT_DIR)
+
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 DB_DIR = os.path.join(BASE_DIR, "database")
 DB_PATH = os.path.join(DB_DIR, "users.db")
@@ -15,11 +20,14 @@ os.makedirs(DB_DIR, exist_ok=True)
 sys.path.append(CURRENT_DIR)
 
 # ── Backend Imports ───────────────────────────────────────────────────
+
 from backend.search_ai import search_knowledge, get_recommendations
 
 # ── Flask Setup ───────────────────────────────────────────────────────
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret")
+
 CORS(app, supports_credentials=True)
 
 
@@ -27,19 +35,20 @@ CORS(app, supports_credentials=True)
 
 def init_db():
 
-    # Delete corrupted DB file
+    # Fix corrupted DB
     if os.path.exists(DB_PATH):
         try:
             conn = sqlite3.connect(DB_PATH)
             conn.execute("PRAGMA schema_version;")
             conn.close()
         except:
-            print("⚠️ Corrupt DB detected — deleting")
+            print("⚠️ Corrupt database detected. Recreating...")
             os.remove(DB_PATH)
 
     conn = sqlite3.connect(DB_PATH)
 
     conn.executescript("""
+
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
@@ -63,6 +72,7 @@ def init_db():
         query TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
+
     """)
 
     conn.commit()
@@ -97,7 +107,7 @@ def current_user_id():
     return session.get("user_id")
 
 
-# ── Frontend ──────────────────────────────────────────────────────────
+# ── Frontend Routes ───────────────────────────────────────────────────
 
 @app.route("/")
 def home():
@@ -124,6 +134,7 @@ def register():
             }), 400
 
         with get_db() as conn:
+
             conn.execute(
                 "INSERT INTO users(name,email,password_hash) VALUES (?,?,?)",
                 (
@@ -133,18 +144,23 @@ def register():
                 )
             )
 
-        return jsonify({"status": "registered"})
+        return jsonify({
+            "status": "registered"
+        })
 
     except sqlite3.IntegrityError:
 
         return jsonify({
-            "error": "Already Signed up please login with your email and password"
+            "error": "Already Signed up please login"
         }), 409
 
     except Exception as e:
 
         print("Register Error:", e)
-        return jsonify({"error": "Server error"}), 500
+
+        return jsonify({
+            "error": "Server error"
+        }), 500
 
 
 # ── Login ─────────────────────────────────────────────────────────────
@@ -188,25 +204,71 @@ def login():
     except Exception as e:
 
         print("Login Error:", e)
-        return jsonify({"error": "Server error"}), 500
+
+        return jsonify({
+            "error": "Server error"
+        }), 500
 
 
-# ── Search ────────────────────────────────────────────────────────────
+# ── Search (FULLY FIXED) ─────────────────────────────────────────────
 
 @app.route("/search", methods=["POST"])
 def search():
 
     try:
 
-        data = request.json or {}
-        query = data.get("query", "")
+        data = request.get_json() or {}
 
-        results = search_knowledge(query)
+        query = data.get("query", "").strip()
+        filters = data.get("filters", [])
+
+        # Prevent undefined bug
+        if not query:
+
+            return jsonify({
+                "query": "",
+                "results": [],
+                "recommendations": [],
+                "suggestions": []
+            })
+
+        print("🔎 Search Query:", query)
+
+        # Main search
+        results = search_knowledge(query, filters)
+
+        # Recommendations
         recommendations = get_recommendations([query])
 
+        # Auto Suggestions
+        suggestions = [
+            f"What is {query}",
+            f"{query} benefits",
+            f"{query} dosage",
+            f"{query} side effects",
+            f"Best {query}",
+            f"{query} research"
+        ]
+
+        # Save history
+        if current_user_id():
+
+            try:
+                with get_db() as conn:
+
+                    conn.execute(
+                        "INSERT INTO search_history (user_id, query) VALUES (?,?)",
+                        (current_user_id(), query)
+                    )
+
+            except Exception as e:
+                print("History error:", e)
+
         return jsonify({
+            "query": query,
             "results": results,
-            "recommendations": recommendations
+            "recommendations": recommendations,
+            "suggestions": suggestions
         })
 
     except Exception as e:
@@ -214,12 +276,14 @@ def search():
         print("Search Error:", e)
 
         return jsonify({
+            "query": "",
             "results": [],
-            "recommendations": []
+            "recommendations": [],
+            "suggestions": []
         })
 
 
-# ── Save ──────────────────────────────────────────────────────────────
+# ── Save ─────────────────────────────────────────────────────────────
 
 @app.route("/save", methods=["POST"])
 def save():
@@ -243,7 +307,7 @@ def save():
     return jsonify({"status": "saved"})
 
 
-# ── Saved ─────────────────────────────────────────────────────────────
+# ── Saved ────────────────────────────────────────────────────────────
 
 @app.route("/saved")
 def saved():
@@ -261,7 +325,7 @@ def saved():
     return jsonify([dict(r) for r in rows])
 
 
-# ── Tier ──────────────────────────────────────────────────────────────
+# ── Tier ─────────────────────────────────────────────────────────────
 
 @app.route("/tier")
 def tier():
@@ -276,10 +340,12 @@ def tier():
             (current_user_id(),)
         ).fetchone()
 
-    return jsonify({"tier": user["tier"]})
+    return jsonify({
+        "tier": user["tier"]
+    })
 
 
-# ── Upgrade ───────────────────────────────────────────────────────────
+# ── Upgrade ──────────────────────────────────────────────────────────
 
 @app.route("/upgrade", methods=["POST"])
 @login_required
@@ -292,10 +358,12 @@ def upgrade():
             (current_user_id(),)
         )
 
-    return jsonify({"status": "premium"})
+    return jsonify({
+        "status": "premium"
+    })
 
 
-# ── Run ───────────────────────────────────────────────────────────────
+# ── Run ──────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
