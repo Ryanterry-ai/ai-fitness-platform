@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import os
@@ -10,12 +10,20 @@ from backend.grocery_ai import grocery_list
 from backend.cycle_ai import generate_cycle
 from backend.medical_ai import analyze_medical
 
-app = Flask(__name__)
-app.secret_key = "secret"
-CORS(app)
-
 # Base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+app = Flask(
+    __name__,
+    static_folder=STATIC_DIR,
+    template_folder=FRONTEND_DIR
+)
+
+app.secret_key = "secret"
+CORS(app)
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 DATABASE_PATH = os.path.join(BASE_DIR, "database", "users.db")
@@ -24,15 +32,59 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(os.path.join(BASE_DIR, "database"), exist_ok=True)
 
 
+# -------------------------------
+# Frontend Routes
+# -------------------------------
+
 @app.route("/")
 def home():
-    return "AI Fitness Platform v3 Running"
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
+
+@app.route("/login")
+def login_page():
+    return send_from_directory(FRONTEND_DIR, "login.html")
+
+
+@app.route("/dashboard")
+def dashboard_page():
+    return send_from_directory(FRONTEND_DIR, "dashboard.html")
+
+
+@app.route("/diet")
+def diet_page():
+    return send_from_directory(FRONTEND_DIR, "diet.html")
+
+
+@app.route("/grocery")
+def grocery_page():
+    return send_from_directory(FRONTEND_DIR, "grocery.html")
+
+
+@app.route("/cycle")
+def cycle_page():
+    return send_from_directory(FRONTEND_DIR, "cycle.html")
+
+
+@app.route("/medical")
+def medical_page():
+    return send_from_directory(FRONTEND_DIR, "medical.html")
+
+
+@app.route("/bca")
+def bca_page():
+    return send_from_directory(FRONTEND_DIR, "bca.html")
+
+
+@app.route("/physique")
+def physique_page():
+    return send_from_directory(FRONTEND_DIR, "physique.html")
 
 
 # -------------------------------
 # User Register
 # -------------------------------
-@app.route("/register", methods=["POST"])
+@app.route("/api/register", methods=["POST"])
 def register():
     data = request.json
     conn = sqlite3.connect(DATABASE_PATH)
@@ -56,7 +108,7 @@ def register():
 # -------------------------------
 # Login
 # -------------------------------
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
     data = request.json
     conn = sqlite3.connect(DATABASE_PATH)
@@ -80,7 +132,7 @@ def login():
 # -------------------------------
 # Upload BCA
 # -------------------------------
-@app.route("/upload_bca", methods=["POST"])
+@app.route("/api/upload_bca", methods=["POST"])
 def upload_bca():
     file = request.files["file"]
 
@@ -93,7 +145,7 @@ def upload_bca():
 # -------------------------------
 # Upload Physique Photos
 # -------------------------------
-@app.route("/upload_physique", methods=["POST"])
+@app.route("/api/upload_physique", methods=["POST"])
 def upload_physique():
     files = request.files.getlist("files")
 
@@ -110,7 +162,7 @@ def upload_physique():
 # -------------------------------
 # Medical AI
 # -------------------------------
-@app.route("/medical", methods=["POST"])
+@app.route("/api/medical", methods=["POST"])
 def medical():
     data = request.json
     result = analyze_medical(data)
@@ -121,7 +173,7 @@ def medical():
 # -------------------------------
 # Cycle Planner
 # -------------------------------
-@app.route("/cycle", methods=["POST"])
+@app.route("/api/cycle", methods=["POST"])
 def cycle():
     data = request.json
     result = generate_cycle(data)
@@ -132,7 +184,7 @@ def cycle():
 # -------------------------------
 # Diet Generator
 # -------------------------------
-@app.route("/diet", methods=["POST"])
+@app.route("/api/diet", methods=["POST"])
 def diet():
     data = request.json
 
@@ -148,10 +200,18 @@ def diet():
 # -------------------------------
 # Grocery Generator
 # -------------------------------
-@app.route("/grocery", methods=["POST"])
+@app.route("/api/grocery", methods=["POST"])
 def grocery():
     data = request.json
     return jsonify(grocery_list(data))
+
+
+# -------------------------------
+# Static Files
+# -------------------------------
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    return send_from_directory(STATIC_DIR, filename)
 
 
 # -------------------------------
