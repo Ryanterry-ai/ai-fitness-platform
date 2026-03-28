@@ -131,11 +131,38 @@ function toast(msg, type='info') {
 
 // ── API helper ────────────────────────────────────────────────────────────
 async function api(path, method='GET', body=null) {
-  const opts = { method, credentials: 'include', headers: {} };
-  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const opts = { 
+    method, 
+    credentials: 'include', 
+    headers: {} 
+  };
+
+  if (body) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+
   const res = await fetch(API + path, opts);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
+
+  const contentType = res.headers.get("content-type");
+
+  let data;
+
+  try {
+    if (contentType && contentType.includes("application/json")) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      throw new Error("Server returned HTML instead of JSON: " + text.slice(0,100));
+    }
+  } catch (err) {
+    throw new Error("Invalid server response");
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || "Server error");
+  }
+
   return data;
 }
 
