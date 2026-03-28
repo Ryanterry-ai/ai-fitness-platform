@@ -151,10 +151,13 @@ def current_user_id():
     return session.get("user_id")
 
 # ── Auth routes ──────────────────────────────────────────────────────────────
+from flask import send_from_directory
+
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
 @app.route("/")
 def home():
-    return jsonify({"status": "FitSearch AI Platform v4 Running", "version": "4.0"})
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 @app.route("/register", methods=["POST"])
 def register():
