@@ -7,13 +7,13 @@ from datetime import datetime
 # Fix module import path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from diet_ai import generate_diet
-from calorie_ai import calculate_calories
-from grocery_ai import grocery_list
-from cycle_ai import generate_cycle
-from medical_ai import analyze_medical
-from search_ai import search_knowledge, get_recommendations
-from supplement_ai import compare_supplements
+from backend.diet_ai import generate_diet
+from backend.calorie_ai import calculate_calories
+from backend.grocery_ai import grocery_list
+from backend.cycle_ai import generate_cycle
+from backend.medical_ai import analyze_medical
+from backend.search_ai import search_knowledge, get_recommendations
+from backend.supplement_ai import compare_supplements
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production-please")
