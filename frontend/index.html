@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -16,26 +17,18 @@ color:white;
 font-family:system-ui;
 }
 
-.search-box{
-background:#1e293b;
-padding:20px;
-border-radius:12px;
-}
-
 .card{
 background:#1e293b;
 padding:16px;
 border-radius:12px;
 border:1px solid #334155;
+margin-bottom:12px;
 }
 
 .badge{
 padding:4px 8px;
 border-radius:6px;
 font-size:11px;
-}
-
-.badge-blue{
 background:#1e40af;
 }
 
@@ -45,15 +38,33 @@ background:#1e40af;
 
 <body>
 
-<div class="max-w-5xl mx-auto mt-12">
+<div class="max-w-5xl mx-auto mt-10">
 
 <h1 class="text-3xl font-bold mb-6">
-AI Research Search Platform
+AI Research Platform
 </h1>
 
-<!-- Search Box -->
+<!-- Auth Section -->
 
-<div class="search-box">
+<div id="auth-section" class="mb-6">
+
+<button onclick="googleLogin()" 
+class="bg-white text-black px-4 py-2 rounded-lg mr-2">
+Login with Google
+</button>
+
+<button onclick="phoneLogin()" 
+class="bg-green-600 px-4 py-2 rounded-lg">
+Login with Phone
+</button>
+
+<div id="user-info" class="mt-3"></div>
+
+</div>
+
+<!-- Search -->
+
+<div class="card">
 
 <input 
 id="searchInput"
@@ -70,37 +81,142 @@ Search
 
 </div>
 
+<!-- Dashboard -->
+
+<div id="dashboard" class="mt-6"></div>
+
+<!-- Saved Searches -->
+
+<div id="saved-searches" class="mt-6"></div>
+
 <!-- Results -->
 
 <div id="search-results" class="mt-6"></div>
 
 </div>
 
+
 <script>
 
-const API = "";
+let userHistory = [];
+let savedSearches = [];
 
-async function performSearch() {
+function saveSearch(query){
+
+savedSearches.push(query);
+
+localStorage.setItem("savedSearches", JSON.stringify(savedSearches));
+
+renderSaved();
+
+}
+
+
+function loadSaved(){
+
+const data = localStorage.getItem("savedSearches");
+
+if(data){
+savedSearches = JSON.parse(data);
+}
+
+renderSaved();
+
+}
+
+
+function renderSaved(){
+
+document.getElementById("saved-searches").innerHTML = `
+
+<div class="card">
+
+<h2 class="text-lg font-bold mb-2">Saved Searches</h2>
+
+${savedSearches.map(s => `
+
+<div 
+style="cursor:pointer;color:#3b82f6"
+onclick="searchFromSaved('${s}')"
+>
+
+${s}
+
+</div>
+
+`).join("")}
+
+</div>
+
+`;
+
+}
+
+
+function searchFromSaved(q){
+
+document.getElementById("searchInput").value = q;
+
+performSearch();
+
+}
+
+
+function renderDashboard(){
+
+document.getElementById("dashboard").innerHTML = `
+
+<div class="card">
+
+<h2 class="text-lg font-bold mb-2">
+User Dashboard
+</h2>
+
+<div>
+
+Recent Searches
+
+${userHistory.slice(-5).map(h => `
+<div>${h}</div>
+`).join("")}
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+async function performSearch(){
 
 const query = document.getElementById("searchInput").value;
 
-if (!query) return;
+if(!query) return;
+
+userHistory.push(query);
+
+renderDashboard();
+
+saveSearch(query);
 
 document.getElementById("search-results").innerHTML =
-"<div>Searching verified research...</div>";
+"Searching verified research...";
 
-try {
+try{
 
-const response = await fetch(API + "/search", {
+const response = await fetch("/search",{
 
-method: "POST",
+method:"POST",
 
-headers: {
-"Content-Type": "application/json"
+headers:{
+"Content-Type":"application/json"
 },
 
-body: JSON.stringify({
-query: query
+body:JSON.stringify({
+query,
+history:userHistory
 })
 
 });
@@ -109,108 +225,204 @@ const contentType = response.headers.get("content-type");
 
 let data;
 
-if (contentType && contentType.includes("application/json")) {
+if(contentType && contentType.includes("application/json")){
 data = await response.json();
-} else {
-throw new Error("Server returned HTML instead of JSON");
+}else{
+throw new Error("Invalid response");
 }
 
 renderSearchResults(data.results, query);
 
-} catch (error) {
+}catch(e){
+
+document.getElementById("search-results").innerHTML =
+"<div style='color:red'>Search failed</div>";
+
+}
+
+}
+
+
+function renderSearchResults(results, query){
+
+if(!results || !results.length){
+
+document.getElementById("search-results").innerHTML =
+`No results for ${query}`;
+
+return;
+
+}
 
 document.getElementById("search-results").innerHTML =
 
-`<div style="color:red;">
-Search failed. Please try again.
-</div>`;
+`${results.map(r => `
 
-}
+<div class="card">
 
-}
+<div style="display:flex;justify-content:space-between">
 
-
-
-function renderSearchResults(results, query) {
-
-if (!results || !results.length) {
-
-document.getElementById('search-results').innerHTML =
-
-`<div style="text-align:center;padding:40px 0;color:#94a3b8;">
-No verified results found for "${query}"
-</div>`;
-
-return;
-}
-
-document.getElementById('search-results').innerHTML =
-
-`<div style="font-size:13px;color:#94a3b8;margin-bottom:12px;">
-${results.length} verified results for "${query}"
-</div>
-
-${results.map(r => `
-
-<div class="card" style="margin-bottom:14px;">
-
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-
-<div style="font-size:16px;font-weight:700;">
+<div style="font-weight:700">
 ${r.title || "Research Result"}
 </div>
 
-<span class="badge badge-blue">
-${r.category || 'Research'}
+<span class="badge">
+${r.category || "Research"}
 </span>
 
 </div>
 
-<p style="font-size:13px;color:#cbd5e1;line-height:1.6;">
-${r.summary || "Research based information"}
+<p style="margin-top:8px">
+${r.summary || ""}
 </p>
 
 ${r.evidence ? `
 
-<div style="margin-top:10px;padding:8px;background:#020617;border-radius:6px;font-size:12px;">
+<div style="margin-top:8px;font-size:12px">
 <b>Evidence:</b> ${r.evidence}
 </div>
 
-` : ''}
+` : ""}
 
 ${r.sources ? `
 
-<div style="margin-top:8px;font-size:12px;">
+<div style="margin-top:8px;font-size:12px">
 
-<b>Sources:</b>
+${r.sources.map(s=>`
 
-${r.sources.map(s => `
 <a href="${s.url}" target="_blank"
-style="display:block;color:#3b82f6;">
+style="display:block;color:#3b82f6">
+
 ${s.title}
+
 </a>
-`).join('')}
+
+`).join("")}
 
 </div>
 
-` : ''}
-
-${r.confidence ? `
-
-<div style="margin-top:8px;font-size:11px;color:#94a3b8;">
-Confidence: ${r.confidence}
-</div>
-
-` : ''}
+` : ""}
 
 </div>
 
-`).join('')}
+`).join("")}
+
 `;
 
 }
 
+loadSaved();
+
 </script>
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+
+import {
+getAuth,
+GoogleAuthProvider,
+signInWithPopup,
+signOut,
+RecaptchaVerifier,
+signInWithPhoneNumber,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+
+const firebaseConfig = {
+apiKey: "AIzaSyAe6LNE1Er_KpTK4PdpTVb5OrqbD5wLZG8",
+authDomain: "ai-fitness-platform-94093.firebaseapp.com",
+projectId: "ai-fitness-platform-94093",
+storageBucket: "ai-fitness-platform-94093.firebasestorage.app",
+messagingSenderId: "450345763708",
+appId: "1:450345763708:web:e8967ea4b572a1f9da9af9"
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+
+window.googleLogin = async function(){
+
+const provider = new GoogleAuthProvider();
+
+const result = await signInWithPopup(auth, provider);
+
+showUser(result.user);
+
+}
+
+
+window.phoneLogin = function(){
+
+const phone = prompt("Enter phone number");
+
+window.recaptcha = new RecaptchaVerifier(
+auth,
+'auth-section',
+{size:'invisible'}
+);
+
+signInWithPhoneNumber(auth, phone, window.recaptcha)
+.then(c => {
+
+const code = prompt("OTP");
+
+return c.confirm(code);
+
+})
+.then(result => showUser(result.user));
+
+}
+
+
+function showUser(user){
+
+document.getElementById("user-info").innerHTML = `
+
+<div class="card">
+
+<div>${user.displayName || user.phoneNumber}</div>
+
+<div style="font-size:12px">
+${user.email || ""}
+</div>
+
+<button onclick="logout()"
+class="bg-red-500 px-3 py-1 mt-2 rounded">
+Logout
+</button>
+
+</div>
+
+`;
+
+}
+
+
+window.logout = function(){
+
+signOut(auth);
+
+document.getElementById("user-info").innerHTML = "";
+
+}
+
+
+onAuthStateChanged(auth, user=>{
+
+if(user){
+showUser(user);
+}
+
+});
+
+</script>
+
 
 </body>
 </html>
