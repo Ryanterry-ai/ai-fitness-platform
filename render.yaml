@@ -11,5 +11,7 @@ services:
         value: 3.11.0
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: PUBMED_API_KEY
+        sync: false
       - key: SERP_API_KEY
         sync: false

@@ -1,619 +1,828 @@
 """
-search_ai.py
-============
-Real-time, multilingual, NLP-powered search engine for FitSearch AI Platform.
+search_ai.py  —  FitSearch AI Hybrid Search Engine
+====================================================
 
-Architecture (3 layers, executed in order of availability):
-  Layer 1 → Anthropic Claude API   — NLP understanding + structured AI answer
-  Layer 2 → SerpAPI                — Live Google web results
-  Layer 3 → Local Knowledge Base   — Curated offline fallback (zero API keys needed)
+Pipeline (executed left to right, first success wins):
 
-Supported languages : ALL languages (Claude handles translation internally)
-Natural language    : YES — "What are SARMs", "Best creatine for strength",
-                            "क्रिएटिन के फायदे", "Créatine pour la force" all work
+  User Query
+      │
+      ▼
+  1. ENTITY DETECTION  — detect compounds + intent
+      │
+      ▼
+  2. CACHE LOOKUP  — SQLite: was this query answered in last 24 h?
+      │ miss
+      ▼
+  3. LIVE DATA RETRIEVAL (parallel)
+      ├── PubMed API        (peer-reviewed research)
+      ├── Examine.com API   (trusted supplement DB)
+      ├── OpenFDA API       (safety / adverse events)
+      └── Web scrape fallback (if APIs incomplete)
+      │
+      ▼
+  4. EVIDENCE FILTERING  — score + rank by trust tier
+      │
+      ▼
+  5. CLAUDE LLM CALL  — entity + KB + live data → structured report
+      │
+      ▼
+  6. CACHE WRITE  — store report in SQLite for 24 h
+      │
+      ▼
+  7. STRUCTURED RESULT  — 10-section clickable report returned to frontend
 
-Environment variables (set in Render dashboard):
-  ANTHROPIC_API_KEY   — Claude API key for NLP + AI answers
-  SERP_API_KEY        — SerpAPI key for real-time Google results (optional)
+Environment variables:
+  ANTHROPIC_API_KEY   — required for AI reports
+  PUBMED_API_KEY      — optional, raises PubMed rate limit from 3/s to 10/s
+  SERP_API_KEY        — optional, enables live Google results via SerpAPI
 """
 
 from __future__ import annotations
-import os, json, re, requests
-from datetime import datetime, timezone
 
+import os, json, re, time, hashlib, sqlite3, threading
+import urllib.parse
+from datetime import datetime, timezone
+from typing import Any
+
+import requests
+
+# ── API keys ──────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+PUBMED_API_KEY    = os.getenv("PUBMED_API_KEY", "")
 SERP_API_KEY      = os.getenv("SERP_API_KEY", "")
 
+# ── Paths ─────────────────────────────────────────────────────────────────
+BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE_DB   = os.path.join(BASE_DIR, "database", "search_cache.db")
+
+# ── Constants ─────────────────────────────────────────────────────────────
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-SERP_URL      = "https://serpapi.com/search.json"
+PUBMED_SEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+PUBMED_FETCH  = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+OPENFDA_URL   = "https://api.fda.gov/drug/event.json"
+EXAMINE_BASE  = "https://examine.com/supplements/"
+CACHE_TTL_SEC = 86400  # 24 hours
+
+_cache_lock = threading.Lock()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LOCAL KNOWLEDGE BASE  — offline fallback, always works
+# LOCAL KNOWLEDGE BASE  — always-available offline data
 # ═══════════════════════════════════════════════════════════════════════════
 
-KB = [
+KB: list[dict] = [
     {
-        "id": "crm_mono",
-        "name": "Creatine monohydrate",
-        "aliases": ["creatine", "kreatin", "creatina", "creatine monohydrate", "créatine",
-                    "creatina monoidrata", "creatina monohidrato", "kreatin monohidrat", "क्रिएटिन", "肌酸"],
+        "id": "crm_mono", "name": "Creatine monohydrate",
+        "aliases": ["creatine", "kreatin", "creatina", "créatine", "क्रिएटिन", "肌酸",
+                    "creatina monoidrata", "creatina monohidrato"],
         "category": "supplement",
-        "tags": ["strength", "muscle_gain", "power", "beginner", "best", "creatine"],
-        "summary": "The most extensively researched ergogenic aid in sports science. Increases phosphocreatine stores in muscle, directly fuelling ATP regeneration during high-intensity efforts. Produces consistent strength and power gains across all training levels with no cycling required.",
-        "dosage": "3–5 g/day (loading optional: 20 g/day × 5 days then 3–5 g maintenance)",
-        "timing": "Post-workout or any time of day — consistency matters more than timing",
-        "benefits": ["Strength increase 5–15%", "Power output improvement", "Faster recovery between sets", "Lean mass support", "Cognitive performance support"],
-        "side_effects": [{"effect": "Water retention (mild, intracellular)", "severity": "low"}, {"effect": "GI discomfort if taking full dose at once during loading", "severity": "medium"}],
-        "stacking": ["Beta-alanine", "Caffeine", "Whey protein"],
+        "tags": ["strength", "muscle_gain", "power", "beginner", "creatine", "atp"],
+        "summary": "The most extensively researched ergogenic aid. Increases phosphocreatine stores enabling faster ATP regeneration during high-intensity exercise.",
+        "what_it_is": "Creatine monohydrate is an organic compound naturally produced in the liver and kidneys from amino acids arginine, glycine, and methionine. About 95% is stored in skeletal muscle as phosphocreatine. Supplementation saturates these stores, directly fuelling the ATP-PCr energy system during short, explosive efforts.",
+        "dosage": "Loading (optional): 20 g/day split into 4 × 5 g doses for 5–7 days. Maintenance: 3–5 g/day. No-loading protocol: 3–5 g/day consistently (~3–4 weeks to full saturation.",
+        "timing": "Post-workout slightly superior to pre-workout per meta-analyses. Consistency matters far more than exact timing — any time of day works.",
+        "how_to_take": "Dissolve in 200–300 ml of water, juice, or protein shake. Monohydrate is tasteless and mixes easily. Taking with carbohydrates increases muscle uptake via insulin.",
+        "hydration": "Increase fluid intake to 2.5–3.5 L/day. Creatine draws water into muscle cells — adequate hydration prevents cramps and supports performance.",
+        "training_synergy": "Most effective with progressive-overload resistance training. Compound lifts (squat, deadlift, bench press) maximise creatine's ATP benefits. Also benefits high-intensity interval training.",
+        "cycling": "No cycling required — long-term continuous use (5+ years) has been shown safe in research. No washout period needed.",
+        "benefits": ["Strength increase 5–15%", "Power output improvement (PCr resynthesis)", "Faster recovery between sets", "Lean mass support (muscle volumisation + synthesis)", "Cognitive performance support (emerging research)"],
+        "side_effects": [{"effect": "Water retention (mild, intracellular — cosmetic only)", "severity": "low"}, {"effect": "GI discomfort if loading dose taken all at once", "severity": "medium"}],
+        "stacking": ["Beta-alanine (complementary energy systems)", "Caffeine (minor antagonism at high doses — not clinically significant)", "Whey protein (muscle protein synthesis)"],
+        "final_recommendation": "Pair 3–5 g creatine monohydrate with a post-workout carbohydrate + protein meal. Begin progressive overload training within the same week. Expect strength improvements in 2–4 weeks.",
         "evidence_tier": "very_high",
         "safe_for_beginners": True,
-        "research_refs": ["Buford et al. (2007) ISSN Creatine Position Stand", "Rawson & Volek (2003) JSCR meta-analysis"],
+        "pubmed_ids": ["28615996", "11509496", "14636102"],
+        "examine_url": "https://examine.com/supplements/creatine/",
+        "research_refs": ["Buford et al. (2007) JISSN 4:6 — ISSN Position Stand", "Rawson & Volek (2003) J Strength Cond Res", "Lanhers et al. (2017) Eur J Sport Sci — strength meta-analysis"],
     },
     {
-        "id": "crm_hcl",
-        "name": "Creatine HCL",
+        "id": "crm_hcl", "name": "Creatine HCL",
         "aliases": ["creatine hcl", "creatine hydrochloride", "hcl creatine", "con-cret"],
         "category": "supplement",
-        "tags": ["strength", "muscle_gain", "creatine", "no bloating"],
-        "summary": "Hydrochloride salt of creatine with higher water solubility, allowing effective doses of 1–2 g vs 3–5 g for monohydrate. Reported to cause less bloating. Clinical evidence is comparable but the research body is much smaller than monohydrate.",
-        "dosage": "1–2 g/day, no loading phase needed",
-        "timing": "Pre or post-workout",
-        "benefits": ["Minimal water retention and bloating", "Easy to dissolve in water", "Equivalent strength gains at lower dose", "Good for GI-sensitive individuals"],
+        "tags": ["strength", "muscle_gain", "creatine"],
+        "summary": "Higher-solubility creatine requiring a smaller dose (1–2 g). Less bloating reported. Smaller evidence base than monohydrate.",
+        "what_it_is": "Creatine bound to hydrochloric acid. The HCL salt significantly increases water solubility compared to monohydrate, meaning effective doses are smaller and GI absorption may be faster.",
+        "dosage": "1–2 g/day, no loading phase needed due to superior absorption kinetics.",
+        "timing": "Pre or post-workout.",
+        "how_to_take": "Mix in 150–200 ml water. Dissolves more readily than monohydrate.",
+        "hydration": "2–3 L/day. Less water retention than monohydrate due to smaller dose.",
+        "training_synergy": "Same as monohydrate — most effective with resistance training.",
+        "cycling": "No cycling needed.",
+        "benefits": ["Equivalent strength gains at lower dose", "Minimal bloating", "Easy dissolution"],
         "side_effects": [{"effect": "Minimal GI issues", "severity": "low"}],
         "stacking": ["Citrulline malate", "Beta-alanine"],
+        "final_recommendation": "Choose HCL if monohydrate causes GI discomfort. For most users monohydrate is the superior cost-effective choice.",
         "evidence_tier": "high",
         "safe_for_beginners": True,
+        "pubmed_ids": ["19844003"],
+        "examine_url": "https://examine.com/supplements/creatine/",
         "research_refs": ["Miller et al. (2009) J Int Soc Sports Nutr"],
     },
     {
-        "id": "beta_al",
-        "name": "Beta-alanine",
-        "aliases": ["beta alanine", "beta-alanine", "carnosine precursor", "tingling supplement", "beta alanina"],
+        "id": "beta_al", "name": "Beta-alanine",
+        "aliases": ["beta alanine", "beta-alanine", "carnosine precursor", "beta alanina"],
         "category": "supplement",
         "tags": ["endurance", "strength", "fatigue", "pre_workout"],
-        "summary": "Amino acid that combines with histidine to form carnosine in muscle, acting as a pH buffer to delay lactic acid buildup and fatigue. Most effective for exercise lasting 60–240 seconds (high-rep training, rowing, cycling).",
-        "dosage": "3.2–6.4 g/day — split into 1.6 g doses throughout the day to minimise tingling",
-        "timing": "Pre-workout or split across the day; tingling (paresthesia) is harmless",
-        "benefits": ["Delayed muscle fatigue and lactic acid buildup", "Higher rep capacity before failure", "Endurance improvement in 1–4 minute efforts", "Synergy with creatine for full energy system coverage"],
+        "summary": "Amino acid precursor to carnosine — buffers lactic acid in muscle, delaying fatigue. Most effective for exercise lasting 60–240 seconds.",
+        "what_it_is": "Non-essential amino acid that combines with histidine in muscle tissue to form carnosine — a pH buffer that neutralises lactic acid during intense exercise. Supplementation raises muscle carnosine by 40–80% over 4–6 weeks.",
+        "dosage": "3.2–6.4 g/day. Split into 1.6 g doses throughout the day to reduce tingling (paresthesia).",
+        "timing": "Pre-workout or evenly split throughout the day. Tingling peaks 30–60 min post-dose and is harmless.",
+        "how_to_take": "Capsules or powder mixed in water or shake. Sustained-release formulas reduce paresthesia.",
+        "hydration": "2–3 L/day standard.",
+        "training_synergy": "Ideal for high-rep resistance training, rowing, cycling, and team sports. Synergises with creatine — creatine covers explosive < 10 s, beta-alanine covers sustained 60–240 s.",
+        "cycling": "No cycling required. Benefits plateau after ~10 weeks at full dose — maintenance at 3.2 g/day thereafter.",
+        "benefits": ["Delayed muscle fatigue and H+ accumulation", "Higher rep capacity before failure", "Endurance improvement in 1–4 minute efforts"],
         "side_effects": [{"effect": "Tingling / paresthesia — harmless, dose-dependent", "severity": "low"}],
         "stacking": ["Creatine monohydrate", "Caffeine", "L-Citrulline"],
+        "final_recommendation": "Stack with creatine for comprehensive energy system coverage. Use split dosing to eliminate tingling.",
         "evidence_tier": "high",
         "safe_for_beginners": True,
-        "research_refs": ["Hobson et al. (2012) Amino Acids — 15-study meta-analysis"],
+        "pubmed_ids": ["22649228", "27797728"],
+        "examine_url": "https://examine.com/supplements/beta-alanine/",
+        "research_refs": ["Hobson et al. (2012) Amino Acids — 15-study meta-analysis", "Stout et al. (2006) Int J Sport Nutr Exerc Metab"],
     },
     {
-        "id": "citrulline",
-        "name": "L-Citrulline / Citrulline malate",
-        "aliases": ["citrulline", "citrulline malate", "l-citrulline", "nitric oxide supplement",
-                    "pump supplement", "no booster", "citrulina", "citrulline malate 2:1"],
+        "id": "citrulline", "name": "L-Citrulline / Citrulline malate",
+        "aliases": ["citrulline", "citrulline malate", "l-citrulline", "pump supplement", "no booster", "citrulina"],
         "category": "supplement",
-        "tags": ["pump", "endurance", "blood_flow", "fat_loss", "pre_workout", "nitric oxide"],
-        "summary": "Converted to arginine in the kidneys, then to nitric oxide, causing vasodilation and the muscle pump effect. Citrulline malate (2:1 ratio) also reduces fatigue via malate's role in the Krebs cycle. One of the most evidence-backed pre-workout ingredients.",
-        "dosage": "6–8 g L-citrulline or 8 g citrulline malate 2:1 ratio",
-        "timing": "30–60 minutes pre-workout on an empty stomach for best absorption",
-        "benefits": ["Significant muscle pump and vasodilation", "Reduced fatigue in high-volume training", "Blood pressure support", "Endurance improvement by 12–15%"],
+        "tags": ["pump", "endurance", "blood_flow", "pre_workout", "nitric_oxide"],
+        "summary": "Precursor to arginine → nitric oxide. Enhances blood flow, muscle pump, and endurance. Malate form also reduces fatigue.",
+        "what_it_is": "L-citrulline is an amino acid converted to arginine in the kidneys, then to nitric oxide — a potent vasodilator. Citrulline malate combines citrulline with malic acid (a Krebs cycle intermediate) for additional anti-fatigue effects.",
+        "dosage": "L-citrulline: 6–8 g. Citrulline malate 2:1: 8 g. Take 30–60 min pre-workout.",
+        "timing": "30–60 minutes pre-workout on an empty or light stomach for optimal absorption.",
+        "how_to_take": "Mix in 300–400 ml water. Slight tartness — juice improves palatability.",
+        "hydration": "3+ L/day. Vasodilation increases sweating.",
+        "training_synergy": "Best for volume training and metabolic conditioning. Excellent for hypertrophy days where pump and endurance are priority.",
+        "cycling": "No cycling needed. Some athletes cycle stimulant-containing pre-workouts that include citrulline.",
+        "benefits": ["Significant muscle pump via NO-mediated vasodilation", "Reduced muscle soreness 24–48 h post-training", "Endurance improvement 12–15%", "Blood pressure support"],
         "side_effects": [{"effect": "GI discomfort at doses above 10 g", "severity": "low"}],
-        "stacking": ["Beta-alanine", "Caffeine", "Creatine monohydrate"],
+        "stacking": ["Beta-alanine", "Caffeine", "Creatine"],
+        "final_recommendation": "Use 8 g citrulline malate 2:1 pre-workout. Combine with beta-alanine and caffeine for a complete evidence-based pre-workout.",
         "evidence_tier": "high",
         "safe_for_beginners": True,
+        "pubmed_ids": ["21414438", "26900386"],
+        "examine_url": "https://examine.com/supplements/citrulline/",
         "research_refs": ["Pérez-Guisado & Jakeman (2010) JSCR", "Suzuki et al. (2016) Eur J Nutr"],
     },
     {
-        "id": "whey",
-        "name": "Whey protein",
+        "id": "whey", "name": "Whey protein",
         "aliases": ["whey", "whey protein", "proteina whey", "proteine whey", "proteína whey",
-                    "व्हे प्रोटीन", "乳清蛋白", "protéine lactosérum", "molkenprotein", "proteina del siero"],
+                    "व्हे प्रोटीन", "乳清蛋白", "protéine lactosérum", "molkenprotein"],
         "category": "supplement",
-        "tags": ["muscle_gain", "recovery", "protein", "beginner", "best"],
-        "summary": "Fast-digesting complete protein derived from milk with the highest leucine content of any protein source (approximately 10–11% leucine). Leucine is the primary trigger for muscle protein synthesis. The most evidence-backed protein supplement for muscle gain and recovery.",
-        "dosage": "25–50 g per serving as needed to reach total daily target of 1.6–2.2 g/kg bodyweight",
-        "timing": "Post-workout for peak MPS stimulus; any time of day to supplement dietary protein",
-        "benefits": ["Maximises muscle protein synthesis via high leucine content", "Fast absorption ideal post-workout", "Complete amino acid profile", "Supports both muscle gain and fat loss", "Convenient and cost-effective protein source"],
-        "side_effects": [{"effect": "GI issues if lactose intolerant — use whey isolate instead", "severity": "medium"}],
-        "stacking": ["Creatine monohydrate", "Carbohydrates post-workout for insulin spike", "Casein protein before bed"],
+        "tags": ["muscle_gain", "recovery", "protein", "beginner"],
+        "summary": "Fast-digesting milk protein with highest leucine content of any protein — optimal for post-workout muscle protein synthesis.",
+        "what_it_is": "Whey is the liquid by-product of cheese production. Filtered and dried into concentrate (70–80% protein), isolate (90%+ protein, < 1% lactose), or hydrolysate (pre-digested). Richest natural source of leucine (10–11%) — the primary amino acid trigger for muscle protein synthesis.",
+        "dosage": "25–50 g per serving as needed to reach total daily protein target of 1.6–2.2 g/kg bodyweight.",
+        "timing": "Post-workout for peak MPS stimulus. Any time of day to supplement dietary protein deficit.",
+        "how_to_take": "Shaker bottle with 200–300 ml water or milk. Add to oats, yogurt, or baking. Isolate mixes more cleanly.",
+        "hydration": "Protein metabolism increases urea production — maintain 2.5–3 L/day water intake.",
+        "training_synergy": "Consume within 2 hours post-resistance training for optimal MPS. Combine with fast carbohydrates (banana, white rice) for insulin-mediated uptake.",
+        "cycling": "No cycling. Use daily as needed to hit protein targets.",
+        "benefits": ["Maximises MPS via leucine content", "Fast digestion ideal post-workout", "Complete amino acid profile", "Cost-effective protein source"],
+        "side_effects": [{"effect": "GI discomfort if lactose intolerant — use isolate", "severity": "medium"}, {"effect": "Kidney stress only relevant in existing kidney disease", "severity": "low"}],
+        "stacking": ["Creatine", "Carbohydrates post-workout", "Casein before bed"],
+        "final_recommendation": "Target total daily protein first (food + supplement). Post-workout whey shake with fast carbs optimises muscle protein synthesis and glycogen replenishment.",
         "evidence_tier": "very_high",
         "safe_for_beginners": True,
-        "research_refs": ["Tang et al. (2009) Am J Clin Nutr", "Phillips & Van Loon (2011) JSCR review"],
+        "pubmed_ids": ["19589961", "25048790"],
+        "examine_url": "https://examine.com/supplements/whey-protein/",
+        "research_refs": ["Tang et al. (2009) Am J Clin Nutr", "Morton et al. (2018) BJSM — protein meta-analysis"],
     },
     {
-        "id": "caffeine",
-        "name": "Caffeine",
-        "aliases": ["caffeine", "caffeina", "caféine", "koffein", "कैफीन", "咖啡因",
-                    "caffeine anhydrous", "caffeine pills"],
+        "id": "caffeine", "name": "Caffeine",
+        "aliases": ["caffeine", "caffeina", "caféine", "koffein", "कैफीन", "咖啡因", "caffeine anhydrous"],
         "category": "supplement",
         "tags": ["strength", "endurance", "fat_loss", "focus", "pre_workout", "energy"],
-        "summary": "The most studied ergogenic aid in sports science with over 100 clinical trials. Blocks adenosine receptors to reduce perceived exertion, increases power output, and enhances fat oxidation. Effective for endurance, strength, power, and team sports.",
-        "dosage": "3–6 mg/kg body weight (200–400 mg for most adults) pre-workout",
-        "timing": "30–60 minutes before training; avoid within 6 hours of sleep to protect sleep quality",
-        "benefits": ["Power output improvement +3–7%", "Endurance capacity improvement", "Fat oxidation / thermogenic effect", "Focus, reaction time and alertness", "Reduced perceived effort"],
-        "side_effects": [{"effect": "Tolerance buildup with daily use — cycle off 1–2 weeks monthly", "severity": "medium"}, {"effect": "Sleep disruption if dosed too late", "severity": "medium"}, {"effect": "Anxiety and elevated heart rate at high doses", "severity": "medium"}],
-        "stacking": ["L-Theanine 200 mg (2:1 ratio for focus without jitters)", "L-Citrulline", "Beta-alanine"],
+        "summary": "Adenosine receptor antagonist reducing perceived exertion. Increases power output, endurance, and fat oxidation.",
+        "what_it_is": "Caffeine blocks adenosine receptors in the brain and peripheral tissue, reducing perceived effort and increasing catecholamine release. The most extensively studied ergogenic aid — effective in over 300 clinical trials across all sport types.",
+        "dosage": "3–6 mg/kg bodyweight (200–400 mg for most adults). Higher doses do not provide additional ergogenic benefit and increase side effects.",
+        "timing": "30–60 minutes before training. Half-life ~5–6 hours — avoid dosing within 6 hours of sleep.",
+        "how_to_take": "Anhydrous caffeine (pills/powder) for precise dosing. Coffee effective but variable caffeine content. Combined with L-Theanine (2:1 ratio) for smooth focus without jitters.",
+        "hydration": "Mild diuretic effect — increase water intake by 500 ml on caffeine days.",
+        "training_synergy": "Effective across all training modalities. Most pronounced benefits in endurance, strength, and power sports. Take 30 min pre-workout; pre-exhaustion athletes may need 45–60 min.",
+        "cycling": "Cycle off caffeine 1–2 weeks per month to reset adenosine receptor sensitivity. Tolerance builds within 2 weeks of daily use, blunting ergogenic effects.",
+        "benefits": ["Power output +3–7%", "Endurance capacity improvement", "Fat oxidation (thermogenic)", "Focus, reaction time, alertness", "Reduced perceived effort"],
+        "side_effects": [{"effect": "Tolerance buildup with daily use", "severity": "medium"}, {"effect": "Sleep disruption if dosed too late", "severity": "medium"}, {"effect": "Anxiety and elevated heart rate at high doses", "severity": "medium"}],
+        "stacking": ["L-Theanine 200 mg (2:1 ratio)", "L-Citrulline", "Beta-alanine"],
+        "final_recommendation": "Use 3–5 mg/kg bodyweight 30–60 min pre-workout. Stack with 200 mg L-Theanine. Cycle 5 days on / 2 days off or take planned 1–2 week breaks monthly.",
         "evidence_tier": "very_high",
         "safe_for_beginners": True,
-        "research_refs": ["Grgic et al. (2021) BJSM — 300+ study meta-analysis", "Astorino & Roberson (2010) JSCR"],
+        "pubmed_ids": ["34445894", "20019636"],
+        "examine_url": "https://examine.com/supplements/caffeine/",
+        "research_refs": ["Grgic et al. (2021) BJSM — 300-study meta-analysis", "Goldstein et al. (2010) J Int Soc Sports Nutr — ISSN position stand"],
     },
     {
-        "id": "casein",
-        "name": "Casein protein",
-        "aliases": ["casein", "slow protein", "night protein", "micellar casein", "casein protein powder"],
-        "category": "supplement",
-        "tags": ["muscle_gain", "recovery", "protein", "anti_catabolic", "night"],
-        "summary": "Slow-digesting milk protein that gels in the stomach to provide a sustained 5–7 hour release of amino acids. Ideal before sleep to maximise overnight muscle protein synthesis and prevent catabolism. Complements whey protein perfectly — whey post-workout, casein before bed.",
-        "dosage": "30–40 g before bed",
-        "timing": "30–60 minutes before sleep",
-        "benefits": ["Anti-catabolic protection overnight for 5–7 hours", "Sustained amino acid release vs whey spike", "High leucine content comparable to whey", "Satiety improvement — reduces late-night hunger"],
-        "side_effects": [{"effect": "GI discomfort if lactose intolerant", "severity": "medium"}],
-        "stacking": ["ZMA / Magnesium", "Melatonin 0.5–1 mg"],
-        "evidence_tier": "high",
-        "safe_for_beginners": True,
-        "research_refs": ["Res et al. (2012) Med Sci Sports Exerc", "Snijders et al. (2015) JNBS"],
-    },
-    {
-        "id": "bcaa",
-        "name": "BCAAs (Branched Chain Amino Acids)",
-        "aliases": ["bcaa", "bcaas", "branched chain amino acids", "leucine isoleucine valine",
-                    "amino acids", "eaa", "essential amino acids"],
-        "category": "supplement",
-        "tags": ["muscle_gain", "recovery", "anti_catabolic", "fasting", "intra_workout"],
-        "summary": "Leucine, isoleucine, and valine — the three branched-chain essential amino acids. Most effective during fasted training or when total daily protein intake is below 1.6 g/kg. Largely redundant if you're consuming adequate total protein. Leucine (2.5 g+) is the primary trigger for MPS.",
-        "dosage": "5–10 g per serving; 2:1:1 leucine:isoleucine:valine ratio is standard",
-        "timing": "Intra-workout or during fasted morning training",
-        "benefits": ["Muscle protein synthesis stimulation via leucine", "Anti-catabolic during fasted training", "Reduced DOMS and muscle soreness", "Prevent muscle breakdown during calorie deficit"],
-        "side_effects": [{"effect": "Largely redundant — inefficient if whole protein intake is adequate", "severity": "low"}],
-        "stacking": ["Whey protein", "Glutamine"],
-        "evidence_tier": "moderate",
-        "safe_for_beginners": True,
-        "research_refs": ["Wolfe (2017) J Int Soc Sports Nutr", "Jackman et al. (2017) Front Physiol"],
-    },
-    {
-        "id": "fat_burner_stack",
-        "name": "Fat burner supplements",
-        "aliases": ["fat burner", "fat burning supplement", "weight loss supplement", "thermogenic",
-                    "fat loss supplement", "metabolism booster", "weight loss pills", "quemagrasas",
-                    "brûleur de graisses", "fettverbrenner"],
-        "category": "supplement",
-        "tags": ["fat_loss", "cutting", "weight_loss", "thermogenic", "metabolism"],
-        "summary": "Evidence-based fat loss supplements include: Caffeine (thermogenic, raises metabolic rate 3–11%), L-Carnitine (transports fatty acids to mitochondria for oxidation), Green tea extract / EGCG (catechin-caffeine synergy), Yohimbine (alpha-2 receptor antagonist, requires fasted state to work), and Synephrine / p-synephrine (bitter orange, milder stimulant than ephedrine).",
-        "dosage": "Caffeine 200 mg, L-Carnitine 2–4 g, Green tea extract 400 mg EGCG, Yohimbine 2.5–20 mg, Synephrine 20–50 mg",
-        "timing": "Fasted or pre-workout; yohimbine specifically requires fasted state to work via alpha-2 blockade",
-        "benefits": ["Increased resting metabolic rate", "Improved fat oxidation during exercise", "Appetite suppression", "Energy boost for training in a deficit"],
-        "side_effects": [{"effect": "Anxiety, elevated heart rate, and blood pressure", "severity": "medium"}, {"effect": "Yohimbine: severe anxiety in sensitive individuals — start at 2.5 mg", "severity": "high"}],
-        "stacking": ["High protein diet (2–2.4 g/kg)", "Calorie deficit (500 kcal/day)", "Resistance training to preserve muscle"],
-        "evidence_tier": "moderate",
-        "safe_for_beginners": True,
-        "research_refs": ["Westerterp-Plantenga et al. (2006) Obesity Reviews", "Stohs et al. (2011) Int J Med Sci"],
-    },
-    {
-        "id": "pre_workout",
-        "name": "Pre-workout supplements",
-        "aliases": ["pre workout", "pre-workout", "preworkout", "pre workout supplement",
-                    "pump formula", "training supplement", "pre workout formula", "pré workout"],
-        "category": "supplement",
-        "tags": ["pre_workout", "energy", "pump", "strength", "endurance", "focus"],
-        "summary": "Multi-ingredient pre-workout formulas. Best ingredients with research support: Caffeine (3–6 mg/kg for energy), L-Citrulline 6–8 g (pump and endurance), Beta-alanine 3.2 g (fatigue delay), Creatine 3–5 g (strength), L-Theanine 200 mg (smooth focus without jitters). Many commercial products are under-dosed — always check ingredient amounts.",
-        "dosage": "Verify key ingredient doses: Citrulline 6–8g, Caffeine 150–300mg, Beta-alanine 3.2g, Creatine 3–5g",
-        "timing": "20–45 minutes before training",
-        "benefits": ["Increased energy and mental focus", "Enhanced muscle pump via NO production", "Improved muscular endurance", "Strength output boost", "Motivation and training intensity"],
-        "side_effects": [{"effect": "Jitteriness and anxiety if caffeine-sensitive", "severity": "medium"}, {"effect": "Energy crash post-training with stimulant-heavy formulas", "severity": "low"}, {"effect": "Tolerance builds quickly — cycle every 4–6 weeks", "severity": "medium"}],
-        "stacking": ["Creatine (if not in formula)", "Electrolytes for hydration"],
-        "evidence_tier": "high",
-        "safe_for_beginners": True,
-        "research_refs": ["Campbell et al. (2013) JISSN", "Jagim et al. (2016) JISSN"],
-    },
-    {
-        "id": "vitamin_d",
-        "name": "Vitamin D3 + K2",
-        "aliases": ["vitamin d", "vitamin d3", "cholecalciferol", "vit d", "sunshine vitamin",
-                    "vitamina d", "vitamine d", "विटामिन डी"],
-        "category": "supplement",
-        "tags": ["health", "testosterone", "immune", "bone", "recovery", "foundation"],
-        "summary": "Vitamin D3 deficiency affects over 40% of the global population. It functions as a hormone regulating over 1,000 genes including those controlling testosterone synthesis. D3 + K2 (MK-7) is the optimal combination — K2 directs calcium to bones and away from arteries. Critical for athletes and anyone training hard.",
-        "dosage": "Vitamin D3: 2,000–5,000 IU/day; Vitamin K2 MK-7: 100–200 mcg/day",
-        "timing": "With a fat-containing meal for optimal fat-soluble vitamin absorption",
-        "benefits": ["Testosterone support (+20% in deficient individuals)", "Immune system function", "Bone density and fracture prevention", "Mood improvement and depression reduction", "Cardiovascular and muscle function"],
-        "side_effects": [{"effect": "Toxicity risk only at sustained doses above 10,000 IU/day without monitoring", "severity": "low"}],
-        "stacking": ["Magnesium (required for D3 metabolism)", "Omega-3 fish oil"],
-        "evidence_tier": "very_high",
-        "safe_for_beginners": True,
-        "research_refs": ["Pilz et al. (2011) Hormone & Metabolic Research", "Holick (2007) NEJM review"],
-    },
-    {
-        "id": "omega3",
-        "name": "Omega-3 fish oil (EPA + DHA)",
-        "aliases": ["omega 3", "fish oil", "omega-3", "epa dha", "fatty acids", "omega 3 fish oil",
-                    "aceite de pescado", "huile de poisson", "फिश ऑयल"],
-        "category": "supplement",
-        "tags": ["health", "recovery", "anti_inflammatory", "cardiovascular", "joint_health", "foundation"],
-        "summary": "EPA and DHA are omega-3 long-chain fatty acids with powerful anti-inflammatory effects. Reduce exercise-induced inflammation, improve cardiovascular markers (triglycerides, HDL), support joint health, and modestly enhance muscle protein synthesis. Critically important for steroid users who experience significant cardiovascular strain.",
-        "dosage": "3–6 g combined EPA + DHA per day (check label — NOT total oil volume, which includes inactive fats)",
-        "timing": "With meals to reduce GI discomfort and fish aftertaste",
-        "benefits": ["Systemic anti-inflammatory action", "Cardiovascular protection (HDL up, triglycerides down)", "Joint health and pain reduction", "Muscle protein synthesis support", "Brain and mood support"],
-        "side_effects": [{"effect": "Fish aftertaste / burping — take with meals or use enteric-coated", "severity": "low"}, {"effect": "Very mild blood-thinning at doses above 5 g/day", "severity": "low"}],
-        "stacking": ["Vitamin D3/K2", "Curcumin (anti-inflammatory synergy)"],
-        "evidence_tier": "very_high",
-        "safe_for_beginners": True,
-        "research_refs": ["Smith et al. (2011) JCEM", "Calder (2013) Am J Clin Nutr review"],
-    },
-    {
-        "id": "zinc_magnesium",
-        "name": "Zinc & Magnesium (ZMA)",
-        "aliases": ["zma", "zinc magnesium", "zinc", "magnesium", "mineral supplements",
-                    "magnesium glycinate", "zinc picolinate"],
-        "category": "supplement",
-        "tags": ["testosterone", "sleep", "recovery", "health", "foundation"],
-        "summary": "Zinc is essential for testosterone synthesis, immune function, and protein synthesis — athletes commonly lose zinc in sweat. Magnesium improves sleep architecture, reduces cortisol, and supports over 300 enzymatic reactions including energy production. Deficiencies in both are widespread in training populations.",
-        "dosage": "Zinc: 25–45 mg/day (picolinate or citrate form); Magnesium: 300–500 mg glycinate or malate",
-        "timing": "Before bed on empty stomach for optimal testosterone and sleep hormone effects",
-        "benefits": ["Testosterone support (especially when deficient)", "Sleep quality and depth improvement", "Cortisol reduction", "Immune function support", "Muscle function and recovery"],
-        "side_effects": [{"effect": "Nausea if zinc taken without food", "severity": "low"}, {"effect": "GI upset (diarrhoea) at high magnesium doses — use glycinate form", "severity": "low"}],
-        "stacking": ["Vitamin D3", "Ashwagandha (cortisol and testosterone)"],
-        "evidence_tier": "high",
-        "safe_for_beginners": True,
-        "research_refs": ["Prasad et al. (1996) Nutrition", "Brilla & Conte (2000) Agric Med"],
-    },
-    {
-        "id": "ostarine",
-        "name": "Ostarine (MK-2866)",
-        "aliases": ["ostarine", "mk2866", "mk-2866", "enobosarm", "gtx-024", "ostarina",
-                    "mk 2866", "ostarine mk 2866"],
+        "id": "ostarine", "name": "Ostarine (MK-2866)",
+        "aliases": ["ostarine", "mk2866", "mk-2866", "enobosarm", "mk 2866", "ostarina"],
         "category": "sarm",
-        "tags": ["muscle_gain", "fat_loss", "recomp", "beginner_sarm", "sarm"],
-        "summary": "The mildest and most clinically studied SARM. Selectively binds androgen receptors in muscle and bone with minimal androgenic activity elsewhere. Commonly used for body recomposition and as a first SARM. Still causes testosterone suppression and is a research chemical not approved for human use.",
-        "dosage": "10–25 mg/day for 8 weeks",
-        "timing": "Once daily, same time each day, with or without food",
-        "benefits": ["Lean muscle gain (2–4 kg typical in 8 weeks)", "Fat loss support during recomp", "Joint support and injury healing", "Lower suppression than steroids", "Improved body composition without water retention"],
-        "side_effects": [{"effect": "Mild testosterone suppression — bloodwork required", "severity": "medium"}, {"effect": "Lipid changes (HDL reduction, LDL increase)", "severity": "medium"}, {"effect": "Mild liver enzyme elevation", "severity": "low"}],
-        "stacking": ["Cardarine GW-501516 (fat loss)", "MK-677 Ibutamoren (GH and recovery)"],
-        "cycle_length": "8 weeks",
-        "pct_needed": "Optional mini PCT — Nolvadex 20 mg/day × 3 weeks if suppression symptoms arise",
+        "tags": ["muscle_gain", "fat_loss", "recomp", "sarm"],
+        "summary": "Mildest SARM. Selective androgen receptor modulator with muscle and bone anabolic effects and reduced androgenic activity. Research chemical — not approved for human use.",
+        "what_it_is": "Ostarine is a nonsteroidal SARM originally developed by GTx for muscle-wasting diseases. Selectively binds androgen receptors in muscle and bone with minimal activation of reproductive tissue receptors. Produces lean mass gains without the full androgenic side-effect profile of testosterone.",
+        "dosage": "10–25 mg/day. Start at 10 mg for first cycle to assess tolerance.",
+        "timing": "Once daily, same time each day, with or without food.",
+        "how_to_take": "Oral liquid or capsule. Measure carefully — liquid suspensions require precise dosing syringe.",
+        "hydration": "Standard 2.5–3 L/day. No special hydration requirement.",
+        "training_synergy": "Excellent for recomposition — muscle gain + fat loss simultaneously. Pairs well with body recomposition nutrition protocols (slight calorie surplus or maintenance).",
+        "cycling": "8-week cycles standard. Run bloodwork before and 4–6 weeks post-cycle. Mini PCT (Nolvadex 20 mg/day × 3 weeks) if suppression symptoms occur.",
+        "benefits": ["Lean muscle gain 2–4 kg typical in 8 weeks", "Fat loss support", "Joint support and healing", "Mild testosterone suppression vs steroids"],
+        "side_effects": [{"effect": "Mild testosterone suppression — bloodwork required", "severity": "medium"}, {"effect": "Lipid changes (HDL reduction)", "severity": "medium"}, {"effect": "Mild liver enzyme elevation possible", "severity": "low"}],
+        "stacking": ["Cardarine GW-501516 (fat loss)", "MK-677 Ibutamoren (GH + recovery)"],
+        "final_recommendation": "If considering Ostarine: obtain bloodwork baseline. Start at 10 mg, run 8 weeks, recheck bloodwork. Do not use without access to bloodwork monitoring.",
         "evidence_tier": "moderate",
         "safe_for_beginners": True,
-        "legal_status": "Research chemical — not approved for human use in any country. Banned by WADA in sport.",
-        "research_refs": ["Dalton et al. (2011) Cancer Research", "Papanicolaou et al. (2013) J Gerontol"],
+        "pubmed_ids": ["20814882", "23631853"],
+        "examine_url": "https://examine.com/supplements/ostarine/",
+        "research_refs": ["Dalton et al. (2011) Cancer Res", "Papanicolaou et al. (2013) J Gerontol — Phase II"],
+        "legal_status": "Research chemical — not approved for human use in any country. Banned by WADA.",
     },
     {
-        "id": "lgd4033",
-        "name": "LGD-4033 (Ligandrol)",
-        "aliases": ["lgd4033", "lgd-4033", "ligandrol", "vk5211", "anabolicum", "lgd 4033"],
-        "category": "sarm",
-        "tags": ["muscle_gain", "strength", "bulking", "sarm"],
-        "summary": "The most anabolic SARM available with strength and mass gains approaching low-dose testosterone. Produces 3–5 kg lean mass gains in 8–12 weeks at 5–10 mg/day. Significant testosterone suppression occurs and requires full PCT. Not suitable for beginners.",
-        "dosage": "5–10 mg/day for 8–12 weeks",
-        "timing": "Once daily, same time each day",
-        "benefits": ["3–5 kg lean mass gains typical in 8–12 weeks", "Major strength increase", "Improved recovery and training volume capacity"],
-        "side_effects": [{"effect": "Significant testosterone suppression — bloodwork mandatory", "severity": "high"}, {"effect": "HDL reduction — cardiovascular risk", "severity": "high"}, {"effect": "Potential liver enzyme elevation", "severity": "medium"}],
-        "stacking": ["MK-677 Ibutamoren", "Cardarine GW-501516"],
-        "cycle_length": "8–12 weeks",
-        "pct_needed": "Full SERM PCT required — Nolvadex 40/20/20/20 mg or Clomid 50/25/25/25 mg over 4 weeks",
-        "evidence_tier": "moderate",
-        "safe_for_beginners": False,
-        "legal_status": "Research chemical — not approved for human use. Banned by WADA. Triggered anti-doping violations in athletes.",
-        "research_refs": ["Basaria et al. (2013) Lancet — phase I trial"],
-    },
-    {
-        "id": "rad140",
-        "name": "RAD-140 (Testolone)",
-        "aliases": ["rad140", "rad-140", "testolone", "rad 140"],
-        "category": "sarm",
-        "tags": ["muscle_gain", "strength", "fat_loss", "sarm"],
-        "summary": "One of the most potent SARMs with the highest anabolic:androgenic ratio. Produces significant lean mass and strength gains. Strong testosterone suppression and hepatotoxicity (liver damage) have been reported in case studies. Not suitable for beginners.",
-        "dosage": "5–15 mg/day for 8–10 weeks",
-        "timing": "Once daily",
-        "benefits": ["High anabolic potency", "Lean mass gains", "Fat loss support", "Neuroprotective effects in early research"],
-        "side_effects": [{"effect": "Strong testosterone suppression — requires bloodwork", "severity": "high"}, {"effect": "Aggression and mood changes", "severity": "medium"}, {"effect": "Hepatotoxicity — liver damage in case reports", "severity": "high"}],
-        "cycle_length": "8–10 weeks",
-        "pct_needed": "Full PCT mandatory",
-        "evidence_tier": "low",
-        "safe_for_beginners": False,
-        "legal_status": "Research chemical — not approved for human use. Banned by WADA.",
-        "research_refs": ["Jayaraman et al. (2014) Endocrinology", "FDA safety warning 2017"],
-    },
-    {
-        "id": "mk677",
-        "name": "MK-677 (Ibutamoren)",
-        "aliases": ["mk677", "mk-677", "ibutamoren", "nutrobal", "gh secretagogue", "mk 677"],
-        "category": "sarm",
-        "tags": ["muscle_gain", "fat_loss", "recovery", "hgh", "sleep", "sarm", "growth hormone"],
-        "summary": "Oral growth hormone secretagogue that stimulates the pituitary to release GH and raise IGF-1 levels. Not technically a SARM but grouped with them. Non-suppressive of testosterone. Improves sleep quality, lean mass, recovery, and reduces body fat. Long half-life enables once-daily dosing.",
-        "dosage": "10–25 mg/day",
-        "timing": "Before bed to align with and amplify the natural overnight GH pulse",
-        "benefits": ["Elevated GH and IGF-1 levels", "Lean mass gain", "Significantly improved sleep depth and quality", "Joint and recovery support", "Skin and collagen improvement"],
-        "side_effects": [{"effect": "Increased appetite — challenging in fat loss phase", "severity": "medium"}, {"effect": "Water retention (mild)", "severity": "medium"}, {"effect": "Elevated fasting blood glucose / insulin resistance", "severity": "medium"}],
-        "cycle_length": "12–24 weeks (long-term use common)",
-        "pct_needed": "No PCT needed — non-suppressive of testosterone",
-        "evidence_tier": "moderate",
-        "safe_for_beginners": True,
-        "legal_status": "Research chemical — not approved for human use",
-        "research_refs": ["Murphy et al. (1998) JCEM", "Svensson et al. (1998) Eur J Endocrinol"],
-    },
-    {
-        "id": "test_e",
-        "name": "Testosterone enanthate",
-        "aliases": ["testosterone enanthate", "test e", "testo e", "test enanthate", "testosterone",
-                    "testosteron", "テストステロン", "تستوستيرون", "testosterona"],
+        "id": "test_e", "name": "Testosterone enanthate",
+        "aliases": ["testosterone enanthate", "test e", "testo e", "testosterone", "testosteron", "testosterona"],
         "category": "steroid",
-        "tags": ["muscle_gain", "strength", "bulking", "base_compound", "testosterone", "steroid"],
-        "summary": "Long-ester injectable testosterone and the gold standard base compound for anabolic cycles. Provides the most predictable, well-studied anabolic and androgenic effects. Injected every 3.5 days or twice weekly for stable blood levels. Decades of clinical data on efficacy and side effect management.",
-        "dosage": "300–500 mg/week beginner, 500–750 mg/week intermediate",
-        "timing": "Injected subcutaneous or intramuscular every 3.5 days for stable hormone levels",
-        "benefits": ["Significant lean mass and strength gains", "Improved recovery allowing higher training volume", "Libido and well-being enhancement", "Predictable, well-understood effects"],
-        "side_effects": [{"effect": "Complete natural testosterone suppression", "severity": "high"}, {"effect": "Aromatisation to estrogen — requires aromatase inhibitor", "severity": "medium"}, {"effect": "Acne and hair loss (genetically determined)", "severity": "medium"}, {"effect": "Cardiovascular strain — HDL reduction, LVH risk", "severity": "high"}, {"effect": "Testicular atrophy during cycle", "severity": "high"}],
-        "stacking": ["Nandrolone NPP (intermediate+)", "Anavar oxandrolone (cut)", "Anadrol or Dianabol (mass)"],
-        "cycle_length": "12–16 weeks",
-        "pct_needed": "Full PCT — Nolvadex 40/40/20/20 mg over 4 weeks, start 2 weeks after last injection",
+        "tags": ["muscle_gain", "strength", "bulking", "testosterone", "steroid"],
+        "summary": "Gold standard anabolic injectable. Long-ester testosterone with predictable pharmacokinetics and decades of clinical data.",
+        "what_it_is": "Synthetic testosterone bound to an enanthate ester (7-carbon chain). The ester slows release, providing stable blood levels with twice-weekly injections. Testosterone is the body's primary anabolic hormone — exogenous administration saturates androgen receptors in muscle, bone, and CNS.",
+        "dosage": "Beginner: 300–500 mg/week (split E3.5D). Intermediate: 500–750 mg/week.",
+        "timing": "Injected subcutaneous or intramuscular every 3.5 days for stable blood levels.",
+        "how_to_take": "IM (glute, quads, delts) or SubQ. Rotate injection sites. Use 23–25G needle for injection, 18–21G for drawing.",
+        "hydration": "2.5–3 L/day. Monitor blood pressure — elevated sodium retention occurs.",
+        "training_synergy": "Maximum anabolic output requires progressive overload resistance training, adequate protein (2–2.4 g/kg), calorie surplus (muscle gain), and sufficient sleep.",
+        "cycling": "12–16 week cycles standard. Aromatase inhibitor (Anastrozole 0.25–0.5 mg E3D) required. PCT (Nolvadex 40/40/20/20 mg) begins 2 weeks after last injection.",
+        "benefits": ["Significant lean mass and strength gains", "Improved recovery capacity", "Libido and well-being improvement", "Predictable pharmacokinetics"],
+        "side_effects": [{"effect": "Complete testosterone suppression", "severity": "high"}, {"effect": "Aromatisation → estrogen management required", "severity": "medium"}, {"effect": "Cardiovascular strain (HDL reduction, LVH risk)", "severity": "high"}, {"effect": "Testicular atrophy during cycle", "severity": "high"}, {"effect": "Acne and hair loss (genetic)", "severity": "medium"}],
+        "stacking": ["Anastrozole (AI)", "NPP or Deca (intermediate+)", "Anavar (cut)"],
+        "final_recommendation": "Bloodwork mandatory before, mid-cycle, and post-PCT. AI + liver support + cardiovascular monitoring non-negotiable. Consult endocrinologist.",
         "evidence_tier": "very_high",
         "safe_for_beginners": False,
-        "legal_status": "Schedule III controlled substance USA. Prescription only in UK, India, Canada, Australia. Illegal to possess without prescription in most countries.",
-        "research_refs": ["Bhasin et al. (1996) NEJM — landmark dose-response study", "Bhasin et al. (2001) NEJM"],
+        "pubmed_ids": ["8637536", "11502560"],
+        "examine_url": None,
+        "research_refs": ["Bhasin et al. (1996) NEJM — landmark dose-response", "Bhasin et al. (2001) NEJM"],
+        "legal_status": "Schedule III controlled substance (USA). Prescription only in UK, India, Canada, Australia.",
     },
     {
-        "id": "anavar",
-        "name": "Anavar (Oxandrolone)",
-        "aliases": ["anavar", "oxandrolone", "var", "oxandrin", "oxandrolona"],
-        "category": "steroid",
-        "tags": ["fat_loss", "strength", "cutting", "lean_muscle", "steroid", "mild_steroid"],
-        "summary": "Mild oral anabolic steroid with low androgenic activity, making it popular for cutting cycles and with women (at low doses). Preserves muscle mass during calorie deficit and increases strength without significant water retention. Still hepatotoxic and hormonally suppressive.",
-        "dosage": "20–80 mg/day men (split doses), 5–20 mg/day women",
-        "timing": "Split into 2 doses due to 9-hour half-life (morning and evening)",
-        "benefits": ["Muscle preservation during calorie deficit", "Strength gains without significant mass gain", "Minimal water retention compared to other steroids", "Mild side effect profile versus most anabolic steroids"],
-        "side_effects": [{"effect": "Liver stress — oral 17-alpha alkylated; limit to 6–8 weeks", "severity": "medium"}, {"effect": "Testosterone suppression requiring PCT", "severity": "medium"}, {"effect": "Significant lipid changes (HDL reduction)", "severity": "high"}, {"effect": "Virilisation in women at doses above 10 mg/day", "severity": "high"}],
-        "cycle_length": "6–8 weeks (oral limit due to liver)",
-        "pct_needed": "Yes — standard SERM PCT required",
-        "evidence_tier": "high",
-        "safe_for_beginners": False,
-        "legal_status": "Schedule III controlled substance. Prescription only in all countries where legal.",
-        "research_refs": ["Bhasin anabolic steroid research series", "Giorgi et al. (1999) Clin J Sport Med"],
-    },
-    {
-        "id": "nandrolone",
-        "name": "Nandrolone / NPP / Deca-Durabolin",
-        "aliases": ["nandrolone", "deca", "deca durabolin", "npp", "nandrolone decanoate",
-                    "nandrolone phenylpropionate", "deca-durabolin"],
-        "category": "steroid",
-        "tags": ["muscle_gain", "strength", "bulking", "joint_health", "steroid"],
-        "summary": "19-nor anabolic steroid available as NPP (short ester, faster clearance) and Deca-Durabolin (long decanoate ester). Well known for lean mass gains and joint lubrication. Requires prolactin management with cabergoline and must always be run with a testosterone base to avoid severe sexual dysfunction.",
-        "dosage": "NPP: 300–400 mg/week (E3.5D injections); Deca: 200–400 mg/week (weekly injection)",
-        "timing": "Subcutaneous or intramuscular injection on schedule",
-        "benefits": ["Lean mass gains with less water retention than testosterone", "Joint lubrication and pain relief", "Collagen synthesis improvement", "Improved recovery and training volume"],
-        "side_effects": [{"effect": "Prolactin elevation — cabergoline 0.25 mg E3D required", "severity": "high"}, {"effect": "Complete natural testosterone suppression", "severity": "high"}, {"effect": "Cardiovascular strain", "severity": "high"}, {"effect": "Erectile dysfunction without testosterone base (deca dick)", "severity": "high"}],
-        "cycle_length": "12–16 weeks",
-        "pct_needed": "Full PCT required — recovery more complex due to 19-nor suppression mechanism",
-        "evidence_tier": "high",
-        "safe_for_beginners": False,
-        "legal_status": "Controlled substance in most countries. Prescription only.",
-        "research_refs": ["Bhasin et al. (1996) NEJM nandrolone arm"],
-    },
-    {
-        "id": "bpc157",
-        "name": "BPC-157",
-        "aliases": ["bpc157", "bpc-157", "body protection compound", "bpc 157", "pentadecapeptide", "bpc-157 peptide"],
+        "id": "bpc157", "name": "BPC-157",
+        "aliases": ["bpc157", "bpc-157", "body protection compound", "bpc 157", "pentadecapeptide"],
         "category": "peptide",
         "tags": ["recovery", "injury", "joint_health", "gut", "healing", "peptide"],
-        "summary": "15-amino acid peptide derived from human gastric juice with potent healing properties. Accelerates recovery of tendons, ligaments, muscle, and gut lining. Strong animal research and extensive anecdotal evidence with no serious side effects reported. One of the safest and most used research peptides.",
-        "dosage": "250–500 mcg/day by subcutaneous or intramuscular injection",
-        "timing": "Near the injury site (local) or systemic (abdomen), once or twice daily",
-        "benefits": ["Significantly accelerated tendon and ligament healing", "Gut lining repair (leaky gut syndrome)", "Anti-inflammatory effects throughout body", "Muscle and wound repair acceleration", "Angiogenesis stimulation improving blood supply to injuries"],
-        "side_effects": [{"effect": "Injection site irritation (mild, transient)", "severity": "low"}, {"effect": "Mild nausea with oral form", "severity": "low"}],
+        "summary": "15-amino acid peptide from gastric juice with potent tendon, ligament, muscle, and gut healing properties.",
+        "what_it_is": "BPC-157 (Body Protection Compound-157) is a synthetic 15-amino acid sequence derived from a protein found in human gastric juice. Animal research demonstrates accelerated healing of tendons, ligaments, muscles, and intestinal tissue via upregulation of growth hormone receptor expression and angiogenesis.",
+        "dosage": "250–500 mcg/day subcutaneous or intramuscular. Some protocols use 200–400 mcg twice daily.",
+        "timing": "Near injury site (local protocol) or systemic (abdominal subcutaneous). Once or twice daily.",
+        "how_to_take": "Reconstitute lyophilised powder with bacteriostatic water. Use insulin syringes (29–31G). Store reconstituted solution refrigerated, use within 30 days.",
+        "hydration": "Standard 2.5–3 L/day.",
+        "training_synergy": "Active rehabilitation exercises appropriate to the injury site during BPC-157 protocol maximise healing outcomes per animal research.",
+        "cycling": "Acute injury: 4–6 week protocol. Chronic issues: 8–12 weeks. No established need for cycling.",
+        "benefits": ["Accelerated tendon/ligament healing", "Gut lining repair", "Anti-inflammatory effects", "Angiogenesis promotion"],
+        "side_effects": [{"effect": "Injection site irritation (mild, transient)", "severity": "low"}, {"effect": "Mild nausea (oral form)", "severity": "low"}],
         "stacking": ["TB-500 (systemic healing synergy)", "Ipamorelin/CJC-1295"],
+        "final_recommendation": "Source quality is critical — obtain from reputable peptide research vendor. Sterility is non-negotiable. Not a substitute for physiotherapy.",
         "evidence_tier": "moderate",
         "safe_for_beginners": True,
-        "legal_status": "Research chemical — not approved for human use in any country",
-        "research_refs": ["Sikiric et al. (2013) Current Pharmaceutical Design review", "Chang et al. (2011) JBMR"],
+        "pubmed_ids": ["23439702", "21447935"],
+        "examine_url": "https://examine.com/supplements/bpc-157/",
+        "research_refs": ["Sikiric et al. (2013) Curr Pharm Des", "Chang et al. (2011) JBMR"],
+        "legal_status": "Research chemical — not approved for human use.",
     },
     {
-        "id": "tb500",
-        "name": "TB-500 (Thymosin Beta-4)",
-        "aliases": ["tb500", "tb-500", "thymosin beta 4", "thymosin beta-4", "tb 500"],
+        "id": "hgh", "name": "Human Growth Hormone (HGH)",
+        "aliases": ["hgh", "human growth hormone", "growth hormone", "gh", "somatropin", "rhgh", "生长激素", "hormona de crecimiento"],
         "category": "peptide",
-        "tags": ["recovery", "injury", "muscle_repair", "flexibility", "peptide", "healing"],
-        "summary": "Synthetic peptide analogue of Thymosin Beta-4, a naturally occurring protein involved in cell migration, angiogenesis, and tissue repair throughout the body. Acts as a systemic healing agent often combined with BPC-157 for synergistic injury recovery. Improves flexibility and reduces inflammation.",
-        "dosage": "2–2.5 mg twice weekly (loading phase 4–6 weeks), then 2 mg bi-weekly maintenance",
-        "timing": "Subcutaneous injection, any time of day",
-        "benefits": ["Systemic tissue repair and regeneration", "Improved joint and muscle flexibility", "Enhanced angiogenesis (new blood vessel formation)", "Systemic anti-inflammatory action", "Synergistic injury recovery with BPC-157"],
-        "side_effects": [{"effect": "Injection site irritation", "severity": "low"}, {"effect": "Brief head rush or fatigue immediately post-injection", "severity": "low"}],
-        "stacking": ["BPC-157", "Ipamorelin/CJC-1295"],
-        "evidence_tier": "moderate",
-        "safe_for_beginners": True,
-        "legal_status": "Research chemical — not approved for human use",
-        "research_refs": ["Goldstein et al. (2012) Annals NY Acad Sci"],
-    },
-    {
-        "id": "ipamorelin",
-        "name": "Ipamorelin / CJC-1295",
-        "aliases": ["ipamorelin", "cjc1295", "cjc-1295", "ipamorelin cjc", "ghrp",
-                    "gh peptide", "growth hormone peptide", "ipamorelin cjc 1295"],
-        "category": "peptide",
-        "tags": ["fat_loss", "recovery", "hgh", "anti_aging", "sleep", "gh", "growth hormone", "peptide"],
-        "summary": "The gold standard GH peptide combination. Ipamorelin selectively triggers GH release with minimal cortisol or prolactin elevation. CJC-1295 without DAC extends the GH pulse by amplifying the GHRH signal. Combined, they produce a strong, clean, physiological-style GH release ideal for fat loss, recovery, and anti-aging.",
-        "dosage": "Ipamorelin 200–300 mcg + CJC-1295 no-DAC 100–200 mcg, 2–3 times daily",
-        "timing": "Before bed (mandatory for GH pulse alignment), plus morning and pre-workout; must be fasted (no food 2 hours before)",
-        "benefits": ["Amplified natural GH pulse", "Accelerated fat loss especially visceral fat", "Improved sleep depth and REM quality", "Lean mass retention and recovery", "Skin, hair, and collagen improvement over long term"],
-        "side_effects": [{"effect": "Mild water retention (transient, first 2 weeks)", "severity": "low"}, {"effect": "Increased hunger", "severity": "low"}, {"effect": "Tingling or numbness at injection site", "severity": "low"}],
-        "stacking": ["BPC-157", "TB-500", "MK-677 (oral alternative for GH stimulation)"],
-        "evidence_tier": "moderate",
-        "safe_for_beginners": False,
-        "legal_status": "Research chemical — not approved for human use in any country",
-        "research_refs": ["Raun et al. (1998) Eur J Endocrinol", "Svensson et al. (1997) Eur J Endocrinol"],
-    },
-    {
-        "id": "hgh",
-        "name": "Human Growth Hormone (HGH)",
-        "aliases": ["hgh", "human growth hormone", "growth hormone", "gh", "somatropin",
-                    "rhgh", "igf-1", "hormona de crecimiento", "hormone de croissance",
-                    "성장 호르몬", "生长激素", "wachstumshormon"],
-        "category": "peptide",
-        "tags": ["fat_loss", "muscle_gain", "recovery", "anti_aging", "hgh", "gh", "growth hormone"],
-        "summary": "Recombinant human growth hormone (somatropin). The most potent anti-aging and body composition agent available. Dramatically reduces visceral fat, supports lean mass, strengthens connective tissue, improves sleep and recovery. Expensive, requires daily injection, and is prescription-only globally.",
-        "dosage": "1–3 IU/day (anti-aging / fat loss), 4–8 IU/day (bodybuilding — significantly higher risk)",
-        "timing": "Subcutaneous injection on waking (fat loss protocol) or before bed (GH pulse alignment). Some split doses.",
-        "benefits": ["Significant visceral and subcutaneous fat loss", "Lean mass retention and modest gain", "Connective tissue and tendon strengthening", "Improved sleep quality and energy", "Skin quality and anti-aging effects"],
-        "side_effects": [{"effect": "Carpal tunnel syndrome (tingling hands)", "severity": "medium"}, {"effect": "Insulin resistance — monitor blood glucose", "severity": "high"}, {"effect": "Water retention and joint pain (dose-dependent)", "severity": "medium"}, {"effect": "Acromegaly (organ / bone growth) at sustained high doses", "severity": "high"}, {"effect": "Very expensive — USD 600–2000+/month for quality product", "severity": "low"}],
-        "stacking": ["Testosterone (synergistic)", "Insulin (advanced users only — extreme danger)", "T3 thyroid hormone (advanced)"],
+        "tags": ["fat_loss", "muscle_gain", "recovery", "anti_aging", "hgh", "growth hormone"],
+        "summary": "Recombinant somatropin. Potent lipolytic and anabolic agent. Prescription only. Dramatically reduces visceral fat and supports lean mass.",
+        "what_it_is": "Recombinant human growth hormone (somatropin) is a 191-amino acid protein identical to endogenous GH. Stimulates IGF-1 production in the liver — IGF-1 drives anabolic effects. GH itself drives lipolysis (fat breakdown). Age-related GH decline makes supplementation appealing for anti-aging and body composition.",
+        "dosage": "Anti-aging/fat loss: 1–3 IU/day. Bodybuilding: 4–8 IU/day (significantly higher risk at bodybuilding doses).",
+        "timing": "Sub-Q injection on waking (fat loss protocol) or before bed (GH pulse alignment). Some split protocols dose am + pm.",
+        "how_to_take": "Sub-Q injection in abdomen fat, rotating sites. Reconstitute with bacteriostatic water. Refrigerate at 2–8°C.",
+        "hydration": "3+ L/day. Water retention common especially in first 4–6 weeks.",
+        "training_synergy": "Resistance training synergises with GH to maximise lean mass. Fasted morning cardio amplifies fat loss effects.",
+        "cycling": "Anti-aging protocols often continuous (6–12 month cycles). Bodybuilding: 16–24 week cycles. Monitor IGF-1 levels to guide dosing.",
+        "benefits": ["Significant visceral fat reduction", "Lean mass retention and modest gain", "Connective tissue strengthening", "Improved sleep quality"],
+        "side_effects": [{"effect": "Carpal tunnel syndrome (tingling hands)", "severity": "medium"}, {"effect": "Insulin resistance — monitor blood glucose", "severity": "high"}, {"effect": "Acromegaly risk at sustained high doses", "severity": "high"}, {"effect": "Very expensive — $600–2000+/month for pharmaceutical grade", "severity": "low"}],
+        "stacking": ["Testosterone (synergistic)", "T3 thyroid (advanced)", "Insulin (extreme danger — advanced only)"],
+        "final_recommendation": "Physician supervision mandatory. Monitor IGF-1, fasting glucose, HbA1c quarterly. Only use pharmaceutical-grade (Novo Nordisk, Pfizer, Eli Lilly) to avoid counterfeit risk.",
         "evidence_tier": "very_high",
         "safe_for_beginners": False,
-        "legal_status": "Prescription only in all countries. Banned by WADA. Significant anti-doping and legal risk.",
-        "research_refs": ["Rudman et al. (1990) NEJM — landmark study", "Vance (1990) NEJM", "Birzniece et al. (2020) review"],
+        "pubmed_ids": ["2388534", "7476061"],
+        "examine_url": None,
+        "research_refs": ["Rudman et al. (1990) NEJM — landmark study", "Vance (1990) NEJM editorial"],
+        "legal_status": "Prescription only in all countries. Banned by WADA. Significant legal risk.",
     },
     {
-        "id": "sermorelin_cjc",
-        "name": "Sermorelin / GHRH peptides",
-        "aliases": ["sermorelin", "ghrh analogue", "sermorelin acetate", "modified grf", "mod grf 1-29"],
-        "category": "peptide",
-        "tags": ["hgh", "fat_loss", "anti_aging", "recovery", "gh", "growth hormone", "peptide"],
-        "summary": "GHRH (growth hormone releasing hormone) analogues that stimulate the pituitary to produce and release GH in a physiological pattern. Softer, more natural GH stimulation than exogenous HGH. Often prescribed in anti-aging medicine. More affordable than HGH with a better safety profile.",
-        "dosage": "Sermorelin: 200–500 mcg before bed. Mod GRF 1-29: 100–200 mcg per dose",
-        "timing": "Subcutaneous injection before sleep, minimum 2 hours fasted",
-        "benefits": ["Natural-pattern GH stimulation via pituitary", "Body composition improvement over 3–6 months", "Improved sleep quality and recovery", "Lower cost than exogenous HGH", "Better safety profile than HGH due to pituitary regulation"],
-        "side_effects": [{"effect": "Injection site redness", "severity": "low"}, {"effect": "Flushing and warmth", "severity": "low"}],
-        "stacking": ["Ipamorelin (GHRP + GHRH synergy)", "BPC-157"],
-        "evidence_tier": "moderate",
-        "safe_for_beginners": False,
-        "legal_status": "Sermorelin: Prescription only in USA and many countries. Mod GRF 1-29: Research chemical.",
-        "research_refs": ["Walker et al. (2004) JCEM", "Prakash & Goa (1999) BioDrugs review"],
+        "id": "vitamin_d", "name": "Vitamin D3 + K2",
+        "aliases": ["vitamin d", "vitamin d3", "cholecalciferol", "vit d", "vitamina d", "vitamine d", "विटामिन डी"],
+        "category": "supplement",
+        "tags": ["health", "testosterone", "immune", "bone", "recovery", "foundation"],
+        "summary": "Essential fat-soluble vitamin-hormone. Deficiency affects 40%+ of population globally. Regulates testosterone synthesis, immune function, and bone density.",
+        "what_it_is": "Vitamin D3 (cholecalciferol) is a fat-soluble prohormone synthesised in skin on UV exposure. Functions as a hormone regulating 1,000+ genes. Vitamin K2 (MK-7) is required alongside D3 to direct calcium to bone and away from arteries. Deficiency is epidemic in office workers, those in northern latitudes, and darker-skinned individuals.",
+        "dosage": "Vitamin D3: 2,000–5,000 IU/day. Vitamin K2 MK-7: 100–200 mcg/day. Test serum 25-OH-D to dial in personal dose.",
+        "timing": "With largest fat-containing meal for optimal absorption.",
+        "how_to_take": "Softgel capsule or oil drops. Take D3 + K2 in same capsule or same meal. Avoid taking with calcium supplements — K2 directs calcium correctly without excess supplementation.",
+        "hydration": "Standard 2.5–3 L/day.",
+        "training_synergy": "Adequate vitamin D supports testosterone production (+20% in deficient men), muscle contraction efficiency, and injury prevention via bone density.",
+        "cycling": "Take year-round — dietary sources and sunlight rarely achieve optimal serum levels in training populations.",
+        "benefits": ["Testosterone support", "Immune system regulation", "Bone density", "Mood improvement", "Muscle function"],
+        "side_effects": [{"effect": "Toxicity only at >10,000 IU/day sustained without monitoring", "severity": "low"}],
+        "stacking": ["Magnesium (required for D3 activation)", "Omega-3"],
+        "final_recommendation": "Get serum 25-OH-D tested. Target 40–70 ng/mL. Adjust D3 dose accordingly. Take with K2 MK-7 daily.",
+        "evidence_tier": "very_high",
+        "safe_for_beginners": True,
+        "pubmed_ids": ["21154195", "17556697"],
+        "examine_url": "https://examine.com/supplements/vitamin-d/",
+        "research_refs": ["Pilz et al. (2011) Horm Metab Res", "Holick (2007) NEJM — Vitamin D deficiency review"],
     },
 ]
 
-# ── Fast lookup structures ──────────────────────────────────────────────────
-_ALIAS_MAP: dict[str, dict] = {}
+# ── Alias index ────────────────────────────────────────────────────────────
+_ALIAS: dict[str, dict] = {}
+for _it in KB:
+    _ALIAS[_it["name"].lower()] = _it
+    for _a in _it.get("aliases", []):
+        _ALIAS[_a.lower()] = _it
 
-for _item in KB:
-    _ALIAS_MAP[_item["name"].lower()] = _item
-    for _alias in _item.get("aliases", []):
-        _ALIAS_MAP[_alias.lower()] = _item
-
-# ── Synonym / intent map ───────────────────────────────────────────────────
+# ── Intent / synonym map ────────────────────────────────────────────────────
 INTENT_MAP: dict[str, list[str]] = {
-    "lose weight": ["fat_loss","cutting","thermogenic"],
-    "fat loss":    ["fat_loss","cutting","thermogenic"],
-    "burn fat":    ["fat_loss","cutting","thermogenic"],
-    "weight loss": ["fat_loss","cutting","weight_loss"],
-    "cut":         ["fat_loss","cutting"],
-    "shred":       ["fat_loss","cutting"],
-    "bulk":        ["muscle_gain","bulking"],
-    "build muscle":["muscle_gain","bulking"],
-    "muscle gain": ["muscle_gain","bulking"],
-    "muscle growth":["muscle_gain","bulking"],
-    "get strong":  ["strength"],
-    "strength":    ["strength"],
-    "endurance":   ["endurance"],
-    "recovery":    ["recovery","healing"],
-    "joint":       ["joint_health","recovery"],
-    "injury":      ["recovery","injury","healing"],
-    "sleep":       ["sleep","anti_aging","recovery"],
-    "pump":        ["pump","pre_workout","nitric oxide"],
-    "energy":      ["pre_workout","energy","focus"],
-    "focus":       ["pre_workout","focus","energy"],
-    "sarm":        ["sarm","muscle_gain"],
-    "sarms":       ["sarm","muscle_gain"],
-    "steroid":     ["steroid","muscle_gain"],
-    "steroids":    ["steroid","muscle_gain"],
-    "peptide":     ["peptide","recovery"],
-    "peptides":    ["peptide","recovery"],
-    "growth hormone":["hgh","gh","growth hormone"],
-    "hgh":         ["hgh","gh","growth hormone"],
-    "human growth":["hgh","gh","growth hormone"],
-    "pre workout":  ["pre_workout","energy","pump"],
-    "preworkout":   ["pre_workout","energy","pump"],
-    "protein":     ["protein","muscle_gain","recovery"],
-    "vitamin":     ["health","foundation"],
-    "mineral":     ["health","foundation"],
-    "best":        [],
-    "safe":        ["beginner"],
-    "beginner":    ["beginner"],
-    "advanced":    ["strength","muscle_gain"],
-    "cycle":       ["steroid","sarm"],
-    "stack":       ["pre_workout","muscle_gain"],
-    "what are":    [],
-    "what is":     [],
-    "how does":    [],
-    "how to":      [],
-    "dosage":      [],
-    "dose":        [],
-    "side effects":["side_effects"],
-    "benefits":    [],
-    "compare":     [],
+    "muscle gain": ["muscle_gain"], "build muscle": ["muscle_gain"], "bulk": ["muscle_gain"],
+    "fat loss": ["fat_loss"], "lose weight": ["fat_loss"], "cut": ["fat_loss"],
+    "strength": ["strength"], "power": ["strength"],
+    "endurance": ["endurance"], "cardio": ["endurance"],
+    "recovery": ["recovery"], "injury": ["recovery", "joint_health"],
+    "pre workout": ["pre_workout"], "pump": ["pump"],
+    "sarm": ["sarm"], "sarms": ["sarm"],
+    "steroid": ["steroid"], "steroids": ["steroid"],
+    "peptide": ["peptide"], "peptides": ["peptide"],
+    "growth hormone": ["hgh"], "hgh": ["hgh"],
+    "protein": ["muscle_gain", "recovery"],
+    "dosage": [], "dose": [], "timing": [], "how to": [],
+    "side effects": [], "risks": [], "cycle": [], "stack": [],
+    "what is": [], "what are": [], "best": [], "safe": [], "beginner": [],
+    "recommended": [], "research": [], "evidence": [],
 }
 
-# ── Multilingual keyword map ───────────────────────────────────────────────
-MULTILINGUAL_MAP: dict[str, list[str]] = {
-    # Hindi
+MULTILINGUAL: dict[str, list[str]] = {
     "क्रिएटिन": ["creatine"], "मसल": ["muscle_gain"], "प्रोटीन": ["protein"],
-    "ताकत": ["strength"], "वजन कम": ["fat_loss"], "चर्बी": ["fat_loss"],
-    "सार्म": ["sarm"], "पेप्टाइड": ["peptide"],
-    # Spanish
-    "músculo": ["muscle_gain"], "fuerza": ["strength"],
-    "grasa": ["fat_loss"], "ciclo": ["steroid","sarm"], "pérdida de grasa": ["fat_loss"],
-    # French
-    "muscle": ["muscle_gain"], "force": ["strength"], "graisse": ["fat_loss"],
-    # Portuguese
-    "músculo": ["muscle_gain"], "gordura": ["fat_loss"], "força": ["strength"],
-    # German
-    "muskel": ["muscle_gain"], "fett": ["fat_loss"], "kraft": ["strength"],
-    # Arabic
-    "عضلات": ["muscle_gain"], "دهون": ["fat_loss"], "قوة": ["strength"],
-    # Russian
-    "мышцы": ["muscle_gain"], "жир": ["fat_loss"], "сила": ["strength"],
-    # Chinese
-    "肌肉": ["muscle_gain"], "脂肪": ["fat_loss"], "力量": ["strength"],
-    "生长激素": ["hgh","gh"], "蛋白质": ["protein"],
-    # Japanese
-    "筋肉": ["muscle_gain"], "脂肪燃焼": ["fat_loss"], "成長ホルモン": ["hgh","gh"],
-    # Turkish
-    "kas": ["muscle_gain"], "yağ yakma": ["fat_loss"], "güç": ["strength"],
-    # Italian
-    "muscolo": ["muscle_gain"], "grassi": ["fat_loss"], "forza": ["strength"],
-    # Bengali
-    "পেশী": ["muscle_gain"], "চর্বি": ["fat_loss"],
+    "ताकत": ["strength"], "वजन कम": ["fat_loss"],
+    "creatina": ["creatine"], "músculo": ["muscle_gain"], "fuerza": ["strength"],
+    "créatine": ["creatine"], "muscle": ["muscle_gain"], "force": ["strength"],
+    "kreatin": ["creatine"], "muskel": ["muscle_gain"], "kraft": ["strength"],
+    "мышцы": ["muscle_gain"], "сила": ["strength"], "жир": ["fat_loss"],
+    "肌肉": ["muscle_gain"], "肌酸": ["creatine"], "力量": ["strength"],
 }
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LAYER 1 — ANTHROPIC CLAUDE API
+# CACHE  (SQLite — thread-safe)
 # ═══════════════════════════════════════════════════════════════════════════
 
-_SYSTEM_PROMPT = """You are FitSearch AI — a world-class fitness, sports nutrition, and performance enhancement expert.
+def _init_cache() -> None:
+    os.makedirs(os.path.dirname(CACHE_DB), exist_ok=True)
+    with sqlite3.connect(CACHE_DB) as conn:
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS report_cache (
+            cache_key   TEXT PRIMARY KEY,
+            query       TEXT NOT NULL,
+            report_json TEXT NOT NULL,
+            source      TEXT DEFAULT 'kb',
+            created_at  REAL NOT NULL
+        )""")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_created ON report_cache(created_at)")
+
+_init_cache()
+
+
+def _cache_key(query: str, filters: list) -> str:
+    raw = json.dumps({"q": query.lower().strip(), "f": sorted(filters)})
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+def _cache_get(key: str) -> list | None:
+    try:
+        with _cache_lock, sqlite3.connect(CACHE_DB) as conn:
+            row = conn.execute(
+                "SELECT report_json, created_at FROM report_cache WHERE cache_key=?", (key,)
+            ).fetchone()
+        if not row:
+            return None
+        age = time.time() - row[1]
+        if age > CACHE_TTL_SEC:
+            return None  # expired
+        return json.loads(row[0])
+    except Exception as e:
+        print(f"[Cache GET] {e}")
+        return None
+
+
+def _cache_set(key: str, query: str, results: list, source: str = "ai") -> None:
+    try:
+        with _cache_lock, sqlite3.connect(CACHE_DB) as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO report_cache(cache_key,query,report_json,source,created_at) VALUES (?,?,?,?,?)",
+                (key, query, json.dumps(results), source, time.time())
+            )
+    except Exception as e:
+        print(f"[Cache SET] {e}")
+
+
+def _cache_stats() -> dict:
+    try:
+        with sqlite3.connect(CACHE_DB) as conn:
+            total    = conn.execute("SELECT COUNT(*) FROM report_cache").fetchone()[0]
+            fresh    = conn.execute(
+                "SELECT COUNT(*) FROM report_cache WHERE created_at > ?",
+                (time.time() - CACHE_TTL_SEC,)
+            ).fetchone()[0]
+        return {"total": total, "fresh": fresh}
+    except Exception:
+        return {}
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ENTITY DETECTION  (rule-based NLP)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _detect_entities(query: str) -> tuple[list[str], list[str], str]:
+    """
+    Returns (compounds, tags, intent_label).
+    intent_label: explain | dosage | compare | cycle | side_effects | general
+    """
+    q = query.lower()
+    compounds: list[str] = []
+    tags: list[str]      = []
+
+    # Alias matching
+    for alias, item in _ALIAS.items():
+        if alias in q:
+            if item["name"] not in compounds:
+                compounds.append(item["name"])
+            tags.extend(item.get("tags", []))
+
+    # Multilingual
+    for word, wtags in MULTILINGUAL.items():
+        if word in query:
+            tags.extend(wtags)
+
+    # Intent matching
+    for phrase, ptags in INTENT_MAP.items():
+        if phrase in q:
+            tags.extend(ptags)
+
+    # Word-level fuzzy
+    for word in re.split(r"[\s\W]+", q):
+        if len(word) < 3:
+            continue
+        for alias, item in _ALIAS.items():
+            if word in alias and item["name"] not in compounds:
+                compounds.append(item["name"])
+                tags.extend(item.get("tags", []))
+
+    # Intent label
+    intent = "general"
+    if any(w in q for w in ["dosage", "dose", "how much", "mg", "grams"]):
+        intent = "dosage"
+    elif any(w in q for w in ["side effect", "risk", "dangerous", "safe", "harm"]):
+        intent = "side_effects"
+    elif any(w in q for w in ["compare", "vs", "versus", "better", "difference"]):
+        intent = "compare"
+    elif any(w in q for w in ["cycle", "protocol", "pct", "stack"]):
+        intent = "cycle"
+    elif any(w in q for w in ["what is", "what are", "how does", "explain", "define"]):
+        intent = "explain"
+    elif any(w in q for w in ["best", "recommend", "should i", "beginner"]):
+        intent = "recommend"
+
+    return (
+        list(dict.fromkeys(compounds)),
+        list(dict.fromkeys(tags)),
+        intent
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LIVE DATA RETRIEVAL
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Trust tiers for evidence scoring
+TRUST_TIERS = {
+    "pubmed":        5,
+    "clinicaltrials":4,
+    "examine":       4,
+    "openfda":       3,
+    "jissn":         4,
+    "ncbi":          5,
+    "serp":          2,
+    "scraped":       1,
+}
+
+
+def _pubmed_search(query: str, max_results: int = 5) -> list[dict]:
+    """Search PubMed for peer-reviewed research. Returns structured reference list."""
+    try:
+        params: dict[str, Any] = {
+            "db":      "pubmed",
+            "term":    f"{query} supplement exercise",
+            "retmax":  max_results,
+            "retmode": "json",
+            "sort":    "relevance",
+        }
+        if PUBMED_API_KEY:
+            params["api_key"] = PUBMED_API_KEY
+
+        r = requests.get(PUBMED_SEARCH, params=params, timeout=8)
+        if r.status_code != 200:
+            return []
+
+        ids = r.json().get("esearchresult", {}).get("idlist", [])
+        if not ids:
+            return []
+
+        # Fetch summaries
+        params2: dict[str, Any] = {
+            "db":      "pubmed",
+            "id":      ",".join(ids),
+            "retmode": "json",
+            "rettype": "abstract",
+        }
+        if PUBMED_API_KEY:
+            params2["api_key"] = PUBMED_API_KEY
+
+        r2 = requests.get(PUBMED_FETCH, params=params2, timeout=10)
+        if r2.status_code != 200:
+            return [{"id": pid, "source": "pubmed", "trust": TRUST_TIERS["pubmed"],
+                     "title": f"PubMed ID: {pid}", "url": f"https://pubmed.ncbi.nlm.nih.gov/{pid}/",
+                     "snippet": ""} for pid in ids]
+
+        articles = r2.json().get("result", {})
+        refs = []
+        for pid in ids:
+            article = articles.get(pid, {})
+            authors = article.get("authors", [])
+            author_str = authors[0].get("name", "") + " et al." if authors else ""
+            pubdate = article.get("pubdate", "")
+            title   = article.get("title", f"PubMed ID: {pid}")
+            journal = article.get("fulljournalname", "")
+            refs.append({
+                "id":      pid,
+                "source":  "pubmed",
+                "trust":   TRUST_TIERS["pubmed"],
+                "title":   title,
+                "authors": author_str,
+                "journal": journal,
+                "year":    pubdate[:4] if pubdate else "",
+                "url":     f"https://pubmed.ncbi.nlm.nih.gov/{pid}/",
+                "snippet": f"{author_str} {pubdate}. {journal}.",
+            })
+        return refs
+
+    except Exception as e:
+        print(f"[PubMed] {e}")
+        return []
+
+
+def _examine_data(compound_name: str) -> dict | None:
+    """Attempt to retrieve structured data from Examine.com by scraping the supplement page."""
+    try:
+        slug = compound_name.lower().replace(" ", "-").replace("(", "").replace(")", "")
+        url  = f"https://examine.com/supplements/{slug}/"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; FitSearchBot/1.0; research purposes)"
+        }
+        r = requests.get(url, headers=headers, timeout=8)
+        if r.status_code != 200:
+            return None
+
+        # Extract key structured data from Examine page
+        text = r.text
+
+        # Extract summary paragraph (first 500 chars of main content area)
+        summary_match = re.search(
+            r'<p[^>]*class="[^"]*summary[^"]*"[^>]*>(.*?)</p>', text, re.DOTALL | re.IGNORECASE
+        )
+        if not summary_match:
+            summary_match = re.search(r'<meta[^>]*name="description"[^>]*content="([^"]{50,})"', text)
+
+        summary = ""
+        if summary_match:
+            summary = re.sub(r"<[^>]+>", "", summary_match.group(1)).strip()[:500]
+
+        return {
+            "source":  "examine",
+            "trust":   TRUST_TIERS["examine"],
+            "url":     url,
+            "summary": summary,
+            "snippet": summary[:200] if summary else "",
+        }
+    except Exception as e:
+        print(f"[Examine] {e}")
+        return None
+
+
+def _openfda_safety(compound_name: str) -> list[dict]:
+    """Query OpenFDA for adverse event reports related to the compound."""
+    try:
+        r = requests.get(
+            OPENFDA_URL,
+            params={
+                "search": f'patient.drug.medicinalproduct:"{compound_name}"',
+                "limit":  3,
+            },
+            timeout=6,
+        )
+        if r.status_code != 200:
+            return []
+        results = r.json().get("results", [])
+        events = []
+        for ev in results[:3]:
+            reactions = [
+                r.get("reactionmeddrapt", "Unknown")
+                for r in ev.get("patient", {}).get("reaction", [])[:3]
+            ]
+            events.append({
+                "source":  "openfda",
+                "trust":   TRUST_TIERS["openfda"],
+                "reactions": reactions,
+                "snippet": f"FDA adverse event report: {', '.join(reactions)}",
+            })
+        return events
+    except Exception as e:
+        print(f"[OpenFDA] {e}")
+        return []
+
+
+def _serp_search(query: str) -> list[dict]:
+    """Live Google search via SerpAPI. Falls back gracefully if key not set."""
+    if not SERP_API_KEY:
+        return []
+    try:
+        r = requests.get(
+            "https://serpapi.com/search.json",
+            params={
+                "q":       f"{query} site:examine.com OR site:pubmed.ncbi.nlm.nih.gov OR site:jissn.biomedcentral.com",
+                "api_key": SERP_API_KEY,
+                "engine":  "google",
+                "num":     5,
+                "hl":      "en",
+            },
+            timeout=8,
+        )
+        if r.status_code != 200:
+            return []
+        return [
+            {
+                "source":  "serp",
+                "trust":   TRUST_TIERS["serp"],
+                "title":   result.get("title", ""),
+                "url":     result.get("link", ""),
+                "snippet": result.get("snippet", ""),
+            }
+            for result in r.json().get("organic_results", [])[:5]
+        ]
+    except Exception as e:
+        print(f"[SerpAPI] {e}")
+        return []
+
+
+def _retrieve_live_data(query: str, compounds: list[str]) -> dict:
+    """
+    Parallel live data retrieval from all configured sources.
+    Returns merged evidence dictionary.
+    """
+    import concurrent.futures
+
+    live: dict = {"pubmed": [], "examine": {}, "fda": [], "serp": []}
+
+    primary = compounds[0] if compounds else query
+
+    def run_pubmed():   return _pubmed_search(primary, 5)
+    def run_examine():  return _examine_data(primary)
+    def run_fda():      return _openfda_safety(primary)
+    def run_serp():     return _serp_search(query)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
+        f_pub  = ex.submit(run_pubmed)
+        f_exam = ex.submit(run_examine)
+        f_fda  = ex.submit(run_fda)
+        f_serp = ex.submit(run_serp)
+
+        live["pubmed"]  = f_pub.result()
+        live["examine"] = f_exam.result() or {}
+        live["fda"]     = f_fda.result()
+        live["serp"]    = f_serp.result()
+
+    return live
+
+
+def _filter_evidence(live: dict) -> dict:
+    """
+    Score and rank all retrieved evidence by trust tier.
+    Discards low-quality / anecdotal sources.
+    Returns filtered, sorted evidence.
+    """
+    all_items = []
+    all_items.extend(live.get("pubmed",  []))
+    all_items.extend(live.get("serp",    []))
+    all_items.extend(live.get("fda",     []))
+    if live.get("examine"):
+        all_items.append(live["examine"])
+
+    # Sort by trust, discard trust < 2
+    filtered = sorted(
+        [i for i in all_items if i.get("trust", 0) >= 2],
+        key=lambda x: x.get("trust", 0),
+        reverse=True
+    )
+
+    return {
+        "high_trust": [i for i in filtered if i.get("trust", 0) >= 4],
+        "medium_trust": [i for i in filtered if i.get("trust", 0) == 3],
+        "pubmed_ids": [i["id"] for i in live.get("pubmed", []) if "id" in i],
+        "examine_url": live.get("examine", {}).get("url"),
+        "examine_summary": live.get("examine", {}).get("summary", ""),
+        "fda_events": live.get("fda", []),
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CLAUDE LLM  — structured report generation
+# ═══════════════════════════════════════════════════════════════════════════
+
+_REPORT_SYSTEM_PROMPT = """You are FitSearch AI — a world-class evidence-based fitness and nutrition scientist.
+
+Your job is to generate a structured 10-section research report answering the user's fitness query.
 
 RULES:
-1. Always respond in the SAME language as the user's query (detect language automatically)
-2. Respond ONLY with a valid JSON object — no markdown, no prose outside JSON
-3. Include honest safety warnings for steroids, SARMs, peptides, and HGH
-4. safe_for_beginners must be false for steroids and most SARMs
-5. evidence_tier must honestly reflect the research quality
-6. Return 1–4 most relevant results
+1. Respond ONLY with valid JSON — no markdown fences, no prose outside JSON.
+2. Respond in the SAME language as the user's query.
+3. Be specific with dosages, timing, and practical tips.
+4. safe_for_beginners must be false for steroids and most SARMs.
+5. Include real PubMed IDs and reference links wherever possible.
+6. evidence_tier: "very_high" | "high" | "moderate" | "low"
+7. Include legal_status for any controlled/research substance.
 
-JSON response format (respond ONLY with this, nothing else):
+Respond with this exact JSON structure:
 {
-  "detected_language": "language name",
+  "detected_language": "English",
   "intent": "explain | recommend | dosage | compare | cycle | side_effects | general",
-  "compounds_mentioned": ["compound names found in query"],
-  "tags": ["relevant tags"],
-  "results": [
-    {
-      "name": "compound or topic name",
-      "category": "supplement | sarm | steroid | peptide | training | diet",
-      "summary": "3-5 sentence comprehensive answer in the user's language",
-      "dosage": "evidence-based dosage",
-      "timing": "when to take",
-      "benefits": ["benefit 1", "benefit 2", "benefit 3"],
-      "side_effects": [{"effect": "description", "severity": "low | medium | high"}],
-      "stacking": ["compound 1", "compound 2"],
-      "evidence_tier": "very_high | high | moderate | low",
-      "safe_for_beginners": true,
-      "legal_status": "status or null",
-      "research_refs": ["key reference"],
-      "cycle_length": "if applicable or null",
-      "pct_needed": "if applicable or null"
-    }
-  ],
-  "ai_summary": "2-3 sentence direct answer to the user's question in their language",
-  "safety_note": "important safety warning in user's language if applicable, otherwise null"
+  "name": "Primary supplement/compound name",
+  "tagline": "One-sentence description",
+  "category": "supplement | sarm | steroid | peptide | training | diet",
+  "evidence_tier": "very_high | high | moderate | low",
+  "safe_for_beginners": true,
+  "legal_status": "legal / prescription only / research chemical / banned — or null",
+  "sections": {
+    "what_it_is": "2-4 sentence explanation of mechanism and origin",
+    "dosage": "Specific evidence-based dosage with loading/maintenance phases if applicable",
+    "timing": "Optimal timing and why",
+    "how_to_take": "Practical preparation and consumption tips",
+    "hydration": "Fluid requirements and why",
+    "training_synergy": "How to combine with training for maximum effect",
+    "cycling": "Whether cycling is needed, and recommended protocol",
+    "benefits": ["benefit 1", "benefit 2", "benefit 3"],
+    "side_effects": [{"effect": "description", "severity": "low | medium | high"}],
+    "references": [
+      {"type": "pubmed", "id": "PMID", "title": "Study title", "url": "https://pubmed.ncbi.nlm.nih.gov/PMID/"},
+      {"type": "examine", "url": "https://examine.com/supplements/compound/", "title": "Examine.com — Compound"}
+    ]
+  },
+  "stacking": ["compound 1", "compound 2"],
+  "final_recommendation": "2-3 sentence actionable recommendation",
+  "ai_note": "brief note on confidence level based on available evidence"
 }"""
 
 
-def _call_anthropic(query: str) -> dict | None:
+def _call_claude(query: str, compounds: list[str], kb_items: list[dict], evidence: dict) -> dict | None:
+    """Call Claude with query + KB data + live evidence to generate structured report."""
     if not ANTHROPIC_API_KEY:
         return None
+
+    # Build evidence context for prompt
+    pubmed_block = ""
+    if evidence.get("pubmed_ids"):
+        pubmed_block = f"\n\nLIVE PUBMED RESULTS:\n" + "\n".join(
+            f"- PMID {pid}: https://pubmed.ncbi.nlm.nih.gov/{pid}/"
+            for pid in evidence["pubmed_ids"][:5]
+        )
+
+    examine_block = ""
+    if evidence.get("examine_url"):
+        examine_block = f"\n\nEXAMINE.COM DATA:\nURL: {evidence['examine_url']}\nSummary: {evidence.get('examine_summary', '')[:300]}"
+
+    fda_block = ""
+    if evidence.get("fda_events"):
+        reactions = [ev["reactions"] for ev in evidence["fda_events"][:2]]
+        fda_block = f"\n\nFDA ADVERSE EVENTS:\n{json.dumps(reactions)}"
+
+    kb_block = ""
+    for item in kb_items[:3]:
+        kb_block += f"\n\nKNOWLEDGE BASE ENTRY — {item['name']}:\n{json.dumps({k: v for k, v in item.items() if k not in ['aliases', 'id']}, ensure_ascii=False)[:1500]}"
+
+    user_message = (
+        f"User query: {query}\n"
+        f"Detected compounds: {', '.join(compounds) if compounds else 'general fitness query'}\n"
+        f"{kb_block}"
+        f"{pubmed_block}"
+        f"{examine_block}"
+        f"{fda_block}"
+    )
+
     try:
         resp = requests.post(
             ANTHROPIC_URL,
@@ -624,259 +833,299 @@ def _call_anthropic(query: str) -> dict | None:
             },
             json={
                 "model":      "claude-sonnet-4-20250514",
-                "max_tokens": 2000,
-                "system":     _SYSTEM_PROMPT,
-                "messages":   [{"role": "user", "content": query}],
+                "max_tokens": 3000,
+                "system":     _REPORT_SYSTEM_PROMPT,
+                "messages":   [{"role": "user", "content": user_message}],
             },
-            timeout=20,
+            timeout=30,
         )
         resp.raise_for_status()
         text = resp.json()["content"][0]["text"].strip()
+        # Strip markdown code fences if Claude adds them
         text = re.sub(r"^```(?:json)?\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
         return json.loads(text)
     except Exception as e:
-        print(f"[Anthropic] Error: {e}")
+        print(f"[Claude] {e}")
         return None
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LAYER 2 — SERPAPI  (real-time Google results)
+# KB SCORING  (offline)
 # ═══════════════════════════════════════════════════════════════════════════
 
-def _call_serp(query: str) -> list[dict]:
-    if not SERP_API_KEY:
-        return []
-    try:
-        resp = requests.get(
-            SERP_URL,
-            params={
-                "q":       f"{query} supplement research site:examine.com OR site:pubmed.ncbi.nlm.nih.gov OR site:jissn.biomedcentral.com",
-                "api_key": SERP_API_KEY,
-                "engine":  "google",
-                "num":     5,
-                "hl":      "en",
-            },
-            timeout=8,
-        )
-        if resp.status_code != 200:
-            return []
-        return [
-            {"title": r.get("title",""), "snippet": r.get("snippet",""),
-             "link": r.get("link",""), "source": r.get("displayed_link","")}
-            for r in resp.json().get("organic_results", [])[:5]
-        ]
-    except Exception as e:
-        print(f"[SerpAPI] Error: {e}")
-        return []
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# LAYER 3 — LOCAL KNOWLEDGE BASE
-# ═══════════════════════════════════════════════════════════════════════════
-
-def _expand_query(query: str) -> tuple[list[str], list[str]]:
-    """Extract compound names and goal tags from natural language query (any language)."""
-    q_lower = query.lower()
-    compounds: list[str] = []
-    tags: list[str]      = []
-
-    # Direct alias matching
-    for alias, item in _ALIAS_MAP.items():
-        if alias in q_lower:
-            if item["name"] not in compounds:
-                compounds.append(item["name"])
-            tags.extend(item.get("tags", []))
-
-    # Intent phrase matching
-    for phrase, phrase_tags in INTENT_MAP.items():
-        if phrase in q_lower:
-            tags.extend(phrase_tags)
-
-    # Multilingual keyword matching (case-sensitive for non-Latin scripts)
-    for word, word_tags in MULTILINGUAL_MAP.items():
-        if word in query:
-            tags.extend(word_tags)
-            for wt in word_tags:
-                m = _ALIAS_MAP.get(wt)
-                if m and m["name"] not in compounds:
-                    compounds.append(m["name"])
-
-    # Word-level fuzzy matching against aliases
-    for word in re.split(r"[\s\W]+", q_lower):
-        if len(word) < 3:
-            continue
-        for alias, item in _ALIAS_MAP.items():
-            if word in alias and item["name"] not in compounds:
-                compounds.append(item["name"])
-                tags.extend(item.get("tags", []))
-
-    return list(dict.fromkeys(compounds)), list(dict.fromkeys(tags))
-
-
-def _score_item(q_lower: str, compounds: list[str], tags: list[str],
-                item: dict, filters: list[str]) -> int:
-    s         = 0
-    name      = item["name"].lower()
-    summ      = item["summary"].lower()
-    itags_str = " ".join(item.get("tags", []))
-    aliases   = " ".join(item.get("aliases", []))
+def _score_kb(query: str, compounds: list[str], tags: list[str], item: dict, filters: list[str]) -> int:
+    q = query.lower()
+    s = 0
+    name     = item["name"].lower()
+    aliases  = " ".join(item.get("aliases", []))
+    summ     = item.get("summary", "").lower()
+    itags    = " ".join(item.get("tags", []))
 
     for c in compounds:
         if c.lower() in name or name in c.lower():
-            s += 20
-
+            s += 25
     for t in tags:
-        if t in itags_str:
-            s += 5
-
-    for word in re.split(r"[\s\W]+", q_lower):
+        if t in itags:
+            s += 6
+    for word in re.split(r"[\s\W]+", q):
         if len(word) < 3:
             continue
-        if word in name:    s += 8
-        if word in aliases: s += 6
-        if word in itags_str: s += 4
+        if word in name:    s += 10
+        if word in aliases: s += 7
+        if word in itags:   s += 4
         if word in summ:    s += 1
-
     if "beginner" in filters and item.get("safe_for_beginners"):
-        s += 4
-    if "advanced" in filters and not item.get("safe_for_beginners"):
-        s += 2
+        s += 5
     for f in filters:
-        if f in itags_str:
-            s += 3
-
+        if f in itags:
+            s += 4
     return s
 
 
-def _search_kb(query: str, filters: list[str]) -> list[dict]:
-    q_lower = query.lower()
-    compounds, tags = _expand_query(query)
+def _kb_results(query: str, compounds: list[str], tags: list[str], filters: list[str]) -> list[dict]:
     scored = [
-        {**item, "_sc": _score_item(q_lower, compounds, tags, item, filters)}
+        {**item, "_sc": _score_kb(query, compounds, tags, item, filters)}
         for item in KB
     ]
     scored = [r for r in scored if r["_sc"] > 0]
     scored.sort(key=lambda x: x["_sc"], reverse=True)
-    return [{k: v for k, v in r.items() if k != "_sc"} for r in scored[:6]]
+    return [{k: v for k, v in r.items() if k != "_sc"} for r in scored[:5]]
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# MAIN PUBLIC FUNCTIONS
+# REPORT ASSEMBLY  — convert Claude/KB data → frontend format
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _kb_to_report(item: dict, live_evidence: dict) -> dict:
+    """
+    Convert a local KB item into the full 10-section report format.
+    Used when Claude is unavailable.
+    """
+    sections = {
+        "what_it_is":      item.get("what_it_is", item.get("summary", "")),
+        "dosage":          item.get("dosage", "—"),
+        "timing":          item.get("timing", "—"),
+        "how_to_take":     item.get("how_to_take", "Mix with water or a protein shake."),
+        "hydration":       item.get("hydration", "Maintain 2.5–3 L/day water intake."),
+        "training_synergy":item.get("training_synergy", "Most effective combined with progressive-overload resistance training."),
+        "cycling":         item.get("cycling", "No cycling required."),
+        "benefits":        item.get("benefits", []),
+        "side_effects":    item.get("side_effects", []),
+        "references": [],
+    }
+
+    # Attach live PubMed references
+    for pid in (live_evidence.get("pubmed_ids") or item.get("pubmed_ids", []))[:5]:
+        sections["references"].append({
+            "type":  "pubmed",
+            "id":    pid,
+            "title": f"PubMed ID: {pid}",
+            "url":   f"https://pubmed.ncbi.nlm.nih.gov/{pid}/",
+        })
+
+    # Attach static KB references
+    for ref in item.get("research_refs", []):
+        sections["references"].append({
+            "type":  "journal",
+            "id":    None,
+            "title": ref,
+            "url":   None,
+        })
+
+    # Examine.com link
+    if item.get("examine_url") or live_evidence.get("examine_url"):
+        exam_url = item.get("examine_url") or live_evidence.get("examine_url")
+        sections["references"].append({
+            "type":  "examine",
+            "id":    None,
+            "title": f"Examine.com — {item['name']}",
+            "url":   exam_url,
+        })
+
+    return {
+        "name":                item["name"],
+        "tagline":             item.get("summary", "")[:120],
+        "category":            item.get("category", "supplement"),
+        "evidence_tier":       item.get("evidence_tier", "moderate"),
+        "safe_for_beginners":  item.get("safe_for_beginners", True),
+        "legal_status":        item.get("legal_status"),
+        "sections":            sections,
+        "stacking":            item.get("stacking", []),
+        "final_recommendation":item.get("final_recommendation", ""),
+        "ai_note":             "Report generated from curated knowledge base. For most recent research, set ANTHROPIC_API_KEY.",
+        "_source":             "kb",
+    }
+
+
+def _claude_to_report(ai_data: dict, live_evidence: dict) -> dict:
+    """Normalise Claude's JSON output into the standard report format."""
+    sections = ai_data.get("sections", {})
+
+    # Merge live PubMed IDs into references if not already included
+    existing_ids = {r.get("id") for r in sections.get("references", [])}
+    for pid in live_evidence.get("pubmed_ids", []):
+        if pid not in existing_ids:
+            sections.setdefault("references", []).append({
+                "type":  "pubmed",
+                "id":    pid,
+                "title": f"PubMed ID: {pid}",
+                "url":   f"https://pubmed.ncbi.nlm.nih.gov/{pid}/",
+            })
+
+    if live_evidence.get("examine_url"):
+        sections.setdefault("references", []).append({
+            "type":  "examine",
+            "id":    None,
+            "title": f"Examine.com — {ai_data.get('name', 'Supplement')}",
+            "url":   live_evidence["examine_url"],
+        })
+
+    return {
+        "name":                ai_data.get("name", "Supplement"),
+        "tagline":             ai_data.get("tagline", ""),
+        "category":            ai_data.get("category", "supplement"),
+        "evidence_tier":       ai_data.get("evidence_tier", "moderate"),
+        "safe_for_beginners":  ai_data.get("safe_for_beginners", True),
+        "legal_status":        ai_data.get("legal_status"),
+        "sections":            sections,
+        "stacking":            ai_data.get("stacking", []),
+        "final_recommendation":ai_data.get("final_recommendation", ""),
+        "ai_note":             ai_data.get("ai_note", "AI-generated report."),
+        "_source":             "ai",
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PUBLIC INTERFACE
 # ═══════════════════════════════════════════════════════════════════════════
 
 def search_knowledge(query: str, filters: list | None = None) -> list[dict]:
     """
-    Main search entry point called by app.py.
-    Tries Anthropic → SerpAPI → local KB in order of availability.
-    Returns a list of structured result dicts ready for the frontend.
+    Main entry point called by app.py /search route.
+
+    Returns a list of structured 10-section reports.
+    Each report has sections: what_it_is, dosage, timing, how_to_take,
+    hydration, training_synergy, cycling, benefits, side_effects, references.
     """
-    filters   = filters or []
-    ts        = datetime.now(timezone.utc).isoformat()
+    filters = filters or []
+    ts      = datetime.now(timezone.utc).isoformat()
 
-    # ── Layer 1: Anthropic (NLP + AI-generated structured answer) ──────────
-    ai = _call_anthropic(query)
-    if ai and ai.get("results"):
-        results = ai["results"]
-        # Enrich AI results with local KB data where compound names overlap
-        for r in results:
-            kb = _ALIAS_MAP.get(r.get("name", "").lower())
-            if kb:
-                r.setdefault("research_refs", kb.get("research_refs", []))
-                r.setdefault("stacking",      kb.get("stacking", []))
-            r["_source"]    = "ai"
+    # 1. Check cache
+    ckey = _cache_key(query, filters)
+    cached = _cache_get(ckey)
+    if cached:
+        for r in cached:
+            r["_cached"] = True
+        return cached
+
+    # 2. Entity detection
+    compounds, tags, intent = _detect_entities(query)
+
+    # 3. KB lookup
+    kb_matches = _kb_results(query, compounds, tags, filters)
+
+    # 4. Live data retrieval (parallel)
+    live = _retrieve_live_data(query, compounds)
+
+    # 5. Evidence filtering
+    evidence = _filter_evidence(live)
+
+    # 6. Claude call
+    ai_data = _call_claude(query, compounds, kb_matches, evidence)
+
+    results: list[dict] = []
+
+    if ai_data and ai_data.get("sections"):
+        # AI report is primary result
+        report = _claude_to_report(ai_data, evidence)
+        report["_timestamp"] = ts
+        results.append(report)
+
+        # Append additional KB results as supplementary cards
+        for item in kb_matches[1:3]:
+            if item["name"].lower() != ai_data.get("name", "").lower():
+                r = _kb_to_report(item, {})
+                r["_timestamp"] = ts
+                r["_supplementary"] = True
+                results.append(r)
+
+    else:
+        # Fallback: build reports from KB only
+        for item in kb_matches[:4]:
+            r = _kb_to_report(item, evidence if not results else {})
             r["_timestamp"] = ts
-        # Inject AI summary and safety note into the first result
-        if results:
-            results[0]["ai_summary"]  = ai.get("ai_summary", "")
-            results[0]["safety_note"] = ai.get("safety_note")
-        return results
+            results.append(r)
 
-    # ── Layer 2: SerpAPI (live web results) + local KB ─────────────────────
-    web  = _call_serp(query)
-    kb   = _search_kb(query, filters)
+    if not results:
+        results = [_fallback_report(query, ts)]
 
-    if web:
-        web_fmt = [
-            {
-                "id": f"web_{i}", "name": r["title"], "category": "research",
-                "summary": r["snippet"], "dosage": None, "timing": None,
-                "benefits": [], "side_effects": [], "stacking": [],
-                "evidence_tier": "moderate", "safe_for_beginners": None,
-                "legal_status": None, "research_refs": [r["link"]],
-                "source_url": r["link"], "source_name": r["source"],
-                "_source": "web", "_timestamp": ts,
-            }
-            for i, r in enumerate(web)
-        ]
-        combined = (kb[:3] if kb else []) + web_fmt[:2]
-        for r in combined:
-            r.setdefault("_source", "kb")
-            r.setdefault("_timestamp", ts)
-        return combined if combined else _fallback(query, ts)
+    # 7. Cache results
+    _cache_set(ckey, query, results, source="ai" if ai_data else "kb")
 
-    # ── Layer 3: Local KB only ─────────────────────────────────────────────
-    for r in kb:
-        r["_source"]    = "kb"
-        r["_timestamp"] = ts
-    return kb if kb else _fallback(query, ts)
-
-
-def _fallback(query: str, ts: str) -> list[dict]:
-    return [{
-        "id": "fallback", "name": f"Search: {query}", "category": "supplement",
-        "summary": (
-            f"No exact match for '{query}'. Try: 'Creatine monohydrate', 'Ostarine', "
-            "'Testosterone enanthate', 'BPC-157', 'Ipamorelin', 'Whey protein', "
-            "'fat burner', 'pre-workout', or goal-based queries like "
-            "'best supplement for strength' or 'safe SARMs for beginners'."
-        ),
-        "dosage": None, "timing": None, "benefits": [], "side_effects": [],
-        "stacking": [], "evidence_tier": "moderate", "safe_for_beginners": True,
-        "legal_status": None,
-        "research_refs": ["https://examine.com", "https://pubmed.ncbi.nlm.nih.gov"],
-        "_source": "fallback", "_timestamp": ts,
-    }]
+    return results
 
 
 def get_recommendations(recent_queries: list[str], user: dict) -> list[dict]:
-    """Personalised recommendations from user history + profile. No API calls needed."""
+    """Personalised recommendations based on user history. No API calls."""
     goal  = (user.get("goal") or "muscle_gain").replace("-", "_")
     level = user.get("experience_level") or "beginner"
 
     seen: set[str] = set()
     for q in recent_queries:
-        _, _ = _expand_query(q)
-        compounds, _ = _expand_query(q)
-        for c in compounds:
-            m = _ALIAS_MAP.get(c.lower())
+        comps, _, _ = _detect_entities(q)
+        for c in comps:
+            m = _ALIAS.get(c.lower())
             if m:
                 seen.add(m["id"])
 
-    recs: list[dict] = []
+    recs = []
     for item in KB:
         if item["id"] in seen:
             continue
         sc = 0
-        if goal in item.get("tags", []):
-            sc += 4
-        if item.get("safe_for_beginners") and level == "beginner":
-            sc += 3
-        if not item.get("safe_for_beginners") and level in ("intermediate","advanced"):
-            sc += 2
-        if item["category"] == "supplement":
-            sc += 1
-        if item["evidence_tier"] in ("very_high","high"):
-            sc += 1
+        if goal in item.get("tags", []):         sc += 4
+        if item.get("safe_for_beginners") and level == "beginner": sc += 3
+        if not item.get("safe_for_beginners") and level in ("intermediate", "advanced"): sc += 2
+        if item["evidence_tier"] in ("very_high", "high"):         sc += 1
         if sc <= 1:
             continue
-
-        parts = [f"Matches your {goal.replace('_',' ')} goal"]
+        parts = [f"Matches your {goal.replace('_', ' ')} goal"]
         if level == "beginner" and item.get("safe_for_beginners"):
             parts.append("beginner-friendly")
-        if item["evidence_tier"] in ("very_high","high"):
+        if item["evidence_tier"] in ("very_high", "high"):
             parts.append("strong research support")
         recs.append({**item, "_sc": sc, "recommendation_reason": " · ".join(parts)})
 
     recs.sort(key=lambda x: x["_sc"], reverse=True)
     return [{k: v for k, v in r.items() if k != "_sc"} for r in recs[:6]]
+
+
+def _fallback_report(query: str, ts: str) -> dict:
+    return {
+        "name":    f"Search: {query}",
+        "tagline": "No exact match found.",
+        "category": "supplement",
+        "evidence_tier": "moderate",
+        "safe_for_beginners": True,
+        "legal_status": None,
+        "sections": {
+            "what_it_is": (
+                f"No specific results found for '{query}'. "
+                "Try searching: Creatine monohydrate, Whey protein, Beta-alanine, "
+                "Ostarine, Testosterone enanthate, BPC-157, HGH, Vitamin D3, Caffeine."
+            ),
+            "dosage": "—", "timing": "—", "how_to_take": "—",
+            "hydration": "—", "training_synergy": "—", "cycling": "—",
+            "benefits": [], "side_effects": [],
+            "references": [
+                {"type": "examine", "url": "https://examine.com", "title": "Examine.com — Supplement Database", "id": None},
+                {"type": "pubmed",  "url": "https://pubmed.ncbi.nlm.nih.gov", "title": "PubMed — Research Database", "id": None},
+            ],
+        },
+        "stacking": [],
+        "final_recommendation": "Refine your query with a specific supplement, compound, or topic.",
+        "ai_note": "No match in knowledge base or live retrieval.",
+        "_source": "fallback",
+        "_timestamp": ts,
+    }

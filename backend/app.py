@@ -430,3 +430,21 @@ def health():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CACHE STATS  (new endpoint)
+# ═══════════════════════════════════════════════════════════════════════════
+
+@app.route("/cache/stats", methods=["GET"])
+def cache_stats():
+    from backend.search_ai import _cache_stats
+    return jsonify(_cache_stats())
+
+@app.route("/cache/clear", methods=["DELETE"])
+@login_required
+def cache_clear():
+    import sqlite3 as _sq
+    from backend.search_ai import CACHE_DB
+    with _sq.connect(CACHE_DB) as conn:
+        conn.execute("DELETE FROM report_cache")
+    return jsonify({"status": "cleared"})
