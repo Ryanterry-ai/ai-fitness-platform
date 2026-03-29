@@ -6,236 +6,229 @@
 <title>FitSearch AI Platform</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  :root { --sidebar: #0f172a; --accent: #3b82f6; --accent-hover: #2563eb; }
+  :root { --sidebar: #0f172a; --accent: #3b82f6; --accent-h: #2563eb; }
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; }
-  .sidebar { width: 240px; min-height: 100vh; background: var(--sidebar); flex-shrink: 0; }
-  .nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #94a3b8; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all .15s; margin: 2px 8px; }
-  .nav-link:hover { background: rgba(255,255,255,.08); color: #e2e8f0; }
-  .nav-link.active { background: var(--accent); color: #fff; }
-  .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
-  .card + .card { margin-top: 14px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; }
+  .sidebar { width: 232px; min-height: 100vh; background: #0a1120; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,.06); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; color: #64748b; border-radius: 8px; cursor: pointer; font-size: 13.5px; transition: all .14s; margin: 1px 8px; border: none; background: none; width: calc(100% - 16px); text-align: left; }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #94a3b8; }
+  .nav-item.active { background: var(--accent); color: #fff; }
+  .ni { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+  .card { background: #1e293b; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 18px 20px; }
+  .card + .card { margin-top: 12px; }
   .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
-  .badge-blue   { background: #dbeafe; color: #1d4ed8; }
-  .badge-green  { background: #dcfce7; color: #15803d; }
-  .badge-teal   { background: #ccfbf1; color: #0f766e; }
-  .badge-purple { background: #ede9fe; color: #7c3aed; }
-  .badge-amber  { background: #fef3c7; color: #b45309; }
-  .badge-red    { background: #fee2e2; color: #b91c1c; }
-  .badge-gray   { background: #f1f5f9; color: #475569; }
-  .pill { padding: 5px 12px; font-size: 12px; border: 1px solid #e2e8f0; border-radius: 99px; cursor: pointer; color: #64748b; background: #fff; transition: all .12s; }
-  .pill.active { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
-  .btn { padding: 8px 16px; font-size: 13px; border-radius: 8px; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #374151; transition: all .12s; }
-  .btn:hover { background: #f1f5f9; }
+  .b-blue { background: #1d3557; color: #60a5fa; }
+  .b-green { background: #14532d; color: #4ade80; }
+  .b-teal { background: #134e4a; color: #2dd4bf; }
+  .b-purple { background: #3b0764; color: #c084fc; }
+  .b-amber { background: #451a03; color: #fbbf24; }
+  .b-red { background: #450a0a; color: #f87171; }
+  .b-gray { background: #1e293b; color: #94a3b8; }
+  .pill { padding: 5px 12px; font-size: 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 99px; cursor: pointer; color: #64748b; background: transparent; transition: all .12s; }
+  .pill.on { background: #1d3557; color: #60a5fa; border-color: #2563eb; }
+  .btn { padding: 8px 16px; font-size: 13px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,.12); background: transparent; color: #94a3b8; transition: all .12s; }
+  .btn:hover { background: rgba(255,255,255,.06); color: #e2e8f0; }
   .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-  .input { width: 100%; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; background: #fff; color: #1e293b; }
-  .input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
-  .label { display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 5px; }
-  .section-title { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px; }
-  .metric-card { background: #f8fafc; border-radius: 10px; padding: 14px; text-align: center; }
-  .metric-val { font-size: 24px; font-weight: 700; color: #1e293b; }
-  .metric-lbl { font-size: 11px; color: #94a3b8; margin-top: 3px; }
-  .severity-low  { background: #dcfce7; color: #15803d; }
-  .severity-medium { background: #fef3c7; color: #b45309; }
-  .severity-high { background: #fee2e2; color: #b91c1c; }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 999; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7 7l3 3 3-3' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; padding-right: 32px; }
-  .week-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .week-label { font-size: 11px; color: #94a3b8; width: 80px; flex-shrink: 0; }
-  .phase-on  { background: #dbeafe; color: #1d4ed8; }
-  .phase-pct { background: #dcfce7; color: #15803d; }
-  .phase-off { background: #f1f5f9; color: #64748b; }
-  .skeleton { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
-  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-  .comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .comp-table th, .comp-table td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; text-align: left; }
-  .comp-table th { font-size: 12px; font-weight: 600; color: #94a3b8; background: #f8fafc; }
-  .comp-table tr:last-child td { border-bottom: none; }
-  .winner-cell { color: #15803d; font-weight: 600; }
-  #toast-el { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 9999; display: none; }
+  .btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
+  .inp { width: 100%; padding: 9px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; font-size: 14px; outline: none; background: #0f172a; color: #e2e8f0; }
+  .inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+  select.inp { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7 7l3 3 3-3' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; padding-right: 30px; }
+  .lbl { display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 5px; }
+  .metric { background: rgba(255,255,255,.04); border-radius: 10px; padding: 12px 14px; text-align: center; }
+  .metric-v { font-size: 22px; font-weight: 700; color: #e2e8f0; }
+  .metric-l { font-size: 11px; color: #475569; margin-top: 2px; }
+  .skel { background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%); background-size: 200% 100%; animation: sk 1.5s infinite; border-radius: 8px; }
+  @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .phase-on  { background: #1d3557; color: #60a5fa; }
+  .phase-pct { background: #14532d; color: #4ade80; }
+  .phase-off { background: rgba(255,255,255,.05); color: #475569; }
+  #toast-el { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 9999; display: none; color: #fff; max-width: 340px; }
+  .upload-zone { border: 1.5px dashed rgba(255,255,255,.15); border-radius: 10px; padding: 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: border-color .15s; }
+  .upload-zone:hover { border-color: var(--accent); }
+  input[type="file"] { font-size: 13px; color: #94a3b8; }
+  input[type="file"]::file-selector-button { padding: 5px 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 6px; color: #94a3b8; cursor: pointer; font-size: 12px; margin-right: 10px; }
+  input[type="file"]::file-selector-button:hover { background: rgba(255,255,255,.12); }
+  .week-label { font-size: 11px; color: #475569; width: 80px; flex-shrink: 0; }
+  .auth-screen { min-height: 100vh; background: #0f172a; display: flex; align-items: center; justify-content: center; }
+  .auth-card { background: #1e293b; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 28px 32px; width: 420px; }
+  .auth-tabs { display: flex; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+  .auth-tab { flex: 1; padding: 10px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all .15s; }
+  .auth-tab.active { background: var(--accent); color: #fff; }
+  .auth-tab.inactive { background: transparent; color: #64748b; }
 </style>
 </head>
 <body>
 
 <div id="toast-el"></div>
 
-<!-- Auth screens overlay -->
-<div id="auth-screen" style="display:flex;min-height:100vh;align-items:center;justify-content:center;background:#f8fafc;">
-  <div style="width:100%;max-width:400px;padding:20px;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="font-size:26px;font-weight:800;color:#1e293b;">FitSearch <span style="color:#3b82f6;">AI</span></div>
-      <div style="font-size:13px;color:#94a3b8;margin-top:4px;">Your intelligent fitness & performance platform</div>
+<!-- ── AUTH ───────────────────────────────────────────────────────────── -->
+<div id="auth-screen" class="auth-screen">
+  <div style="width:100%;max-width:420px;padding:20px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:28px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
+      <div style="font-size:13px;color:#475569;margin-top:4px;">Your intelligent fitness &amp; performance platform</div>
     </div>
-    <div id="auth-tabs" style="display:flex;gap:0;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:24px;">
-      <button onclick="switchAuth('login')" id="tab-login" style="flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#3b82f6;color:#fff;transition:all .15s;">Sign in</button>
-      <button onclick="switchAuth('register')" id="tab-register" style="flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#fff;color:#64748b;transition:all .15s;">Create account</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-li" onclick="switchAuth('login')">Sign in</button>
+      <button class="auth-tab inactive" id="tab-re" onclick="switchAuth('register')">Create account</button>
     </div>
-    <div class="card" id="auth-form"></div>
+    <div class="auth-card" id="auth-form"></div>
   </div>
 </div>
 
-<!-- Main app -->
+<!-- ── APP ────────────────────────────────────────────────────────────── -->
 <div id="app" style="display:none;display:flex;min-height:100vh;">
-  <div class="sidebar" style="display:flex;flex-direction:column;">
-    <div style="padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.08);">
-      <div style="font-size:18px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
-      <div style="font-size:11px;color:#64748b;margin-top:2px;">Performance Intelligence</div>
+  <div class="sidebar">
+    <div style="padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="font-size:17px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
+      <div style="font-size:11px;color:#334155;margin-top:2px;">Performance Intelligence</div>
     </div>
-    <div id="user-card" style="padding:12px;border-bottom:1px solid rgba(255,255,255,.08);">
-      <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:10px;padding:10px;">
-        <div id="user-avatar" style="width:36px;height:36px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">R</div>
+    <div style="padding:10px;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border-radius:10px;padding:10px;">
+        <div id="av" style="width:34px;height:34px;border-radius:50%;background:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">?</div>
         <div>
-          <div id="user-name-display" style="font-size:13px;font-weight:600;color:#e2e8f0;">Loading...</div>
-          <div id="user-goal-display" style="font-size:11px;color:#64748b;">—</div>
+          <div id="uname" style="font-size:13px;font-weight:600;color:#e2e8f0;">—</div>
+          <div id="ugoal" style="font-size:11px;color:#334155;">—</div>
         </div>
       </div>
     </div>
-    <nav style="padding:8px;flex:1;">
-      <div class="nav-link active" onclick="showPage('search',this)" data-page="search"><span class="nav-icon">&#128269;</span> Search</div>
-      <div class="nav-link" onclick="showPage('history',this)" data-page="history"><span class="nav-icon">&#128336;</span> Search history</div>
-      <div class="nav-link" onclick="showPage('recs',this)" data-page="recs"><span class="nav-icon">&#11088;</span> For you</div>
-      <div class="nav-link" onclick="showPage('compare',this)" data-page="compare"><span class="nav-icon">&#9878;</span> Compare</div>
-      <div class="nav-link" onclick="showPage('diet',this)" data-page="diet"><span class="nav-icon">&#127859;</span> Diet generator</div>
-      <div class="nav-link" onclick="showPage('cycle',this)" data-page="cycle"><span class="nav-icon">&#128200;</span> Cycle planner</div>
-      <div class="nav-link" onclick="showPage('grocery',this)" data-page="grocery"><span class="nav-icon">&#128722;</span> Grocery list</div>
-      <div class="nav-link" onclick="showPage('medical',this)" data-page="medical"><span class="nav-icon">&#127973;</span> Medical screen</div>
-      <div class="nav-link" onclick="showPage('upload',this)" data-page="upload"><span class="nav-icon">&#128190;</span> Upload files</div>
+    <nav style="padding:8px;flex:1;overflow-y:auto;">
+      <button class="nav-item active" data-page="search"  onclick="showPage('search',this)"><span class="ni">🔍</span>Search</button>
+      <button class="nav-item"        data-page="history" onclick="showPage('history',this)"><span class="ni">🕐</span>Search history</button>
+      <button class="nav-item"        data-page="diet"    onclick="showPage('diet',this)"><span class="ni">🍽</span>Diet generator</button>
+      <button class="nav-item"        data-page="cycle"   onclick="showPage('cycle',this)"><span class="ni">📈</span>Cycle planner</button>
+      <button class="nav-item"        data-page="medical" onclick="showPage('medical',this)"><span class="ni">🏥</span>Medical screen</button>
+      <button class="nav-item"        data-page="upload"  onclick="showPage('upload',this)"><span class="ni">📁</span>Upload files</button>
     </nav>
-    <div style="padding:12px;">
-      <div class="nav-link" onclick="logout()" style="margin:0;color:#ef4444;"><span class="nav-icon">&#x2715;</span> Sign out</div>
+    <div style="padding:10px;">
+      <button class="nav-item" style="color:#ef4444;" onclick="doLogout()"><span class="ni">✕</span>Sign out</button>
     </div>
   </div>
 
-  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
-    <div id="main-content" style="flex:1;padding:28px;overflow:auto;"></div>
+  <div style="flex:1;min-width:0;background:#0f172a;overflow:auto;">
+    <div id="main" style="padding:28px;max-width:860px;"></div>
   </div>
 </div>
 
 <script>
-const API = '';
-let currentUser = null;
-let activeFilters = [];
+"use strict";
+let CU = null;
+let AF = [];
 
-// ── Toast ─────────────────────────────────────────────────────────────────
-function toast(msg, type='info') {
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type) {
   const el = document.getElementById('toast-el');
   el.textContent = msg;
+  el.style.background = type==='error' ? '#7f1d1d' : type==='success' ? '#14532d' : '#1e293b';
   el.style.display = 'block';
-  el.style.background = type === 'error' ? '#b91c1c' : type === 'success' ? '#15803d' : '#1e293b';
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.display = 'none', 3000);
+  el._t = setTimeout(() => el.style.display='none', 3200);
 }
 
-// ── API helper ────────────────────────────────────────────────────────────
-async function api(path, method='GET', body=null) {
-  const opts = { method, credentials: 'include', headers: {} };
-  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-  const res = await fetch(API + path, opts);
+// ── API ────────────────────────────────────────────────────────────────────
+async function api(path, method, body) {
+  const opts = { method: method||'GET', credentials:'include', headers:{} };
+  if (body) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(body); }
+  const res  = await fetch(path, opts);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────
+// ── Auth ───────────────────────────────────────────────────────────────────
 function switchAuth(mode) {
-  const isLogin = mode === 'login';
-  document.getElementById('tab-login').style.cssText = isLogin ? 'flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#3b82f6;color:#fff;' : 'flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#fff;color:#64748b;';
-  document.getElementById('tab-register').style.cssText = !isLogin ? 'flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#3b82f6;color:#fff;' : 'flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#fff;color:#64748b;';
-  document.getElementById('auth-form').innerHTML = isLogin ? loginForm() : registerForm();
+  const li = mode==='login';
+  document.getElementById('tab-li').className = 'auth-tab ' + (li?'active':'inactive');
+  document.getElementById('tab-re').className = 'auth-tab ' + (!li?'active':'inactive');
+  document.getElementById('auth-form').innerHTML = li ? loginHTML() : registerHTML();
 }
 
-function loginForm() {
+function loginHTML() {
   return `
-  <div style="margin-bottom:16px;">
-    <label class="label">Email address</label>
-    <input class="input" type="email" id="l-email" placeholder="you@email.com">
+  <div style="margin-bottom:14px;">
+    <label class="lbl">Email address</label>
+    <input class="inp" type="email" id="le" placeholder="you@email.com">
   </div>
-  <div style="margin-bottom:20px;">
-    <label class="label">Password</label>
-    <input class="input" type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+  <div style="margin-bottom:18px;">
+    <label class="lbl">Password</label>
+    <input class="inp" type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
   </div>
   <button class="btn btn-primary" style="width:100%;padding:11px;" onclick="doLogin()">Sign in to your account</button>`;
 }
 
-function registerForm() {
+function registerHTML() {
   return `
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-    <div><label class="label">Full name</label><input class="input" id="r-name" placeholder="Your name"></div>
-    <div><label class="label">Email</label><input class="input" type="email" id="r-email" placeholder="you@email.com"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+    <div><label class="lbl">Full name</label><input class="inp" id="rn" placeholder="Your name"></div>
+    <div><label class="lbl">Email</label><input class="inp" type="email" id="re" placeholder="you@email.com"></div>
   </div>
-  <div style="margin-bottom:12px;">
-    <label class="label">Password</label>
-    <input class="input" type="password" id="r-pass" placeholder="Min. 6 characters">
+  <div style="margin-bottom:10px;"><label class="lbl">Password (min 6 chars)</label><input class="inp" type="password" id="rp" placeholder="••••••••"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+    <div><label class="lbl">Goal</label>
+      <select class="inp" id="rg">
+        <option value="muscle_gain">Muscle gain</option>
+        <option value="fat_loss">Fat loss</option>
+        <option value="recomp">Recomposition</option>
+        <option value="strength">Strength</option>
+      </select>
+    </div>
+    <div><label class="lbl">Experience</label>
+      <select class="inp" id="rl">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-    <div><label class="label">Goal</label>
-    <select class="input" id="r-goal">
-      <option value="muscle_gain">Muscle gain</option>
-      <option value="fat_loss">Fat loss</option>
-      <option value="recomp">Body recomposition</option>
-      <option value="strength">Strength</option>
-    </select></div>
-    <div><label class="label">Experience</label>
-    <select class="input" id="r-level">
-      <option value="beginner">Beginner</option>
-      <option value="intermediate">Intermediate</option>
-      <option value="advanced">Advanced</option>
-    </select></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
-    <div><label class="label">Weight (kg)</label><input class="input" type="number" id="r-weight" placeholder="80"></div>
-    <div><label class="label">Height (cm)</label><input class="input" type="number" id="r-height" placeholder="175"></div>
-    <div><label class="label">Age</label><input class="input" type="number" id="r-age" placeholder="25"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
+    <div><label class="lbl">Weight (kg)</label><input class="inp" type="number" id="rw" placeholder="80"></div>
+    <div><label class="lbl">Height (cm)</label><input class="inp" type="number" id="rh" placeholder="175"></div>
+    <div><label class="lbl">Age</label><input class="inp" type="number" id="ra" placeholder="25"></div>
   </div>
   <button class="btn btn-primary" style="width:100%;padding:11px;" onclick="doRegister()">Create account</button>`;
 }
 
+function val(id) { return (document.getElementById(id)||{}).value||''; }
+
 async function doLogin() {
   try {
-    const data = await api('/login', 'POST', { email: document.getElementById('l-email').value, password: document.getElementById('l-pass').value });
-    currentUser = data.user;
+    const d = await api('/login','POST',{email:val('le'),password:val('lp')});
+    CU = d.user;
     enterApp();
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message,'error'); }
 }
 
 async function doRegister() {
   try {
-    await api('/register', 'POST', {
-      name: document.getElementById('r-name').value,
-      email: document.getElementById('r-email').value,
-      password: document.getElementById('r-pass').value,
-      goal: document.getElementById('r-goal').value,
-      experience_level: document.getElementById('r-level').value,
-      weight: document.getElementById('r-weight').value,
-      height: document.getElementById('r-height').value,
-      age: document.getElementById('r-age').value,
+    await api('/register','POST',{
+      name:val('rn'), email:val('re'), password:val('rp'),
+      goal:val('rg'), experience_level:val('rl'),
+      weight:val('rw'), height:val('rh'), age:val('ra')
     });
-    toast('Account created! Please sign in.', 'success');
+    toast('Account created — sign in now!','success');
     switchAuth('login');
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { toast(e.message,'error'); }
 }
 
 function enterApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  updateUserCard();
+  updateCard();
+  // FIX: login always redirects to search immediately
   showPage('search', document.querySelector('[data-page="search"]'));
 }
 
-function updateUserCard() {
-  if (!currentUser) return;
-  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('user-avatar').textContent = initials;
-  document.getElementById('user-name-display').textContent = currentUser.name;
-  document.getElementById('user-goal-display').textContent = (currentUser.goal||'').replace(/_/g,' ') + ' · ' + (currentUser.experience_level||'');
+function updateCard() {
+  if (!CU) return;
+  const ini = (CU.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('av').textContent    = ini;
+  document.getElementById('uname').textContent = CU.name || CU.email;
+  document.getElementById('ugoal').textContent = (CU.goal||'').replace(/_/g,' ') + (CU.experience_level ? ' · '+CU.experience_level : '');
 }
 
-async function logout() {
+async function doLogout() {
   await api('/logout','POST').catch(()=>{});
-  currentUser = null;
+  CU = null;
   document.getElementById('app').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
   switchAuth('login');
@@ -243,507 +236,479 @@ async function logout() {
 
 // ── Navigation ─────────────────────────────────────────────────────────────
 function showPage(page, el) {
-  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if (el) el.classList.add('active');
-  const pages = { search: renderSearch, history: renderHistory, recs: renderRecs, compare: renderCompare, diet: renderDiet, cycle: renderCycle, grocery: renderGrocery, medical: renderMedical, upload: renderUpload };
+  const pages = {search:pgSearch, history:pgHistory, diet:pgDiet, cycle:pgCycle, medical:pgMedical, upload:pgUpload};
   if (pages[page]) pages[page]();
 }
 
-function setContent(html) { document.getElementById('main-content').innerHTML = html; }
+function setMain(h) { document.getElementById('main').innerHTML = h; }
 
-// ── 1. Search ─────────────────────────────────────────────────────────────
-function renderSearch() {
-  setContent(`
-  <div style="max-width:820px;">
-    <div style="margin-bottom:20px;">
-      <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;">Search</h1>
-      <p style="font-size:14px;color:#64748b;margin:0;">Ask anything about supplements, SARMs, steroids, peptides, or training</p>
+// ═══════════════════════════════════════════════════════════════════════════
+// 1. SEARCH
+// ═══════════════════════════════════════════════════════════════════════════
+function pgSearch() {
+  setMain(`
+  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Search</h1>
+  <p style="font-size:13px;color:#475569;margin:0 0 18px;">Ask anything — supplements, SARMs, steroids, peptides, training, diet</p>
+  <div style="display:flex;gap:10px;margin-bottom:12px;">
+    <div style="flex:1;position:relative;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#475569;font-size:15px;">🔍</span>
+      <input class="inp" id="sq" style="padding-left:36px;font-size:15px;height:46px;" placeholder="e.g. Best creatine for strength, Safe SARMs cycle for beginners…" onkeydown="if(event.key==='Enter')doSearch()">
     </div>
-    <div style="display:flex;gap:10px;margin-bottom:14px;">
-      <div style="flex:1;position:relative;">
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px;">&#128269;</span>
-        <input class="input" id="search-q" style="padding-left:38px;font-size:15px;height:46px;" placeholder="e.g. Best creatine for strength, Safe SARMs cycle for beginners..." onkeydown="if(event.key==='Enter')doSearch()">
-      </div>
-      <button class="btn btn-primary" style="height:46px;padding:0 20px;" onclick="doSearch()">Search &#8599;</button>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="filter-row">
-      ${['Muscle gain','Fat loss','Strength','Endurance','Beginner','Advanced'].map(f=>`<span class="pill" onclick="toggleFilter(this,'${f.toLowerCase().replace(' ','_')}')">${f}</span>`).join('')}
-    </div>
-    <div id="search-results"><div style="color:#94a3b8;font-size:14px;text-align:center;padding:40px 0;">Enter a query above to search the knowledge base</div></div>
-  </div>`);
+    <button class="btn btn-primary" style="height:46px;padding:0 18px;" onclick="doSearch()">Search ↗</button>
+  </div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;">
+    ${['Muscle gain','Fat loss','Strength','Endurance','Beginner','Advanced'].map(f=>
+      `<span class="pill" onclick="togF(this,'${f.toLowerCase().replace(' ','_')}')">${f}</span>`
+    ).join('')}
+  </div>
+  <div id="sr"><div style="text-align:center;padding:48px 0;color:#334155;font-size:14px;">Enter a query to search the knowledge base</div></div>`);
 }
 
-function toggleFilter(el, val) {
-  el.classList.toggle('active');
-  const idx = activeFilters.indexOf(val);
-  if (idx > -1) activeFilters.splice(idx,1); else activeFilters.push(val);
+function togF(el, val) {
+  el.classList.toggle('on');
+  const i=AF.indexOf(val); i>-1 ? AF.splice(i,1) : AF.push(val);
 }
 
 async function doSearch() {
-  const q = document.getElementById('search-q').value.trim();
-  if (!q) { toast('Please enter a search query','error'); return; }
-  document.getElementById('search-results').innerHTML = '<div class="skeleton" style="height:100px;margin-bottom:10px;"></div><div class="skeleton" style="height:100px;"></div>';
+  const q = ((document.getElementById('sq')||{}).value||'').trim();
+  if (!q) { toast('Enter a search query','error'); return; }
+  document.getElementById('sr').innerHTML = '<div class="skel" style="height:90px;margin-bottom:10px;"></div><div class="skel" style="height:90px;"></div>';
   try {
-    const data = await api('/search','POST',{ query: q, filters: activeFilters });
-    renderSearchResults(data.results, data.query);
-  } catch(e) { toast(e.message,'error'); }
+    const d = await api('/search','POST',{query:q, filters:AF});
+    renderResults(d);
+  } catch(e) { toast(e.message,'error'); document.getElementById('sr').innerHTML=''; }
 }
 
-function renderSearchResults(results, query) {
-  if (!results.length) { document.getElementById('search-results').innerHTML = `<div style="text-align:center;padding:40px 0;color:#94a3b8;">No results found for "${query}"</div>`; return; }
-  const catColor = { supplement:'blue', sarm:'purple', steroid:'red', peptide:'teal' };
-  const evColor = { very_high:'green', high:'green', moderate:'amber', low:'red' };
-  document.getElementById('search-results').innerHTML = `
-    <div style="font-size:13px;color:#94a3b8;margin-bottom:12px;">${results.length} results for "${query}"</div>
-    ${results.map(r => `
-    <div class="card" style="margin-bottom:12px;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;">
-        <div>
-          <div style="font-size:16px;font-weight:700;margin-bottom:6px;">${r.name}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <span class="badge badge-${catColor[r.category]||'gray'}">${r.category}</span>
-            <span class="badge badge-${evColor[r.evidence_tier]||'gray'}">Evidence: ${(r.evidence_tier||'').replace('_',' ')}</span>
-            ${r.safe_for_beginners ? '<span class="badge badge-green">Beginner safe</span>' : '<span class="badge badge-amber">Advanced</span>'}
-          </div>
+const catC = {supplement:'blue', sarm:'purple', steroid:'red', peptide:'teal', research:'gray'};
+const evC  = {very_high:'green', high:'green', moderate:'amber', low:'red'};
+
+function renderResults(d) {
+  const R = d.results || [];
+  if (!R.length) {
+    document.getElementById('sr').innerHTML = `<div style="text-align:center;padding:48px 0;color:#334155;">No results for "${d.query}"</div>`;
+    return;
+  }
+  document.getElementById('sr').innerHTML = `
+  <div style="font-size:12px;color:#334155;margin-bottom:10px;">${R.length} results for "${d.query}"</div>
+  ${R.map(r=>`
+  <div class="card" style="margin-bottom:12px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:16px;font-weight:700;color:#f1f5f9;margin-bottom:6px;">${r.name}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${r.category ? `<span class="badge b-${catC[r.category]||'gray'}">${r.category}</span>` : ''}
+          ${r.evidence_tier ? `<span class="badge b-${evC[r.evidence_tier]||'gray'}">Evidence: ${r.evidence_tier.replace('_',' ')}</span>` : ''}
+          ${r.safe_for_beginners===true ? '<span class="badge b-green">Beginner safe</span>' : r.safe_for_beginners===false ? '<span class="badge b-red">Advanced only</span>' : ''}
         </div>
-        <button class="btn" style="font-size:11px;padding:5px 10px;flex-shrink:0;" onclick="saveItem('${r.name}','result')">Save</button>
       </div>
-      <p style="font-size:13px;color:#475569;line-height:1.65;margin:0 0 12px;">${r.summary}</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
-        <div class="metric-card"><div style="font-size:12px;font-weight:600;">${r.dosage||'—'}</div><div class="metric-lbl">Dosage</div></div>
-        <div class="metric-card"><div style="font-size:12px;font-weight:600;">${r.timing||'—'}</div><div class="metric-lbl">Timing</div></div>
-        <div class="metric-card"><div style="font-size:12px;font-weight:600;">${(r.cycle_length||r.stacking?.slice(0,2).join(', '))||'No cycle needed'}</div><div class="metric-lbl">${r.cycle_length?'Cycle length':'Stack with'}</div></div>
-      </div>
-      ${r.side_effects?.length ? `<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:6px;">Side effects</div><div style="display:flex;gap:6px;flex-wrap:wrap;">${r.side_effects.map(se=>`<span class="badge badge-${se.severity==='low'?'green':se.severity==='medium'?'amber':'red'}">${se.effect}</span>`).join('')}</div></div>` : ''}
-      ${r.benefits?.length ? `<div style="font-size:11px;color:#475569;">${r.benefits.map(b=>`<span>&#10003; ${b}</span>`).join('  ')}</div>` : ''}
-      ${r.legal_status ? `<div style="margin-top:10px;padding:8px 10px;background:#fef3c7;border-radius:6px;font-size:11px;color:#b45309;">&#9888; ${r.legal_status}</div>` : ''}
-    </div>`).join('')}`;
+    </div>
+    <p style="font-size:13px;color:#94a3b8;line-height:1.65;margin:0 0 12px;">${r.summary||r.snippet||''}</p>
+    ${(r.dosage||r.timing) ? `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
+      <div class="metric"><div style="font-size:11px;font-weight:600;color:#e2e8f0;line-height:1.4;">${r.dosage||'—'}</div><div class="metric-l">Dosage</div></div>
+      <div class="metric"><div style="font-size:11px;font-weight:600;color:#e2e8f0;line-height:1.4;">${r.timing||'—'}</div><div class="metric-l">Timing</div></div>
+      <div class="metric"><div style="font-size:11px;font-weight:600;color:#e2e8f0;line-height:1.4;">${r.cycle_length || (r.stacking||[]).slice(0,2).join(', ') || 'No cycle'}</div><div class="metric-l">${r.cycle_length?'Cycle':'Stack with'}</div></div>
+    </div>` : ''}
+    ${r.side_effects?.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">${r.side_effects.map(s=>`<span class="badge b-${s.severity==='low'?'green':s.severity==='medium'?'amber':'red'}">${s.effect}</span>`).join('')}</div>` : ''}
+    ${r.benefits?.length ? `<div style="font-size:11px;color:#475569;margin-bottom:6px;">${r.benefits.map(b=>`✓ ${b}`).join('  ')}</div>` : ''}
+    ${r.pct_needed ? `<div style="font-size:11px;color:#c084fc;padding:4px 0;">PCT: ${r.pct_needed}</div>` : ''}
+    ${r.legal_status ? `<div style="margin-top:8px;padding:8px 10px;background:#451a03;border-radius:6px;font-size:11px;color:#fbbf24;">⚠ ${r.legal_status}</div>` : ''}
+  </div>`).join('')}`;
 }
 
-// ── 2. Search History ──────────────────────────────────────────────────────
-async function renderHistory() {
-  setContent(`<div style="max-width:720px;"><h1 style="font-size:22px;font-weight:700;margin:0 0 20px;">Search history</h1><div id="history-list"><div class="skeleton" style="height:200px;"></div></div></div>`);
+// ═══════════════════════════════════════════════════════════════════════════
+// 2. HISTORY
+// ═══════════════════════════════════════════════════════════════════════════
+async function pgHistory() {
+  setMain(`<h1 style="font-size:22px;font-weight:700;margin:0 0 18px;color:#f1f5f9;">Search history</h1><div id="hl"><div class="skel" style="height:180px;"></div></div>`);
   try {
     const rows = await api('/history');
-    const el = document.getElementById('history-list');
-    if (!rows.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">No searches yet — go search something!</div>'; return; }
+    const el = document.getElementById('hl');
+    if (!rows.length) { el.innerHTML='<div style="text-align:center;padding:48px;color:#334155;">No searches yet</div>'; return; }
     el.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div style="font-size:13px;color:#64748b;">${rows.length} searches</div>
-        <button class="btn" style="font-size:12px;color:#ef4444;border-color:#fecaca;" onclick="clearHistory()">Clear all</button>
-      </div>
-      <div class="card" style="padding:0;overflow:hidden;">
-        ${rows.map(r=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #f1f5f9;">
-          <div>
-            <div style="font-size:14px;font-weight:500;">${r.query}</div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:3px;">${new Date(r.searched_at).toLocaleString()} · ${r.results_count||0} results</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <button class="btn" style="font-size:11px;padding:5px 10px;" onclick="rerunSearch('${r.query.replace(/'/g,"\\'")}')">Re-run &#8594;</button>
-            <button onclick="deleteHistory(${r.id},this)" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px;">&#10005;</button>
-          </div>
-        </div>`).join('')}
-      </div>`;
-  } catch(e) { toast(e.message,'error'); }
-}
-
-async function clearHistory() {
-  if (!confirm('Clear all search history?')) return;
-  await api('/history/clear','DELETE');
-  toast('History cleared','success');
-  renderHistory();
-}
-
-async function deleteHistory(id, btn) {
-  await api(`/history/${id}`,'DELETE');
-  btn.closest('div[style*="border-bottom"]').remove();
-}
-
-function rerunSearch(query) {
-  showPage('search', document.querySelector('[data-page="search"]'));
-  setTimeout(()=>{ document.getElementById('search-q').value = query; doSearch(); }, 100);
-}
-
-// ── 3. Recommendations ────────────────────────────────────────────────────
-async function renderRecs() {
-  setContent(`<div style="max-width:820px;"><h1 style="font-size:22px;font-weight:700;margin:0 0 4px;">For you</h1><p style="font-size:14px;color:#64748b;margin:0 0 20px;">Personalised picks based on your searches and goals</p><div id="recs-grid"><div class="skeleton" style="height:300px;"></div></div></div>`);
-  try {
-    const recs = await api('/recommendations');
-    const catColor = { supplement:'blue', sarm:'purple', steroid:'red', peptide:'teal' };
-    document.getElementById('recs-grid').innerHTML = recs.length ? `
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
-        ${recs.map(r=>`
-        <div class="card" style="cursor:pointer;" onclick="searchCompound('${r.name}')">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-            <span class="badge badge-${catColor[r.category]||'gray'}">${r.category}</span>
-            ${r.safe_for_beginners?'<span class="badge badge-green">Beginner safe</span>':''}
-          </div>
-          <div style="font-size:15px;font-weight:700;margin-bottom:6px;">${r.name}</div>
-          <div style="font-size:12px;color:#64748b;line-height:1.6;margin-bottom:10px;">${r.recommendation_reason}</div>
-          <div style="font-size:12px;color:#3b82f6;">Tap to search &#8594;</div>
-        </div>`).join('')}
-      </div>` : '<div style="text-align:center;padding:40px;color:#94a3b8;">Do a few searches first to get personalised recommendations</div>';
-  } catch(e) { toast(e.message,'error'); }
-}
-
-function searchCompound(name) {
-  showPage('search', document.querySelector('[data-page="search"]'));
-  setTimeout(()=>{ document.getElementById('search-q').value = name; doSearch(); }, 100);
-}
-
-// ── 4. Compare ────────────────────────────────────────────────────────────
-function renderCompare() {
-  setContent(`
-  <div style="max-width:820px;">
-    <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;">Supplement comparison</h1>
-    <p style="font-size:14px;color:#64748b;margin:0 0 20px;">Compare 2–4 compounds side by side</p>
-    <div class="card" style="margin-bottom:20px;">
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Enter compound names (2–4)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-        <input class="input" id="c1" placeholder="e.g. Creatine monohydrate">
-        <input class="input" id="c2" placeholder="e.g. Creatine HCL">
-        <input class="input" id="c3" placeholder="e.g. Ostarine (optional)">
-        <input class="input" id="c4" placeholder="e.g. LGD-4033 (optional)">
-      </div>
-      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;">
-        <div style="font-size:12px;color:#64748b;margin-right:4px;line-height:28px;">Quick picks:</div>
-        ${[['Creatine mono vs HCL','Creatine monohydrate','Creatine HCL','',''],
-           ['SARMs comparison','Ostarine','LGD-4033','',''],
-           ['Pre-workout stack','Caffeine','Citrulline malate','Beta-alanine','']].map(([label,...vals])=>`
-          <button class="pill" onclick="fillCompare(${vals.map(v=>`'${v}'`).join(',')})">${label}</button>`).join('')}
-      </div>
-      <button class="btn btn-primary" onclick="doCompare()">Compare &#8594;</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:12px;color:#475569;">${rows.length} searches</span>
+      <button class="btn" style="font-size:12px;color:#f87171;border-color:#450a0a;" onclick="clrHist()">Clear all</button>
     </div>
-    <div id="compare-result"></div>
-  </div>`);
-}
-
-function fillCompare(c1,c2,c3,c4) {
-  document.getElementById('c1').value=c1;
-  document.getElementById('c2').value=c2;
-  document.getElementById('c3').value=c3||'';
-  document.getElementById('c4').value=c4||'';
-}
-
-async function doCompare() {
-  const compounds = ['c1','c2','c3','c4'].map(id=>document.getElementById(id).value.trim()).filter(Boolean);
-  if (compounds.length < 2) { toast('Enter at least 2 compounds','error'); return; }
-  document.getElementById('compare-result').innerHTML = '<div class="skeleton" style="height:300px;"></div>';
-  try {
-    const data = await api('/compare','POST',{ compounds });
-    if (data.error) { toast(data.error,'error'); document.getElementById('compare-result').innerHTML=''; return; }
-    const winnerColor = ['#dbeafe','#dcfce7','#ede9fe','#fef3c7'];
-    document.getElementById('compare-result').innerHTML = `
-      <div class="card" style="padding:0;overflow:hidden;">
-        <table class="comp-table">
-          <thead><tr><th>Attribute</th>${data.compounds.map((c,i)=>`<th style="background:${winnerColor[i]}20;">${c}</th>`).join('')}</tr></thead>
-          <tbody>
-            ${data.rows.map(row=>`<tr><td style="color:#64748b;font-size:12px;">${row.attribute}</td>${row.values.map((v,i)=>`<td class="${row.winner_index===i?'winner-cell':''}">${v}</td>`).join('')}</tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-      ${data.verdict ? `
-      <div class="card" style="margin-top:12px;background:#f0f9ff;border-color:#bae6fd;">
-        <div style="font-size:12px;font-weight:600;color:#0369a1;margin-bottom:4px;">&#127941; AI verdict</div>
-        <div style="font-size:13px;font-weight:700;color:#0c4a6e;margin-bottom:4px;">Recommended: ${data.verdict.recommended}</div>
-        <div style="font-size:13px;color:#0369a1;">${data.verdict.reasoning}</div>
-      </div>` : ''}`;
+    <div class="card" style="padding:0;overflow:hidden;">
+      ${rows.map(r=>`
+      <div id="hi-${r.id}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.06);">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:#e2e8f0;">${r.query}</div>
+          <div style="font-size:11px;color:#334155;margin-top:2px;">${new Date(r.searched_at).toLocaleString()} · ${r.results_count||0} results</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn" style="font-size:11px;padding:5px 10px;" onclick="rerun('${esc(r.query)}')">Re-run →</button>
+          <button onclick="delH(${r.id})" style="background:none;border:none;color:#475569;cursor:pointer;font-size:16px;">✕</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
   } catch(e) { toast(e.message,'error'); }
 }
 
-// ── 5. Diet Generator ─────────────────────────────────────────────────────
-function renderDiet() {
-  const u = currentUser || {};
-  setContent(`
-  <div style="max-width:760px;">
-    <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;">Diet generator</h1>
-    <p style="font-size:14px;color:#64748b;margin:0 0 20px;">AI-generated meal plan based on your stats and goal</p>
-    <div class="card" style="margin-bottom:20px;">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
-        <div><label class="label">Weight (kg)</label><input class="input" id="d-weight" type="number" value="${u.weight||80}"></div>
-        <div><label class="label">Height (cm)</label><input class="input" id="d-height" type="number" value="${u.height||175}"></div>
-        <div><label class="label">Age</label><input class="input" id="d-age" type="number" value="${u.age||25}"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
-        <div><label class="label">Goal</label>
-          <select class="input" id="d-goal">
-            <option value="muscle_gain" ${u.goal==='muscle_gain'?'selected':''}>Muscle gain</option>
-            <option value="fat_loss" ${u.goal==='fat_loss'?'selected':''}>Fat loss</option>
-            <option value="recomp" ${u.goal==='recomp'?'selected':''}>Recomposition</option>
-          </select>
-        </div>
-        <div><label class="label">Activity level</label>
-          <select class="input" id="d-activity">
-            <option value="sedentary">Sedentary</option>
-            <option value="light">Light (1–3 days)</option>
-            <option value="moderate" selected>Moderate (3–5 days)</option>
-            <option value="active">Active (6–7 days)</option>
-            <option value="very_active">Very active</option>
-          </select>
-        </div>
-        <div><label class="label">Sex</label>
-          <select class="input" id="d-sex">
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="doDiet()">Generate diet plan &#8599;</button>
+async function clrHist() { if(!confirm('Clear all history?'))return; await api('/history/clear','DELETE'); toast('Cleared','success'); pgHistory(); }
+async function delH(id) { await api('/history/'+id,'DELETE'); const el=document.getElementById('hi-'+id); if(el)el.remove(); }
+function rerun(q) { showPage('search',document.querySelector('[data-page="search"]')); setTimeout(()=>{ document.getElementById('sq').value=q; doSearch(); },80); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 3. DIET GENERATOR — with BCA file upload
+// ═══════════════════════════════════════════════════════════════════════════
+function pgDiet() {
+  const u = CU || {};
+  setMain(`
+  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Diet generator</h1>
+  <p style="font-size:13px;color:#475569;margin:0 0 18px;">AI-generated meal plan based on your stats and goal</p>
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
+      <div><label class="lbl">Weight (kg)</label><input class="inp" type="number" id="dw" value="${u.weight||80}"></div>
+      <div><label class="lbl">Height (cm)</label><input class="inp" type="number" id="dh" value="${u.height||175}"></div>
+      <div><label class="lbl">Age</label><input class="inp" type="number" id="da" value="${u.age||25}"></div>
     </div>
-    <div id="diet-result"></div>
-  </div>`);
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div><label class="lbl">Goal</label>
+        <select class="inp" id="dg">
+          <option value="muscle_gain" ${u.goal==='muscle_gain'?'selected':''}>Muscle gain</option>
+          <option value="fat_loss"    ${u.goal==='fat_loss'   ?'selected':''}>Fat loss</option>
+          <option value="recomp"      ${u.goal==='recomp'     ?'selected':''}>Recomposition</option>
+        </select>
+      </div>
+      <div><label class="lbl">Activity level</label>
+        <select class="inp" id="dact">
+          <option value="sedentary">Sedentary</option>
+          <option value="light">Light (1–3 days)</option>
+          <option value="moderate" ${(!u.activity_level||u.activity_level==='moderate')?'selected':''}>Moderate (3–5 days)</option>
+          <option value="active">Active (6–7 days)</option>
+          <option value="very_active">Very active</option>
+        </select>
+      </div>
+      <div><label class="lbl">Sex</label>
+        <select class="inp" id="ds">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BCA File Upload -->
+    <div style="margin-bottom:14px;">
+      <label class="lbl">Upload BCA report (optional)</label>
+      <div class="upload-zone">
+        <span style="font-size:20px;">📄</span>
+        <div>
+          <input type="file" id="bca-diet" accept=".pdf,.jpg,.jpeg,.png">
+          <div style="font-size:11px;color:#334155;margin-top:4px;">PDF or image · helps personalize macros</div>
+        </div>
+      </div>
+      <div id="bca-diet-status" style="font-size:12px;color:#4ade80;margin-top:6px;display:none;"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn" onclick="uploadDietBCA()" style="font-size:13px;">Upload BCA first</button>
+      <button class="btn btn-primary" onclick="doDiet()">Generate diet plan ↗</button>
+    </div>
+  </div>
+  <div id="dr"></div>`);
+}
+
+async function uploadDietBCA() {
+  const f = (document.getElementById('bca-diet')||{}).files?.[0];
+  if (!f) { toast('Select a BCA file first','error'); return; }
+  const form = new FormData(); form.append('file', f);
+  try {
+    const res  = await fetch('/upload_bca',{method:'POST',body:form,credentials:'include'});
+    const data = await res.json();
+    if (data.status === 'uploaded') {
+      const s = document.getElementById('bca-diet-status');
+      s.textContent = '✓ BCA uploaded: ' + data.file;
+      s.style.display = 'block';
+      toast('BCA uploaded successfully','success');
+    }
+  } catch(e) { toast('Upload failed','error'); }
 }
 
 async function doDiet() {
-  document.getElementById('diet-result').innerHTML = '<div class="skeleton" style="height:400px;"></div>';
+  document.getElementById('dr').innerHTML = '<div class="skel" style="height:400px;"></div>';
   try {
-    const data = await api('/diet','POST',{
-      weight: document.getElementById('d-weight').value,
-      height: document.getElementById('d-height').value,
-      age: document.getElementById('d-age').value,
-      goal: document.getElementById('d-goal').value,
-      activity_level: document.getElementById('d-activity').value,
-      sex: document.getElementById('d-sex').value,
+    const g = val('dg'), act = val('dact'), s = val('ds');
+    const d = await api('/diet','POST',{
+      weight:  val('dw'), height: val('dh'), age:   val('da'),
+      goal:    g,         activity_level: act,      sex: s
     });
-    const m = data.diet.macros || {};
-    document.getElementById('diet-result').innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
-        <div class="metric-card"><div class="metric-val">${data.calories.toLocaleString()}</div><div class="metric-lbl">Calories / day</div></div>
-        <div class="metric-card" style="background:#dcfce7;"><div class="metric-val" style="color:#15803d;">${m.protein_g||0}g</div><div class="metric-lbl">Protein</div></div>
-        <div class="metric-card" style="background:#dbeafe;"><div class="metric-val" style="color:#1d4ed8;">${m.carbs_g||0}g</div><div class="metric-lbl">Carbs</div></div>
-        <div class="metric-card" style="background:#fef3c7;"><div class="metric-val" style="color:#b45309;">${m.fats_g||0}g</div><div class="metric-lbl">Fats</div></div>
-      </div>
-      <div class="card" style="margin-bottom:12px;">
-        <div class="section-title">Daily meal plan</div>
-        ${data.diet.meals?.map(meal=>`
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f1f5f9;">
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:600;">${meal.name}</div>
-            <div style="font-size:12px;color:#64748b;margin-top:3px;line-height:1.6;">${meal.foods}</div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:4px;">P: ${meal.protein}g · C: ${meal.carbs}g · F: ${meal.fats}g</div>
-          </div>
-          <div style="font-size:13px;font-weight:600;color:#374151;margin-left:16px;white-space:nowrap;">${meal.calories} kcal</div>
-        </div>`).join('')}
-      </div>
-      ${data.diet.supplements?.length ? `
-      <div class="card" style="margin-bottom:12px;background:#f0fdf4;border-color:#bbf7d0;">
-        <div style="font-size:13px;font-weight:600;color:#15803d;margin-bottom:8px;">Recommended supplements</div>
-        ${data.diet.supplements.map(s=>`<div style="font-size:13px;color:#166534;padding:3px 0;">&#10003; ${s}</div>`).join('')}
-      </div>` : ''}
-      ${data.diet.notes?.length ? `
-      <div class="card" style="background:#f8fafc;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Notes</div>
-        ${data.diet.notes.map(n=>`<div style="font-size:12px;color:#475569;padding:3px 0;">&#8226; ${n}</div>`).join('')}
-      </div>` : ''}`;
-  } catch(e) { toast(e.message,'error'); }
+    const m = d.diet?.macros || {};
+    // FIX: properly check for diet.meals and render correctly
+    const meals = d.diet?.meals || [];
+    document.getElementById('dr').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+      <div class="metric"><div class="metric-v">${(d.calories||0).toLocaleString()}</div><div class="metric-l">Calories/day</div></div>
+      <div class="metric" style="background:#14532d20;"><div class="metric-v" style="color:#4ade80;">${m.protein_g||0}g</div><div class="metric-l">Protein</div></div>
+      <div class="metric" style="background:#1d345720;"><div class="metric-v" style="color:#60a5fa;">${m.carbs_g||0}g</div><div class="metric-l">Carbs</div></div>
+      <div class="metric" style="background:#45180320;"><div class="metric-v" style="color:#fbbf24;">${m.fats_g||0}g</div><div class="metric-l">Fats</div></div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Daily meal plan</div>
+      ${meals.map(meal=>`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:#e2e8f0;">${meal.name}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px;line-height:1.6;">${meal.foods}</div>
+          <div style="font-size:11px;color:#334155;margin-top:4px;">P:${meal.protein}g · C:${meal.carbs}g · F:${meal.fats}g</div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#94a3b8;margin-left:14px;white-space:nowrap;">${meal.calories} kcal</div>
+      </div>`).join('')}
+    </div>
+    ${d.diet?.supplements?.length ? `
+    <div class="card" style="margin-bottom:12px;background:#14532d20;border-color:#14532d;">
+      <div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">Recommended supplements</div>
+      ${d.diet.supplements.map(s=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">✓ ${s}</div>`).join('')}
+    </div>` : ''}
+    ${d.diet?.notes?.length ? `
+    <div class="card" style="background:rgba(255,255,255,.03);">
+      <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:8px;">Notes</div>
+      ${d.diet.notes.map(n=>`<div style="font-size:12px;color:#64748b;padding:3px 0;">• ${n}</div>`).join('')}
+    </div>` : ''}`;
+  } catch(e) {
+    document.getElementById('dr').innerHTML = `<div class="card" style="background:#450a0a20;border-color:#7f1d1d;"><div style="color:#f87171;font-size:13px;">Error: ${e.message}</div></div>`;
+    toast(e.message, 'error');
+  }
 }
 
-// ── 6. Cycle Planner ──────────────────────────────────────────────────────
-function renderCycle() {
-  const u = currentUser || {};
-  setContent(`
-  <div style="max-width:760px;">
-    <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;">Cycle planner</h1>
-    <p style="font-size:14px;color:#64748b;margin:0 0 4px;">AI-generated cycle protocol with PCT and bloodwork schedule</p>
-    <div style="padding:8px 12px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;font-size:12px;color:#b45309;margin-bottom:20px;">&#9888; Educational purposes only. Consult a physician. Not a substitute for medical advice.</div>
-    <div class="card" style="margin-bottom:20px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-        <div><label class="label">Experience level</label>
-          <select class="input" id="cy-level">
-            <option value="beginner" ${u.experience_level==='beginner'?'selected':''}>Beginner</option>
-            <option value="intermediate" ${u.experience_level==='intermediate'?'selected':''}>Intermediate</option>
-            <option value="advanced" ${u.experience_level==='advanced'?'selected':''}>Advanced</option>
-          </select>
-        </div>
-        <div><label class="label">Compound category</label>
-          <select class="input" id="cy-cat">
-            <option value="auto">Auto (recommended)</option>
-            <option value="sarm">SARMs</option>
-            <option value="steroid">Steroids</option>
-            <option value="peptide">Peptides</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-bottom:16px;"><label class="label">Goal</label>
-        <select class="input" id="cy-goal">
-          <option value="muscle_gain">Muscle gain / Bulk</option>
-          <option value="fat_loss">Fat loss / Cut</option>
-          <option value="recomp">Recomposition</option>
-          <option value="strength">Strength</option>
+// ═══════════════════════════════════════════════════════════════════════════
+// 4. CYCLE PLANNER — with medical report upload
+// ═══════════════════════════════════════════════════════════════════════════
+function pgCycle() {
+  const u = CU || {};
+  setMain(`
+  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Cycle planner</h1>
+  <div style="padding:8px 12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#fbbf24;margin:8px 0 18px;">⚠ Educational purposes only. Consult a physician. Not a substitute for medical advice.</div>
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label class="lbl">Experience level</label>
+        <select class="inp" id="cyl">
+          <option value="beginner"     ${u.experience_level==='beginner'    ?'selected':''}>Beginner</option>
+          <option value="intermediate" ${u.experience_level==='intermediate'?'selected':''}>Intermediate</option>
+          <option value="advanced"     ${u.experience_level==='advanced'    ?'selected':''}>Advanced</option>
         </select>
       </div>
-      <button class="btn btn-primary" onclick="doCycle()">Generate cycle plan &#8599;</button>
+      <div><label class="lbl">Compound category</label>
+        <select class="inp" id="cyc">
+          <option value="auto">Auto (recommended)</option>
+          <option value="sarm">SARMs</option>
+          <option value="steroid">Steroids</option>
+          <option value="peptide">Peptides</option>
+        </select>
+      </div>
     </div>
-    <div id="cycle-result"></div>
-  </div>`);
+    <div style="margin-bottom:14px;"><label class="lbl">Goal</label>
+      <select class="inp" id="cyg">
+        <option value="muscle_gain">Muscle gain / Bulk</option>
+        <option value="fat_loss">Fat loss / Cut</option>
+        <option value="recomp">Recomposition</option>
+        <option value="strength">Strength</option>
+      </select>
+    </div>
+
+    <!-- Medical Report Upload -->
+    <div style="margin-bottom:14px;">
+      <label class="lbl">Upload medical report (optional)</label>
+      <div class="upload-zone">
+        <span style="font-size:20px;">🏥</span>
+        <div>
+          <input type="file" id="med-cycle" accept=".pdf,.jpg,.jpeg,.png">
+          <div style="font-size:11px;color:#334155;margin-top:4px;">Bloodwork / medical report PDF or image</div>
+        </div>
+      </div>
+      <div id="med-cycle-status" style="font-size:12px;color:#4ade80;margin-top:6px;display:none;"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn" onclick="uploadCycleMedical()" style="font-size:13px;">Upload report first</button>
+      <button class="btn btn-primary" onclick="doCycle()">Generate cycle plan ↗</button>
+    </div>
+  </div>
+  <div id="cyr"></div>`);
+}
+
+async function uploadCycleMedical() {
+  const f = (document.getElementById('med-cycle')||{}).files?.[0];
+  if (!f) { toast('Select a medical report file first','error'); return; }
+  const form = new FormData(); form.append('file', f);
+  try {
+    const res  = await fetch('/upload_medical',{method:'POST',body:form,credentials:'include'});
+    const data = await res.json();
+    if (data.status === 'uploaded') {
+      const s = document.getElementById('med-cycle-status');
+      s.textContent = '✓ Report uploaded: ' + data.file;
+      s.style.display = 'block';
+      toast('Medical report uploaded','success');
+    }
+  } catch(e) { toast('Upload failed','error'); }
 }
 
 async function doCycle() {
-  document.getElementById('cycle-result').innerHTML = '<div class="skeleton" style="height:400px;"></div>';
+  document.getElementById('cyr').innerHTML = '<div class="skel" style="height:380px;"></div>';
   try {
-    const data = await api('/cycle','POST',{
-      experience_level: document.getElementById('cy-level').value,
-      compound_category: document.getElementById('cy-cat').value,
-      goal: document.getElementById('cy-goal').value,
+    const d = await api('/cycle','POST',{
+      experience_level:  val('cyl'),
+      compound_category: val('cyc'),
+      goal:              val('cyg')
     });
-    const phaseClass = { on:'phase-on', pct:'phase-pct', off:'phase-off' };
-    document.getElementById('cycle-result').innerHTML = `
-      <div class="card" style="margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-          <div>
-            <div style="font-size:16px;font-weight:700;">${data.cycle_name}</div>
-            <div style="font-size:12px;color:#64748b;margin-top:3px;">Total: ${data.total_weeks} weeks · ${data.category}</div>
-          </div>
-          <span class="badge badge-${data.category==='steroid'?'red':data.category==='sarm'?'purple':'teal'}">${data.category}</span>
+
+    // FIX: correctly check d.weeks exists and is an array
+    const weeks = Array.isArray(d.weeks) ? d.weeks : [];
+    const phC = {on:'phase-on', pct:'phase-pct', off:'phase-off'};
+    const catBadge = d.category==='steroid' ? 'b-red' : d.category==='sarm' ? 'b-purple' : 'b-teal';
+
+    document.getElementById('cyr').innerHTML = `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#f1f5f9;">${d.cycle_name || 'Cycle plan'}</div>
+          <div style="font-size:12px;color:#475569;margin-top:2px;">Total: ${d.total_weeks || '—'} weeks · ${d.category || ''}</div>
         </div>
-        ${data.weeks?.map(w=>`
-        <div class="week-row">
-          <div class="week-label">${w.range}</div>
-          <div style="flex:1;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;justify-content:space-between;align-items:center;" class="${phaseClass[w.phase]||'phase-off'}">
-            <span>${w.compound}</span>
-            <span style="opacity:.8;font-weight:400;">${w.dose}</span>
-          </div>
-        </div>`).join('')}
+        <span class="badge ${catBadge}">${d.category || ''}</span>
       </div>
-      ${data.on_cycle_support?.length ? `
-      <div class="card" style="margin-bottom:12px;background:#eff6ff;border-color:#bfdbfe;">
-        <div style="font-size:13px;font-weight:600;color:#1d4ed8;margin-bottom:8px;">On-cycle support</div>
-        ${data.on_cycle_support.map(s=>`<div style="font-size:12px;color:#1e40af;padding:3px 0;">&#10003; ${s}</div>`).join('')}
-      </div>` : ''}
-      ${data.bloodwork?.length ? `
-      <div class="card" style="margin-bottom:12px;background:#f0fdf4;border-color:#bbf7d0;">
-        <div style="font-size:13px;font-weight:600;color:#15803d;margin-bottom:8px;">&#128203; Bloodwork checkpoints</div>
-        ${data.bloodwork.map((b,i)=>`<div style="font-size:12px;color:#166534;padding:3px 0;">${i+1}. ${b}</div>`).join('')}
-      </div>` : ''}
-      <div style="padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;font-size:12px;color:#9a3412;">${data.disclaimer}</div>`;
-  } catch(e) { toast(e.message,'error'); }
-}
-
-// ── 7. Grocery ────────────────────────────────────────────────────────────
-async function renderGrocery() {
-  setContent(`<div style="max-width:700px;"><h1 style="font-size:22px;font-weight:700;margin:0 0 20px;">Weekly grocery list</h1><div id="g-result"><div class="skeleton" style="height:300px;"></div></div></div>`);
-  try {
-    const u = currentUser || {};
-    const data = await api('/grocery','POST',{ goal: u.goal||'muscle_gain' });
-    const sections = [['Proteins','proteins','green'],['Carbs','carbs','blue'],['Fats','fats','amber'],['Vegetables','vegetables','teal'],['Supplements','supplements','purple']];
-    document.getElementById('g-result').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        ${sections.filter(([,k])=>data.weekly_list[k]?.length).map(([label,key,color])=>`
-        <div class="card">
-          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:${color==='green'?'#15803d':color==='blue'?'#1d4ed8':color==='amber'?'#b45309':color==='teal'?'#0f766e':'#7c3aed'};">${label}</div>
-          ${data.weekly_list[key].map(item=>`<div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f8fafc;display:flex;align-items:center;gap:8px;"><span style="color:#94a3b8;">&#9633;</span> ${item}</div>`).join('')}
-        </div>`).join('')}
-      </div>
-      ${data.tips?.length ? `
-      <div class="card" style="margin-top:12px;background:#f8fafc;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Meal prep tips</div>
-        ${data.tips.map(t=>`<div style="font-size:12px;color:#475569;padding:4px 0;">&#128161; ${t}</div>`).join('')}
-      </div>` : ''}`;
-  } catch(e) { toast(e.message,'error'); }
-}
-
-// ── 8. Medical ────────────────────────────────────────────────────────────
-function renderMedical() {
-  setContent(`
-  <div style="max-width:700px;">
-    <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;">Medical screening</h1>
-    <p style="font-size:14px;color:#64748b;margin:0 0 20px;">Basic risk assessment before starting a cycle</p>
-    <div class="card" style="margin-bottom:20px;">
-      <div style="margin-bottom:12px;"><label class="label">Known medical conditions (comma-separated)</label>
-        <input class="input" id="m-cond" placeholder="e.g. hypertension, diabetes, liver disease"></div>
-      <div style="margin-bottom:16px;"><label class="label">Current medications (comma-separated)</label>
-        <input class="input" id="m-meds" placeholder="e.g. warfarin, metformin"></div>
-      <button class="btn btn-primary" onclick="doMedical()">Run screening &#8599;</button>
+      ${weeks.map(w=>`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div class="week-label">${w.range}</div>
+        <div style="flex:1;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;justify-content:space-between;" class="${phC[w.phase]||'phase-off'}">
+          <span>${w.compound}</span>
+          <span style="opacity:.75;font-weight:400;">${w.dose}</span>
+        </div>
+      </div>`).join('')}
     </div>
-    <div id="medical-result"></div>
-  </div>`);
+
+    ${d.on_cycle_support?.length ? `
+    <div class="card" style="background:#1d345720;border-color:#1d4ed8;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;color:#60a5fa;margin-bottom:8px;">On-cycle support</div>
+      ${d.on_cycle_support.map(s=>`<div style="font-size:13px;color:#93c5fd;padding:3px 0;">✓ ${s}</div>`).join('')}
+    </div>` : ''}
+
+    ${d.bloodwork?.length ? `
+    <div class="card" style="background:#14532d20;border-color:#14532d;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">📋 Bloodwork checkpoints</div>
+      ${d.bloodwork.map((b,i)=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">${i+1}. ${b}</div>`).join('')}
+    </div>` : ''}
+
+    ${d.disclaimer ? `
+    <div style="padding:12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#d97706;line-height:1.6;">${d.disclaimer}</div>` : ''}`;
+  } catch(e) {
+    document.getElementById('cyr').innerHTML = `<div class="card" style="background:#450a0a20;border-color:#7f1d1d;"><div style="color:#f87171;font-size:13px;">Error: ${e.message}</div></div>`;
+    toast(e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 5. MEDICAL SCREEN
+// ═══════════════════════════════════════════════════════════════════════════
+function pgMedical() {
+  setMain(`
+  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Medical screening</h1>
+  <p style="font-size:13px;color:#475569;margin:0 0 18px;">Basic risk assessment before starting a cycle</p>
+  <div class="card" style="margin-bottom:18px;">
+    <div style="margin-bottom:12px;">
+      <label class="lbl">Known medical conditions (comma-separated)</label>
+      <input class="inp" id="mc" placeholder="e.g. hypertension, diabetes, liver disease (leave blank if none)">
+    </div>
+    <div style="margin-bottom:16px;">
+      <label class="lbl">Current medications (comma-separated)</label>
+      <input class="inp" id="mm" placeholder="e.g. warfarin, metformin (leave blank if none)">
+    </div>
+    <button class="btn btn-primary" onclick="doMedical()">Run screening ↗</button>
+  </div>
+  <div id="mr"></div>`);
 }
 
 async function doMedical() {
-  document.getElementById('medical-result').innerHTML = '<div class="skeleton" style="height:200px;"></div>';
+  document.getElementById('mr').innerHTML = '<div class="skel" style="height:200px;"></div>';
   try {
-    const conditions = document.getElementById('m-cond').value.split(',').map(s=>s.trim()).filter(Boolean);
-    const medications = document.getElementById('m-meds').value.split(',').map(s=>s.trim()).filter(Boolean);
-    const data = await api('/medical','POST',{ conditions, medications });
-    const riskColor = { low_risk:'#dcfce7', moderate_risk:'#fef3c7', high_risk:'#fee2e2' };
-    const riskText = { low_risk:'#15803d', moderate_risk:'#b45309', high_risk:'#b91c1c' };
-    const riskLabel = { low_risk:'Low risk', moderate_risk:'Moderate risk', high_risk:'High risk' };
-    document.getElementById('medical-result').innerHTML = `
-      <div class="card" style="background:${riskColor[data.overall_risk]};border-color:transparent;margin-bottom:12px;">
-        <div style="font-size:16px;font-weight:700;color:${riskText[data.overall_risk]};margin-bottom:4px;">${riskLabel[data.overall_risk]}</div>
-        <div style="font-size:13px;color:${riskText[data.overall_risk]};">Physician clearance ${data.clearance?'not required (still recommended)':'required before any cycle'}</div>
-      </div>
-      ${data.flags?.length ? `
-      <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Risk flags</div>
-        ${data.flags.map(f=>`<div style="padding:8px 12px;background:${f.severity==='high'?'#fee2e2':f.severity==='medium'?'#fef3c7':'#f0fdf4'};border-radius:8px;margin-bottom:6px;">
-          <div style="font-size:12px;font-weight:600;">${f.flag}</div>
-          <div style="font-size:12px;color:#475569;margin-top:2px;">${f.note}</div>
-        </div>`).join('')}
-      </div>` : ''}
-      <div class="card">
-        <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Recommendations</div>
-        ${data.recommendations.map(r=>`<div style="font-size:13px;color:#475569;padding:4px 0;">&#10003; ${r}</div>`).join('')}
-      </div>`;
+    const conditions  = val('mc').split(',').map(s=>s.trim()).filter(Boolean);
+    const medications = val('mm').split(',').map(s=>s.trim()).filter(Boolean);
+    const d = await api('/medical','POST',{conditions, medications});
+    const rc = {low_risk:'#14532d20', moderate_risk:'#451a0320', high_risk:'#450a0a20'};
+    const rt = {low_risk:'#4ade80',   moderate_risk:'#fbbf24',   high_risk:'#f87171'};
+    const rl = {low_risk:'Low risk',  moderate_risk:'Moderate risk', high_risk:'High risk'};
+    document.getElementById('mr').innerHTML = `
+    <div class="card" style="background:${rc[d.overall_risk]};border-color:${rt[d.overall_risk]}40;margin-bottom:12px;">
+      <div style="font-size:15px;font-weight:700;color:${rt[d.overall_risk]};margin-bottom:3px;">${rl[d.overall_risk]}</div>
+      <div style="font-size:13px;color:${rt[d.overall_risk]}90;">Clearance: ${d.clearance?'Not required (still recommended)':'Mandatory before any cycle'}</div>
+    </div>
+    ${d.flags?.length ? `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Risk flags</div>
+      ${d.flags.map(f=>`
+      <div style="padding:8px 12px;background:${f.severity==='high'?'#450a0a20':f.severity==='medium'?'#451a0320':'#14532d20'};border-radius:8px;margin-bottom:6px;">
+        <div style="font-size:12px;font-weight:600;color:#e2e8f0;">${f.flag}</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${f.note}</div>
+      </div>`).join('')}
+    </div>` : ''}
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Recommendations</div>
+      ${(d.recommendations||[]).map(r=>`<div style="font-size:13px;color:#64748b;padding:4px 0;">✓ ${r}</div>`).join('')}
+    </div>`;
   } catch(e) { toast(e.message,'error'); }
 }
 
-// ── 9. Upload ─────────────────────────────────────────────────────────────
-function renderUpload() {
-  setContent(`
-  <div style="max-width:700px;">
-    <h1 style="font-size:22px;font-weight:700;margin:0 0 20px;">Upload files</h1>
-    <div class="card" style="margin-bottom:16px;">
-      <div style="font-size:14px;font-weight:600;margin-bottom:12px;">BCA report</div>
-      <input type="file" id="bca-file" accept=".pdf,.jpg,.png" style="font-size:13px;margin-bottom:12px;">
-      <button class="btn btn-primary" onclick="uploadBCA()">Upload BCA</button>
-      <div id="bca-status" style="margin-top:10px;font-size:13px;color:#94a3b8;"></div>
+// ═══════════════════════════════════════════════════════════════════════════
+// 6. UPLOAD FILES
+// ═══════════════════════════════════════════════════════════════════════════
+function pgUpload() {
+  setMain(`
+  <h1 style="font-size:22px;font-weight:700;margin:0 0 18px;color:#f1f5f9;">Upload files</h1>
+  <div class="card" style="margin-bottom:14px;">
+    <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:12px;">BCA report</div>
+    <div class="upload-zone" style="margin-bottom:12px;">
+      <span style="font-size:22px;">📄</span>
+      <input type="file" id="bf" accept=".pdf,.jpg,.jpeg,.png">
     </div>
-    <div class="card">
-      <div style="font-size:14px;font-weight:600;margin-bottom:12px;">Physique photos</div>
-      <input type="file" id="physique-files" accept=".jpg,.png" multiple style="font-size:13px;margin-bottom:12px;">
-      <button class="btn btn-primary" onclick="uploadPhysique()">Upload photos</button>
-      <div id="physique-status" style="margin-top:10px;font-size:13px;color:#94a3b8;"></div>
+    <button class="btn btn-primary" onclick="upBCA()">Upload BCA</button>
+    <div id="bs" style="margin-top:8px;font-size:12px;color:#4ade80;display:none;"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:12px;">Physique photos</div>
+    <div class="upload-zone" style="margin-bottom:12px;">
+      <span style="font-size:22px;">📷</span>
+      <input type="file" id="pf" accept=".jpg,.jpeg,.png" multiple>
     </div>
+    <button class="btn btn-primary" onclick="upPhysique()">Upload photos</button>
+    <div id="ps" style="margin-top:8px;font-size:12px;color:#4ade80;display:none;"></div>
   </div>`);
 }
 
-async function uploadBCA() {
-  const f = document.getElementById('bca-file').files[0];
-  if (!f) { toast('Select a file first','error'); return; }
+async function upBCA() {
+  const f = (document.getElementById('bf')||{}).files?.[0];
+  if (!f) { toast('Select a file','error'); return; }
   const form = new FormData(); form.append('file',f);
-  const res = await fetch(API+'/upload_bca',{method:'POST',body:form,credentials:'include'});
-  const data = await res.json();
-  document.getElementById('bca-status').textContent = data.status === 'uploaded' ? '&#10003; Uploaded: '+data.file : 'Upload failed';
-  toast('BCA uploaded','success');
-}
-
-async function uploadPhysique() {
-  const files = document.getElementById('physique-files').files;
-  if (!files.length) { toast('Select files first','error'); return; }
-  const form = new FormData();
-  for (const f of files) form.append('files',f);
-  const res = await fetch(API+'/upload_physique',{method:'POST',body:form,credentials:'include'});
-  const data = await res.json();
-  document.getElementById('physique-status').textContent = `&#10003; ${data.count} file(s) uploaded`;
-  toast('Photos uploaded','success');
-}
-
-// ── Utility ───────────────────────────────────────────────────────────────
-async function saveItem(name, type) {
   try {
-    await api('/saved','POST',{ name, type, data: { name } });
-    toast(`${name} saved!`,'success');
-  } catch(e) { toast(e.message,'error'); }
+    const res=await fetch('/upload_bca',{method:'POST',body:form,credentials:'include'});
+    const d=await res.json();
+    const s=document.getElementById('bs'); s.textContent='✓ Uploaded: '+d.file; s.style.display='block';
+    toast('BCA uploaded','success');
+  } catch(e) { toast('Upload failed','error'); }
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────
-(async function init() {
+async function upPhysique() {
+  const files=(document.getElementById('pf')||{}).files;
+  if (!files?.length) { toast('Select files','error'); return; }
+  const form=new FormData(); for(const f of files)form.append('files',f);
+  try {
+    const res=await fetch('/upload_physique',{method:'POST',body:form,credentials:'include'});
+    const d=await res.json();
+    const s=document.getElementById('ps'); s.textContent=`✓ ${d.count} file(s) uploaded`; s.style.display='block';
+    toast('Photos uploaded','success');
+  } catch(e) { toast('Upload failed','error'); }
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(async () => {
   switchAuth('login');
   try {
-    const user = await api('/me');
-    currentUser = user;
+    const u = await api('/me');
+    CU = u;
     enterApp();
   } catch { /* not logged in */ }
 })();
