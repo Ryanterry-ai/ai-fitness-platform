@@ -3,75 +3,46 @@ from typing import List, Dict, Any
 
 
 # ================================
-# Intent Detection (Perplexity Style)
+# Intent Detection
 # ================================
 def detect_intent(query: str) -> str:
     q = query.lower()
 
-    # Product / Recommendation
     if any(x in q for x in [
-        "best", "top", "recommend", "which", "good", "compare"
+        "best", "top", "recommend", "which", "compare"
     ]):
         return "product"
 
-    # Research / Information
     if any(x in q for x in [
         "what", "how", "cycle", "dosage", "benefits",
-        "side effects", "is", "are", "explain"
+        "side effects", "explain"
     ]):
         return "research"
 
-    # Workout / Training
     if any(x in q for x in [
         "workout", "exercise", "routine", "split",
-        "fat loss", "muscle gain", "training"
+        "fat loss", "muscle gain"
     ]):
         return "training"
 
-    # Default
     return "general"
 
 
 # ================================
-# Semantic Understanding (ChatGPT Style)
+# Fast Search
 # ================================
-def semantic_filter(query: str, results: List[Dict]) -> List[Dict]:
-
-    query_words = query.lower().split()
-    filtered = []
-
-    for result in results:
-        title = result.get("title", "").lower()
-        description = result.get("description", "").lower()
-
-        if any(word in title or word in description for word in query_words):
-            filtered.append(result)
-
-    # fallback if nothing matched
-    if not filtered:
-        return results
-
-    return filtered
-
-
-# ================================
-# Fast Results (Google Style)
-# ================================
-def fast_results(query: str) -> List[Dict]:
-
-    # This is placeholder fast dataset
-    # Can later plug DB / vector search
+def fast_results(query: str):
 
     return [
         {
             "title": "Creatine Monohydrate",
             "category": "supplement",
-            "description": "Best studied supplement for strength and muscle gain"
+            "description": "Best supplement for muscle gain and strength"
         },
         {
-            "title": "HIIT Fat Loss Training",
+            "title": "HIIT Fat Loss Workout",
             "category": "exercise",
-            "description": "High intensity fat loss workout"
+            "description": "High intensity fat loss training"
         },
         {
             "title": "Whey Protein",
@@ -84,7 +55,7 @@ def fast_results(query: str) -> List[Dict]:
             "description": "Anabolic steroid cycle information"
         },
         {
-            "title": "Push Pull Legs Workout",
+            "title": "Push Pull Legs Split",
             "category": "exercise",
             "description": "Best hypertrophy workout split"
         }
@@ -92,33 +63,96 @@ def fast_results(query: str) -> List[Dict]:
 
 
 # ================================
-# Ranking (AI Style)
+# Semantic Filter
 # ================================
-def rank_results(query: str, results: List[Dict]) -> List[Dict]:
+def semantic_filter(query, results):
 
-    query = query.lower()
+    words = query.lower().split()
 
-    def score(result):
-        title = result.get("title", "").lower()
-        description = result.get("description", "").lower()
+    filtered = []
 
-        score = 0
+    for r in results:
+        text = (
+            r.get("title", "").lower() +
+            r.get("description", "").lower()
+        )
 
-        for word in query.split():
-            if word in title:
-                score += 3
-            if word in description:
-                score += 1
+        if any(w in text for w in words):
+            filtered.append(r)
 
-        return score
+    return filtered if filtered else results
+
+
+# ================================
+# AI Ranking
+# ================================
+def rank_results(query, results):
+
+    words = query.lower().split()
+
+    def score(r):
+        text = (
+            r.get("title", "").lower() +
+            r.get("description", "").lower()
+        )
+
+        return sum(3 if w in text else 0 for w in words)
 
     return sorted(results, key=score, reverse=True)
 
 
 # ================================
-# Main Search Engine
+# Option Filtering (Safe)
 # ================================
-def search_knowledge(query: str, options: Dict = None) -> Dict:
+def apply_option_filter(results, options):
+
+    if not options:
+        return results
+
+    # options can be list
+    if isinstance(options, list):
+
+        filtered = []
+
+        for opt in options:
+            opt = opt.lower()
+
+            for r in results:
+                text = (
+                    r.get("title", "").lower() +
+                    r.get("description", "").lower()
+                )
+
+                if opt in text:
+                    filtered.append(r)
+
+        return filtered if filtered else results
+
+    # options can be dict
+    if isinstance(options, dict):
+
+        goal = options.get("goal")
+
+        if goal:
+            goal = goal.lower()
+
+            filtered = [
+                r for r in results
+                if goal in (
+                    r.get("title", "").lower() +
+                    r.get("description", "").lower()
+                )
+            ]
+
+            return filtered if filtered else results
+
+    return results
+
+
+# ================================
+# Main Search
+# ================================
+def search_knowledge(query, options=None):
 
     if not query:
         return {
@@ -126,29 +160,15 @@ def search_knowledge(query: str, options: Dict = None) -> Dict:
             "results": []
         }
 
-    # 1. Detect Intent
     intent = detect_intent(query)
 
-    # 2. Fast Search
     results = fast_results(query)
 
-    # 3. Semantic Filter
     results = semantic_filter(query, results)
 
-    # 4. AI Ranking
     results = rank_results(query, results)
 
-    # 5. Option filtering (muscle gain, fat loss etc)
-    if options:
-        option = options.get("goal")
-
-        if option:
-            option = option.lower()
-            results = [
-                r for r in results
-                if option in r.get("description", "").lower()
-                or option in r.get("title", "").lower()
-            ] or results
+    results = apply_option_filter(results, options)
 
     return {
         "intent": intent,
@@ -157,8 +177,8 @@ def search_knowledge(query: str, options: Dict = None) -> Dict:
 
 
 # ================================
-# Recommendation API
+# Recommendations
 # ================================
-def get_recommendations(query: str, options: Dict = None):
+def get_recommendations(query, options=None):
 
     return search_knowledge(query, options)
