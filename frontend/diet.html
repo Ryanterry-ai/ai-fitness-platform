@@ -1,5 +1,75 @@
+<h2>Diet Generator</h2>
+<form id="dietForm">
+    <label>Weight (kg) <input type="number" name="weight" required></label><br>
+    <label>Height (cm) <input type="number" name="height" required></label><br>
+    <label>Age <input type="number" name="age" required></label><br>
+    <label>Goal
+        <select name="goal">
+            <option value="muscle_gain">Muscle Gain</option>
+            <option value="fat_loss">Fat Loss</option>
+            <option value="recomp">Recomp</option>
+        </select>
+    </label><br>
+    <label>Activity Level
+        <select name="activity">
+            <option value="sedentary">Sedentary</option>
+            <option value="light">Light</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="active">Active</option>
+            <option value="very_active">Very Active</option>
+        </select>
+    </label><br>
+    <label>Diet Preference
+        <select name="dietary_restrictions">
+            <option value="both">Both</option>
+            <option value="veg">Vegetarian</option>
+            <option value="non-veg">Non-Vegetarian</option>
+        </select>
+    </label><br>
+    <label>Profession
+        <select name="profession">
+            <option value="IT job">IT Job</option>
+            <option value="field job">Field Job</option>
+            <option value="housewife">Housewife</option>
+            <option value="other">Other</option>
+        </select>
+    </label><br>
+    <label>Upload BCA report (optional) <input type="file" name="bca"></label><br>
+    <button type="submit">Generate Plan</button>
+</form>
 
-<h2>Diet</h2>
-<button onclick="generate()">Generate</button>
 <div id="result"></div>
-<script src="/static/app.js"></script>
+
+<script>
+document.getElementById('dietForm').onsubmit = async function(e){
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+
+    const res = await fetch('/diet', { method:'POST', body: data });
+    const json = await res.json();
+
+    const resultDiv = document.getElementById('result');
+    if(json.error) {
+        resultDiv.innerHTML = `<p style="color:red">${json.error}</p>`;
+        return;
+    }
+
+    let html = `<h3>Calories: ${json.total_calories}</h3>`;
+    html += `<p>${json.explanation}</p>`;
+    html += `<h4>Macros: Protein ${json.macros.protein_g}g, Carbs ${json.macros.carbs_g}g, Fats ${json.macros.fats_g}g</h4>`;
+    html += '<h4>Meals:</h4><ul>';
+    json.meals.forEach(m => {
+        html += `<li><strong>${m.name}</strong>: ${m.foods} (~${m.calories} kcal)</li>`;
+    });
+    html += '</ul>';
+    html += '<h4>Supplements:</h4><ul>';
+    json.supplements.forEach(s => html += `<li>${s}</li>`);
+    html += '</ul>';
+    html += '<h4>Notes:</h4><ul>';
+    json.notes.forEach(n => html += `<li>${n}</li>`);
+    html += '</ul>';
+
+    resultDiv.innerHTML = html;
+};
+</script>
