@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FitSearch AI Platform</title>
+<title>FitSearch AI — World-Class Fitness Search</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  :root { --sb:#0a1120; --acc:#3b82f6; --acc-h:#2563eb; --bg:#0f172a; --bg2:#1e293b; --br:rgba(255,255,255,.08); }
+  :root{--sb:#0a1120;--acc:#3b82f6;--acc-h:#2563eb;--bg:#0f172a;--bg2:#1e293b;--br:rgba(255,255,255,.08);}
   *{box-sizing:border-box;}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:#e2e8f0;margin:0;}
   .sidebar{width:230px;min-height:100vh;background:var(--sb);flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--br);}
@@ -17,12 +17,15 @@
   .card{background:var(--bg2);border:1px solid var(--br);border-radius:12px;padding:18px 20px;}
   .card+.card{margin-top:12px;}
   .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;}
-  .b-blue{background:#1d3557;color:#60a5fa;} .b-green{background:#14532d;color:#4ade80;}
-  .b-teal{background:#134e4a;color:#2dd4bf;} .b-purple{background:#3b0764;color:#c084fc;}
-  .b-amber{background:#451a03;color:#fbbf24;} .b-red{background:#450a0a;color:#f87171;}
+  .b-blue{background:#1d3557;color:#60a5fa;}.b-green{background:#14532d;color:#4ade80;}
+  .b-teal{background:#134e4a;color:#2dd4bf;}.b-purple{background:#3b0764;color:#c084fc;}
+  .b-amber{background:#451a03;color:#fbbf24;}.b-red{background:#450a0a;color:#f87171;}
   .b-gray{background:#1e293b;color:#94a3b8;}
-  .pill{padding:5px 12px;font-size:12px;border:1px solid rgba(255,255,255,.12);border-radius:99px;cursor:pointer;color:#64748b;background:transparent;transition:all .12s;}
-  .pill.on{background:#1d3557;color:#60a5fa;border-color:#2563eb;}
+  /* ── Filter pills ── */
+  .pill{padding:5px 12px;font-size:12px;border:1px solid rgba(255,255,255,.12);border-radius:99px;cursor:pointer;color:#64748b;background:transparent;transition:all .18s;user-select:none;}
+  .pill:hover{border-color:rgba(255,255,255,.25);color:#94a3b8;}
+  .pill.on{background:#1d3557;color:#60a5fa;border-color:#2563eb;box-shadow:0 0 0 2px rgba(59,130,246,.18);}
+  /* ── Buttons ── */
   .btn{padding:8px 16px;font-size:13px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:transparent;color:#94a3b8;transition:all .12s;}
   .btn:hover{background:rgba(255,255,255,.06);color:#e2e8f0;}
   .btn-primary{background:var(--acc);color:#fff;border-color:var(--acc);}
@@ -41,8 +44,9 @@
   .upload-zone:hover{border-color:var(--acc);}
   input[type="file"]{font-size:13px;color:#94a3b8;}
   input[type="file"]::file-selector-button{padding:5px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#94a3b8;cursor:pointer;font-size:12px;margin-right:10px;}
-  /* ── Report styles ── */
-  .report-card{background:var(--bg2);border:1px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+  /* ── Report card styles ── */
+  .report-card{background:var(--bg2);border:1px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:border-color .2s;}
+  .report-card:hover{border-color:rgba(59,130,246,.25);}
   .report-header{padding:20px 22px 16px;cursor:pointer;user-select:none;}
   .report-header:hover{background:rgba(255,255,255,.02);}
   .report-name{font-size:19px;font-weight:700;color:#f1f5f9;margin-bottom:6px;}
@@ -71,9 +75,28 @@
   .final-rec{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:14px 16px;margin:16px 22px;}
   .cached-banner{background:rgba(255,255,255,.03);border-bottom:1px solid var(--br);padding:6px 22px;font-size:11px;color:#475569;display:flex;align-items:center;gap:6px;}
   .source-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .src-ai{background:#4ade80;} .src-kb{background:#60a5fa;} .src-cached{background:#fbbf24;}
+  .src-ai{background:#4ade80;}.src-kb{background:#60a5fa;}.src-cached{background:#fbbf24;}
   .stacking-pill{display:inline-block;padding:3px 10px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.25);border-radius:99px;font-size:11px;color:#c084fc;margin:2px;}
-  .phase-on{background:#1d3557;color:#60a5fa;} .phase-pct{background:#14532d;color:#4ade80;} .phase-off{background:rgba(255,255,255,.05);color:#475569;}
+  /* ── Product card ── */
+  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;padding:16px 22px;}
+  .product-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;}
+  .product-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;margin-bottom:8px;}
+  .badge-premium{background:#451a0330;color:#fbbf24;border:1px solid #854d0e;}
+  .badge-popular{background:#450a0a30;color:#f87171;border:1px solid #7f1d1d;}
+  .badge-balanced{background:#1d345730;color:#60a5fa;border:1px solid #1d4ed8;}
+  .product-name{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;}
+  .product-price{font-size:18px;font-weight:700;color:#4ade80;margin-bottom:4px;}
+  .product-rating{font-size:12px;color:#fbbf24;margin-bottom:6px;}
+  .product-benefit{font-size:12px;color:#64748b;line-height:1.5;}
+  /* ── Intent banner ── */
+  .intent-banner{padding:8px 14px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .intent-research{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#60a5fa;}
+  .intent-product{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:#fbbf24;}
+  .intent-training{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);color:#4ade80;}
+  /* ── Filter row active state ── */
+  .filter-row-active{padding:8px 12px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:8px;margin-bottom:10px;font-size:12px;color:#60a5fa;}
+  /* ── Other ── */
+  .phase-on{background:#1d3557;color:#60a5fa;}.phase-pct{background:#14532d;color:#4ade80;}.phase-off{background:rgba(255,255,255,.05);color:#475569;}
   .week-label{font-size:11px;color:#475569;width:80px;flex-shrink:0;}
   .auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;}
   .auth-card{background:var(--bg2);border:1px solid var(--br);border-radius:16px;padding:28px 32px;width:420px;}
@@ -92,7 +115,7 @@
   <div style="width:100%;max-width:420px;padding:20px;">
     <div style="text-align:center;margin-bottom:24px;">
       <div style="font-size:28px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
-      <div style="font-size:13px;color:#475569;margin-top:4px;">Hybrid AI · Live Research · Evidence-Based Reports</div>
+      <div style="font-size:13px;color:#475569;margin-top:4px;">Perplexity-style retrieval · ChatGPT-style analysis · Google-speed results</div>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-li" onclick="switchAuth('login')">Sign in</button>
@@ -135,7 +158,7 @@
 
 <script>
 "use strict";
-let CU=null, AF=[];
+let CU=null, AF=[], _lastQuery='';
 
 // ── Toast ─────────────────────────────────────────────────────────────────
 function toast(msg,type){
@@ -199,127 +222,220 @@ function showPage(page,el){
 function setMain(h){document.getElementById('main').innerHTML=h;}
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SEARCH  — 10-section expandable report UI
+// SEARCH  —  World-Class AI Search Engine
 // ═══════════════════════════════════════════════════════════════════════════
 function pgSearch(){
   setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Search</h1>
-  <p style="font-size:13px;color:#475569;margin:0 0 16px;">Hybrid AI · PubMed live retrieval · Evidence-filtered · Cached reports</p>
+  <div style="margin-bottom:20px;">
+    <h1 style="font-size:22px;font-weight:700;margin:0 0 2px;color:#f1f5f9;">FitSearch AI</h1>
+    <p style="font-size:12px;color:#334155;margin:0;">🔎 Perplexity-style retrieval  ·  🧠 ChatGPT-style analysis  ·  ⚡ Google-speed results</p>
+  </div>
+
+  <!-- Search bar -->
   <div style="display:flex;gap:10px;margin-bottom:12px;">
     <div style="flex:1;position:relative;">
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#475569;font-size:15px;">🔍</span>
-      <input class="inp" id="sq" style="padding-left:36px;font-size:15px;height:46px;" placeholder="e.g. best ways to use creatine for muscle gain…" onkeydown="if(event.key==='Enter')doSearch()">
+      <input class="inp" id="sq" style="padding-left:36px;font-size:15px;height:48px;" placeholder="e.g. best creatine for muscle gain, SARMs kya hai, HGH fat loss…" onkeydown="if(event.key==='Enter')doSearch()">
     </div>
-    <button class="btn btn-primary" style="height:46px;padding:0 20px;" onclick="doSearch()">Search ↗</button>
+    <button class="btn btn-primary" style="height:48px;padding:0 22px;font-size:14px;" onclick="doSearch()">Search ↗</button>
   </div>
-  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;">
-    ${['Muscle gain','Fat loss','Strength','Endurance','Beginner','Advanced'].map(f=>`<span class="pill" onclick="togF(this,'${f.toLowerCase().replace(' ','_')}')">${f}</span>`).join('')}
+
+  <!-- Filter chips — FIX 2: clicking NOW triggers doSearch() immediately -->
+  <div style="margin-bottom:8px;">
+    <div style="font-size:11px;color:#334155;margin-bottom:7px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Real-time filters — click to re-rank results</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;" id="filter-row">
+      ${[
+        ['Muscle gain','muscle_gain','💪'],
+        ['Fat loss','fat_loss','🔥'],
+        ['Strength','strength','⚡'],
+        ['Endurance','endurance','🏃'],
+        ['Beginner','beginner','🌱'],
+        ['Advanced','advanced','🎯'],
+        ['Recovery','recovery','🔄'],
+        ['Pre-workout','pre_workout','⚡'],
+      ].map(([label,val,icon])=>
+        `<span class="pill" data-filter="${val}" onclick="togF(this,'${val}')">${icon} ${label}</span>`
+      ).join('')}
+    </div>
   </div>
+  <div id="active-filters-banner" style="display:none;" class="filter-row-active"></div>
+
+  <!-- Quick search suggestions -->
+  <div style="margin-bottom:20px;display:flex;gap:7px;flex-wrap:wrap;">
+    ${[
+      'Best creatine for muscle gain',
+      'Ostarine beginner cycle',
+      'Whey protein timing',
+      'Best pre-workout India',
+      'BPC-157 injury recovery',
+      'HGH fat loss protocol',
+      'SARMs kya hai',
+    ].map(q=>`<span onclick="quickSearch('${esc(q)}')" style="padding:4px 11px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:99px;font-size:11px;color:#60a5fa;cursor:pointer;transition:all .12s;" onmouseover="this.style.background='rgba(59,130,246,.15)'" onmouseout="this.style.background='rgba(59,130,246,.08)'">${q}</span>`).join('')}
+  </div>
+
+  <!-- Results area -->
   <div id="sr">
-    <div style="text-align:center;padding:52px 0;color:#334155;font-size:14px;">
-      <div style="font-size:32px;margin-bottom:12px;">🔬</div>
-      <div style="font-weight:600;color:#64748b;margin-bottom:6px;">Evidence-Based AI Search</div>
+    <div style="text-align:center;padding:52px 0;color:#334155;">
+      <div style="font-size:36px;margin-bottom:12px;">🔬</div>
+      <div style="font-weight:600;color:#64748b;margin-bottom:6px;font-size:15px;">Evidence-Based AI Search Engine</div>
       <div style="color:#334155;font-size:13px;">Queries PubMed · Examine.com · OpenFDA · Claude AI</div>
-      <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-        ${['Best creatine for muscle gain','Ostarine beginner cycle','Whey protein timing','BPC-157 injury recovery','HGH fat loss protocol'].map(q=>
-          `<span style="padding:5px 12px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:99px;font-size:12px;color:#60a5fa;cursor:pointer;" onclick="quickSearch('${q}')">${q}</span>`
-        ).join('')}
-      </div>
     </div>
   </div>`);
 }
 
-function togF(el,val){el.classList.toggle('on');const i=AF.indexOf(val);i>-1?AF.splice(i,1):AF.push(val);}
-function quickSearch(q){const inp=document.getElementById('sq');if(inp)inp.value=q;doSearch();}
+// ── FIX 2 (frontend) — togF now immediately re-runs the search ────────────
+function togF(el, filterVal){
+  // Toggle UI state
+  el.classList.toggle('on');
+  const i = AF.indexOf(filterVal);
+  i > -1 ? AF.splice(i, 1) : AF.push(filterVal);
 
+  // Update active filter banner
+  updateFilterBanner();
+
+  // ← THE FIX: if a search is already showing, re-run it immediately
+  const q = ((document.getElementById('sq')||{}).value||'').trim();
+  if(q) doSearch();   // re-POST with updated AF → fresh ranking from backend
+}
+
+function updateFilterBanner(){
+  const banner = document.getElementById('active-filters-banner');
+  if(!banner) return;
+  if(AF.length === 0){
+    banner.style.display = 'none';
+    return;
+  }
+  const labels = {muscle_gain:'💪 Muscle gain',fat_loss:'🔥 Fat loss',strength:'⚡ Strength',
+                  endurance:'🏃 Endurance',beginner:'🌱 Beginner',advanced:'🎯 Advanced',
+                  recovery:'🔄 Recovery',pre_workout:'⚡ Pre-workout'};
+  banner.style.display = 'flex';
+  banner.innerHTML = `<span>🔄 Filtering by:</span> ${AF.map(f=>`<strong>${labels[f]||f}</strong>`).join(', ')} <span style="margin-left:auto;cursor:pointer;color:#475569;" onclick="clearFilters()">✕ Clear</span>`;
+}
+
+function clearFilters(){
+  AF = [];
+  document.querySelectorAll('.pill.on').forEach(p => p.classList.remove('on'));
+  updateFilterBanner();
+  const q = ((document.getElementById('sq')||{}).value||'').trim();
+  if(q) doSearch();
+}
+
+function quickSearch(q){
+  const inp = document.getElementById('sq');
+  if(inp) inp.value = q;
+  doSearch();
+}
+
+// ── Main search function ──────────────────────────────────────────────────
 async function doSearch(){
-  const q=((document.getElementById('sq')||{}).value||'').trim();
-  if(!q){toast('Enter a search query','error');return;}
-  document.getElementById('sr').innerHTML=`
+  const q = ((document.getElementById('sq')||{}).value||'').trim();
+  if(!q){ toast('Enter a search query','error'); return; }
+  _lastQuery = q;
+
+  document.getElementById('sr').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;padding:20px 0;color:#64748b;font-size:13px;">
       <div class="skel" style="width:20px;height:20px;border-radius:50%;flex-shrink:0;"></div>
-      <div>Querying PubMed, Examine.com &amp; Claude AI… <span style="color:#475569;font-size:12px;">(may take 3–8 seconds on first search)</span></div>
+      <div>
+        <div style="color:#94a3b8;font-weight:600;margin-bottom:2px;">Analysing intent · Extracting entities · Querying sources…</div>
+        <div style="font-size:11px;color:#334155;">PubMed · Examine.com · OpenFDA · Claude AI ${AF.length?'· Filters: '+AF.join(', '):''}</div>
+      </div>
     </div>
-    <div class="skel" style="height:120px;margin-bottom:12px;"></div>
-    <div class="skel" style="height:80px;margin-bottom:12px;"></div>`;
+    <div class="skel" style="height:130px;margin-bottom:12px;"></div>
+    <div class="skel" style="height:80px;margin-bottom:12px;"></div>
+    <div class="skel" style="height:60px;"></div>`;
+
   try{
-    const d=await api('/search','POST',{query:q,filters:AF});
-    renderReports(d.results||[],q,d.count||0);
-  }catch(e){toast(e.message,'error');document.getElementById('sr').innerHTML=`<div style="padding:20px;color:#f87171;">Error: ${e.message}</div>`;}
+    const d = await api('/search','POST',{query:q, filters:AF});
+    renderResults(d.results||[], q, d.count||0);
+  } catch(e){
+    toast(e.message,'error');
+    document.getElementById('sr').innerHTML=`<div class="card" style="background:#450a0a20;border-color:#7f1d1d;"><div style="color:#f87171;font-size:13px;">Error: ${e.message}</div></div>`;
+  }
 }
 
-// ── Evidence tier colors ──────────────────────────────────────────────────
-const evColor={very_high:'b-green',high:'b-green',moderate:'b-amber',low:'b-red'};
-const evLabel={very_high:'Evidence: Very high',high:'Evidence: High',moderate:'Evidence: Moderate',low:'Evidence: Low'};
-const catColor={supplement:'b-blue',sarm:'b-purple',steroid:'b-red',peptide:'b-teal',research:'b-gray',diet:'b-green',training:'b-teal'};
-const srcLabel={ai:'🤖 AI + Live data',kb:'📚 Knowledge base',cached:'⚡ Cached',fallback:'📚 Fallback'};
+// ── Evidence / category colour maps ──────────────────────────────────────
+const evC  = {very_high:'b-green',high:'b-green',moderate:'b-amber',low:'b-red'};
+const evLb = {very_high:'⬆ Very high evidence',high:'↑ High evidence',moderate:'~ Moderate evidence',low:'↓ Low evidence'};
+const catC = {supplement:'b-blue',sarm:'b-purple',steroid:'b-red',peptide:'b-teal',research:'b-gray',diet:'b-green',training:'b-teal'};
+const intLb= {research:'🔬 Research report',product:'🛒 Product results',training:'🏋 Training plan',
+              dosage:'💊 Dosage guide',compare:'⚖ Comparison',cycle:'🔄 Cycle protocol',
+              explain:'📖 Explanation',recommend:'✅ Recommendation',side_effects:'⚠ Safety report'};
+const srcLb= {ai:'🤖 AI + Live data',kb:'📚 Knowledge base',cached:'⚡ Cached · 24h TTL',fallback:'📚 Fallback'};
 
-// ── 10-section report renderer ────────────────────────────────────────────
-function renderReports(results,query,count){
-  if(!results.length){document.getElementById('sr').innerHTML=`<div style="text-align:center;padding:48px 0;color:#334155;">No results for "${query}"</div>`;return;}
+// ── Master result renderer ────────────────────────────────────────────────
+function renderResults(results, query, count){
+  if(!results.length){
+    document.getElementById('sr').innerHTML=`<div style="text-align:center;padding:48px 0;color:#334155;">No results for "${query}"</div>`;
+    return;
+  }
+  const src     = results[0]?._source || 'kb';
+  const cached  = results[0]?._cached;
+  const intent  = results[0]?.intent || 'research';
 
-  const firstSrc = results[0]?._source||'kb';
-  const isCached = results[0]?._cached;
-
-  let html=`
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-    <div style="font-size:12px;color:#334155;display:flex;align-items:center;gap:8px;">
-      <span class="source-dot ${isCached?'src-cached':firstSrc==='ai'?'src-ai':'src-kb'}"></span>
-      <span>${isCached?'⚡ Cached result · 24h TTL':srcLabel[firstSrc]||firstSrc}</span>
-      <span>·</span><span>${count} report${count!==1?'s':''} for "${query}"</span>
+  let html = `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#334155;">
+      <span class="source-dot ${cached?'src-cached':src==='ai'?'src-ai':'src-kb'}"></span>
+      <span>${cached?'⚡ Cached · 24h TTL':srcLb[src]||src}</span>
+      <span>·</span>
+      <span>${count} result${count!==1?'s':''} for <em style="color:#64748b;">"${query}"</em></span>
+      ${AF.length?`<span>·</span><span style="color:#60a5fa;">${AF.length} filter${AF.length>1?'s':''} active</span>`:''}
     </div>
-    <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="expandAll()">Expand all</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="intent-banner ${intent==='product'?'intent-product':intent==='training'?'intent-training':'intent-research'}" style="margin:0;">${intLb[intent]||intent}</span>
+      <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="expandAll()">Expand all</button>
+    </div>
   </div>`;
 
-  results.forEach((r,idx)=>{
-    const isSupp = r._supplementary;
-    const bodyId = `rb-${idx}`;
-    const secOpen = idx===0 && !isSupp;
-    html += buildReportCard(r, bodyId, secOpen, isSupp);
+  results.forEach((r, idx) => {
+    // Route to correct renderer based on intent
+    if((r.intent === 'product' || intent === 'product') && r.products?.length){
+      html += buildProductCard(r, `rb-${idx}`, idx === 0);
+    } else {
+      html += buildReportCard(r, `rb-${idx}`, idx === 0 && !r._supplementary);
+    }
   });
 
-  document.getElementById('sr').innerHTML=html;
+  document.getElementById('sr').innerHTML = html;
 }
 
-function buildReportCard(r,bodyId,open,isSupp){
-  const s=r.sections||{};
-  const cat=catColor[r.category]||'b-gray';
-  const ev=evColor[r.evidence_tier]||'b-gray';
-  const legalHtml=r.legal_status?`<span class="badge b-amber">${r.legal_status}</span>`:'';
-  const suppHtml=isSupp?`<span class="badge b-gray">Related</span>`:'';
-  const cachedBadge=r._cached?`<div class="cached-banner"><span class="source-dot src-cached"></span>Cached result · retrieved from 24h cache</div>`:'';
-
-  const stackHtml=(r.stacking||[]).map(s=>`<span class="stacking-pill">${s}</span>`).join('');
-
-  const sections=[
-    {n:1,key:'what_it_is',       label:'What it is & How it works'},
-    {n:2,key:'dosage',           label:'Recommended dosage'},
-    {n:3,key:'timing',           label:'Timing'},
-    {n:4,key:'how_to_take',      label:'How to take'},
-    {n:5,key:'hydration',        label:'Hydration'},
-    {n:6,key:'training_synergy', label:'Combine with strength training'},
-    {n:7,key:'cycling',          label:'Cycle or no-cycle'},
-    {n:8,key:'benefits',         label:'Expected benefits'},
-    {n:9,key:'side_effects',     label:'Risks & side effects'},
-    {n:10,key:'references',      label:'Research references'},
+// ── 10-section research report card ──────────────────────────────────────
+function buildReportCard(r, bodyId, open){
+  const s   = r.sections || {};
+  const cat = catC[r.category] || 'b-gray';
+  const ev  = evC[r.evidence_tier] || 'b-gray';
+  const stackHtml = (r.stacking||[]).map(s=>`<span class="stacking-pill">${s}</span>`).join('');
+  const cachedBanner = r._cached ? `<div class="cached-banner"><span class="source-dot src-cached"></span>⚡ Cached result · retrieved from 24h cache</div>` : '';
+  const sections = [
+    {n:1, key:'what_it_is',       label:'What it is & How it works'},
+    {n:2, key:'dosage',           label:'Recommended dosage & Phases'},
+    {n:3, key:'timing',           label:'Timing'},
+    {n:4, key:'how_to_take',      label:'How to take'},
+    {n:5, key:'hydration',        label:'Hydration'},
+    {n:6, key:'training_synergy', label:'Combine with strength training'},
+    {n:7, key:'cycling',          label:'Cycle or no-cycle'},
+    {n:8, key:'benefits',         label:'Expected benefits'},
+    {n:9, key:'side_effects',     label:'Risks & side effects'},
+    {n:10,key:'references',       label:'Research references (PubMed · Examine · NIH)'},
   ];
-
   const secRows = sections.map(sec=>{
     const content = s[sec.key];
-    let bodyHtml='';
-    if(sec.key==='benefits'&&Array.isArray(content)){
-      bodyHtml=content.map(b=>`<div class="benefit-item"><div class="benefit-dot"></div><div>${b}</div></div>`).join('');
-    } else if(sec.key==='side_effects'&&Array.isArray(content)){
-      bodyHtml=content.map(se=>`<span class="se-badge se-${se.severity||'low'}">${se.effect}</span>`).join('');
-    } else if(sec.key==='references'&&Array.isArray(content)){
-      bodyHtml=content.map(ref=>{
-        const icon=ref.type==='pubmed'?'📄':ref.type==='examine'?'🔬':'📖';
-        const link=ref.url?`<a href="${ref.url}" target="_blank" class="ref-link">${ref.title||ref.url}</a>`:`<span style="color:#64748b;">${ref.title||'—'}</span>`;
-        const pmid=ref.id?`<span style="color:#334155;"> · PMID ${ref.id}</span>`:'';
+    let bodyHtml = '';
+    if(sec.key === 'benefits' && Array.isArray(content)){
+      bodyHtml = content.map(b=>`<div class="benefit-item"><div class="benefit-dot"></div><div>${b}</div></div>`).join('');
+    } else if(sec.key === 'side_effects' && Array.isArray(content)){
+      bodyHtml = content.map(se=>`<span class="se-badge se-${se.severity||'low'}">${se.effect}</span>`).join('');
+    } else if(sec.key === 'references' && Array.isArray(content)){
+      bodyHtml = content.map(ref=>{
+        const icon = ref.type==='pubmed'?'📄':ref.type==='examine'?'🔬':'📖';
+        const link = ref.url
+          ? `<a href="${ref.url}" target="_blank" rel="noopener" class="ref-link">${ref.title||ref.url}</a>`
+          : `<span style="color:#64748b;">${ref.title||'—'}</span>`;
+        const pmid = ref.id ? `<span style="color:#334155;"> · PMID ${ref.id}</span>` : '';
         return `<div class="ref-item"><span class="ref-icon">${icon}</span><div>${link}${pmid}</div></div>`;
       }).join('');
     } else {
-      bodyHtml=`<div class="section-content">${content||'—'}</div>`;
+      bodyHtml = `<div class="section-content">${content||'—'}</div>`;
     }
     return `
     <div class="section-row">
@@ -334,37 +450,40 @@ function buildReportCard(r,bodyId,open,isSupp){
     </div>`;
   }).join('');
 
-  const finalRec=r.final_recommendation?`
+  const finalRec = r.final_recommendation ? `
   <div class="final-rec">
     <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:6px;">✅ Final recommendation</div>
     <div style="font-size:13px;color:#93c5fd;line-height:1.65;">${r.final_recommendation}</div>
-  </div>`:'';
+  </div>` : '';
 
-  const stackRow=stackHtml?`
+  const stackRow = stackHtml ? `
   <div style="padding:10px 22px 14px;">
     <div style="font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Stack with</div>
     <div>${stackHtml}</div>
-  </div>`:'';
+  </div>` : '';
 
-  const aiNote=r.ai_note?`<div style="padding:0 22px 16px;font-size:11px;color:#334155;font-style:italic;">${r.ai_note}</div>`:'';
+  const aiNote = r.ai_note ? `<div style="padding:0 22px 14px;font-size:11px;color:#334155;font-style:italic;">${r.ai_note}</div>` : '';
 
   return `
   <div class="report-card" id="rc-${bodyId}">
-    ${cachedBadge}
+    ${cachedBanner}
     <div class="report-header" onclick="toggleReport('${bodyId}')">
-      <div class="report-name">${r.name} <span style="font-size:14px;font-weight:400;color:#475569;">→ Click to ${open?'collapse':'expand'} full report</span></div>
+      <div class="report-name">${r.name} <span style="font-size:14px;font-weight:400;color:#475569;">→ ${open?'Click to collapse':'Click to expand full report'}</span></div>
       <div class="report-tagline">${r.tagline||''}</div>
       <div class="report-badges">
         <span class="badge ${cat}">${r.category||'supplement'}</span>
-        <span class="badge ${ev}">${evLabel[r.evidence_tier]||'Evidence: moderate'}</span>
-        ${r.safe_for_beginners===true?'<span class="badge b-green">Beginner safe</span>':r.safe_for_beginners===false?'<span class="badge b-red">Advanced only</span>':''}
-        ${legalHtml}${suppHtml}
+        <span class="badge ${ev}">${evLb[r.evidence_tier]||'Evidence: moderate'}</span>
+        ${r.safe_for_beginners===true?'<span class="badge b-green">🌱 Beginner safe</span>':r.safe_for_beginners===false?'<span class="badge b-red">⚠ Advanced only</span>':''}
+        ${r.legal_status?`<span class="badge b-amber" title="${r.legal_status}">⚖ Legal notice</span>`:''}
+        ${r._supplementary?'<span class="badge b-gray">Related</span>':''}
+        ${r._source==='ai'?'<span class="badge b-teal">🤖 AI</span>':r._cached?'<span class="badge b-amber">⚡ Cached</span>':'<span class="badge b-gray">📚 KB</span>'}
       </div>
       <div class="report-toggle">
         <span id="tt-${bodyId}">${open?'▲ Collapse':'▼ Expand all 10 sections'}</span>
       </div>
     </div>
     <div class="report-body ${open?'':'hidden'}" id="${bodyId}">
+      ${r.legal_status?`<div style="margin:0 22px 10px;padding:8px 12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#fbbf24;">⚖ ${r.legal_status}</div>`:''}
       ${secRows}
       ${finalRec}
       ${stackRow}
@@ -373,23 +492,61 @@ function buildReportCard(r,bodyId,open,isSupp){
   </div>`;
 }
 
+// ── Product results card ──────────────────────────────────────────────────
+function buildProductCard(r, bodyId, open){
+  const products = r.products || [];
+  const badgeClass = {'🏅 Premium':'badge-premium','🔥 Popular':'badge-popular','💪 Balanced':'badge-balanced'};
+  const stars = rating => '★'.repeat(Math.round(rating)) + '☆'.repeat(5-Math.round(rating));
+
+  return `
+  <div class="report-card" id="rc-${bodyId}">
+    <div class="report-header" onclick="toggleReport('${bodyId}')">
+      <div class="report-name">${r.name} <span style="font-size:14px;font-weight:400;color:#475569;">→ ${open?'Collapse':'Expand product list'}</span></div>
+      <div class="report-tagline">${r.tagline||''}</div>
+      <div class="report-badges">
+        <span class="badge b-amber">🛒 Product results</span>
+        <span class="badge b-blue">${products.length} products found</span>
+        ${r._source==='ai'?'<span class="badge b-teal">🤖 AI curated</span>':r._cached?'<span class="badge b-amber">⚡ Cached</span>':''}
+      </div>
+      <div class="report-toggle"><span id="tt-${bodyId}">${open?'▲ Collapse':'▼ View products'}</span></div>
+    </div>
+    <div class="report-body ${open?'':'hidden'}" id="${bodyId}">
+      <div class="product-grid">
+        ${products.map(p => {
+          const bc = badgeClass[p.badge] || 'badge-balanced';
+          return `
+          <div class="product-card">
+            <div class="product-badge ${bc}">${p.badge||'💪 Balanced'}</div>
+            <div class="product-name">${p.name}</div>
+            ${p.price_inr ? `<div class="product-price">₹${p.price_inr.toLocaleString()}</div>` : ''}
+            ${p.rating ? `<div class="product-rating">${stars(p.rating)} <span style="color:#64748b;">${p.rating}/5</span></div>` : ''}
+            ${p.key_benefit ? `<div class="product-benefit">✓ ${p.key_benefit}</div>` : ''}
+            ${p.best_for ? `<div style="font-size:11px;color:#475569;margin-top:4px;">Best for: ${p.best_for}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      ${r.final_recommendation?`<div class="final-rec"><div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:6px;">🛒 Buying recommendation</div><div style="font-size:13px;color:#fde68a;line-height:1.65;">${r.final_recommendation}</div></div>`:''}
+      ${r.ai_note?`<div style="padding:0 22px 14px;font-size:11px;color:#334155;font-style:italic;">${r.ai_note}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// ── Expand/collapse helpers ────────────────────────────────────────────────
 function toggleReport(id){
-  const body=document.getElementById(id);
-  const tt=document.getElementById('tt-'+id);
-  if(!body)return;
-  const isOpen=!body.classList.contains('hidden');
+  const body = document.getElementById(id);
+  const tt   = document.getElementById('tt-'+id);
+  if(!body) return;
+  const isOpen = !body.classList.contains('hidden');
   body.classList.toggle('hidden');
-  if(tt) tt.textContent=isOpen?'▼ Expand all 10 sections':'▲ Collapse';
+  if(tt) tt.textContent = isOpen ? '▼ Expand all 10 sections' : '▲ Collapse';
 }
-
 function toggleSection(el){
-  const body=el.nextElementSibling;
-  if(!body)return;
-  body.style.display=body.style.display==='none'?'block':'none';
-  const arr=el.querySelector('span:last-child');
-  if(arr) arr.textContent=body.style.display==='none'?'▸':'▾';
+  const body = el.nextElementSibling;
+  if(!body) return;
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+  const arr = el.querySelector('span:last-child');
+  if(arr) arr.textContent = body.style.display === 'none' ? '▸' : '▾';
 }
-
 function expandAll(){
   document.querySelectorAll('.report-body.hidden').forEach(b=>b.classList.remove('hidden'));
   document.querySelectorAll('[id^="tt-"]').forEach(t=>t.textContent='▲ Collapse');
@@ -532,7 +689,7 @@ async function doCycle(){
       </div>`).join('')}
     </div>
     ${d.on_cycle_support?.length?`<div class="card" style="background:#1d345720;border-color:#1d4ed8;margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:#60a5fa;margin-bottom:8px;">On-cycle support</div>${d.on_cycle_support.map(s=>`<div style="font-size:13px;color:#93c5fd;padding:3px 0;">✓ ${s}</div>`).join('')}</div>`:''}
-    ${d.bloodwork?.length?`<div class="card" style="background:#14532d20;border-color:#14532d;margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">📋 Bloodwork</div>${d.bloodwork.map((b,i)=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">${i+1}. ${b}</div>`).join('')}</div>`:''}
+    ${d.bloodwork?.length?`<div class="card" style="background:#14532d20;border-color:#14532d;margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">📋 Bloodwork checkpoints</div>${d.bloodwork.map((b,i)=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">${i+1}. ${b}</div>`).join('')}</div>`:''}
     ${d.disclaimer?`<div style="padding:12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#d97706;line-height:1.6;">${d.disclaimer}</div>`:''}`;
   }catch(e){toast(e.message,'error');}
 }
