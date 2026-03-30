@@ -1,10 +1,12 @@
 
 def route_domain(intent):
-    routes = {
-        "exercise": "exercise_db",
-        "supplement": "supplement_db",
-        "ped": "ped_db",
-        "diet": "diet_db",
-        "general": "general_db"
+
+    mapping = {
+        "exercise": "exercise",
+        "supplement": "supplement",
+        "ped": "ped",
+        "diet": "diet",
+        "general": "general"
     }
-    return routes.get(intent, "general_db")
+
+    return mapping.get(intent, "general")

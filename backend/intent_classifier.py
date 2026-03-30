@@ -1,21 +1,41 @@
 
-import re
-
-def classify_intent(query):
+def classify_intent(query: str):
     query = query.lower()
 
-    exercise_keywords = ["exercise","workout","training","routine","split","fat loss","cardio"]
-    supplement_keywords = ["creatine","whey","protein","pre workout","supplement"]
-    ped_keywords = ["sarm","steroid","mk","ostarine","tren","testosterone"]
-    diet_keywords = ["diet","meal","calorie","nutrition"]
+    exercise_keywords = [
+        "exercise","workout","training","routine","fat loss",
+        "cardio","hiit","home workout","gym workout"
+    ]
 
-    if any(k in query for k in exercise_keywords):
-        return "exercise"
-    if any(k in query for k in supplement_keywords):
-        return "supplement"
-    if any(k in query for k in ped_keywords):
-        return "ped"
-    if any(k in query for k in diet_keywords):
-        return "diet"
+    supplement_keywords = [
+        "creatine","whey","protein","pre workout",
+        "bcaa","mass gainer","supplement"
+    ]
+
+    ped_keywords = [
+        "sarm","steroid","cycle","mk-2866",
+        "testosterone","tren","anavar","performance enhancing"
+    ]
+
+    diet_keywords = [
+        "diet","nutrition","meal plan",
+        "calories","macro"
+    ]
+
+    for word in exercise_keywords:
+        if word in query:
+            return "exercise"
+
+    for word in supplement_keywords:
+        if word in query:
+            return "supplement"
+
+    for word in ped_keywords:
+        if word in query:
+            return "ped"
+
+    for word in diet_keywords:
+        if word in query:
+            return "diet"
 
     return "general"
