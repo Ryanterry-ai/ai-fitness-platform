@@ -8,19 +8,17 @@ from typing import List, Dict, Any
 def detect_intent(query: str) -> str:
     q = query.lower()
 
-    if any(x in q for x in [
-        "best", "top", "recommend", "which", "compare"
-    ]):
+    if any(x in q for x in ["best", "top", "recommend", "which"]):
         return "product"
 
     if any(x in q for x in [
-        "what", "how", "cycle", "dosage", "benefits",
-        "side effects", "explain"
+        "what", "how", "cycle", "dosage",
+        "benefits", "side effects"
     ]):
         return "research"
 
     if any(x in q for x in [
-        "workout", "exercise", "routine", "split",
+        "workout", "exercise", "routine",
         "fat loss", "muscle gain"
     ]):
         return "training"
@@ -29,15 +27,20 @@ def detect_intent(query: str) -> str:
 
 
 # ================================
-# Fast Search
+# Fast Search Dataset
 # ================================
-def fast_results(query: str):
+def fast_results(query):
 
     return [
         {
             "title": "Creatine Monohydrate",
             "category": "supplement",
-            "description": "Best supplement for muscle gain and strength"
+            "description": "Best supplement for muscle gain"
+        },
+        {
+            "title": "Pre Workout Supplements",
+            "category": "supplement",
+            "description": "Best pre workout for energy and pumps"
         },
         {
             "title": "HIIT Fat Loss Workout",
@@ -45,25 +48,25 @@ def fast_results(query: str):
             "description": "High intensity fat loss training"
         },
         {
-            "title": "Whey Protein",
-            "category": "supplement",
-            "description": "Protein supplement for muscle growth"
+            "title": "Push Pull Legs Split",
+            "category": "exercise",
+            "description": "Best hypertrophy workout"
         },
         {
             "title": "Testosterone Cycle",
             "category": "ped",
-            "description": "Anabolic steroid cycle information"
+            "description": "Anabolic steroid cycle"
         },
         {
-            "title": "Push Pull Legs Split",
-            "category": "exercise",
-            "description": "Best hypertrophy workout split"
+            "title": "Whey Protein",
+            "category": "supplement",
+            "description": "Protein for muscle growth"
         }
     ]
 
 
 # ================================
-# Semantic Filter
+# Semantic Search (Improved)
 # ================================
 def semantic_filter(query, results):
 
@@ -77,47 +80,49 @@ def semantic_filter(query, results):
             r.get("description", "").lower()
         )
 
-        if any(w in text for w in words):
+        score = sum(1 for w in words if w in text)
+
+        if score > 0:
+            r["score"] = score
             filtered.append(r)
 
-    return filtered if filtered else results
+    # fallback if empty
+    if not filtered:
+        return results
+
+    return filtered
 
 
 # ================================
-# AI Ranking
+# Ranking
 # ================================
-def rank_results(query, results):
+def rank_results(results):
 
-    words = query.lower().split()
-
-    def score(r):
-        text = (
-            r.get("title", "").lower() +
-            r.get("description", "").lower()
-        )
-
-        return sum(3 if w in text else 0 for w in words)
-
-    return sorted(results, key=score, reverse=True)
+    return sorted(
+        results,
+        key=lambda x: x.get("score", 0),
+        reverse=True
+    )
 
 
 # ================================
-# Option Filtering (Safe)
+# Option Filtering
 # ================================
 def apply_option_filter(results, options):
 
     if not options:
         return results
 
-    # options can be list
     if isinstance(options, list):
 
         filtered = []
 
         for opt in options:
+
             opt = opt.lower()
 
             for r in results:
+
                 text = (
                     r.get("title", "").lower() +
                     r.get("description", "").lower()
@@ -128,12 +133,12 @@ def apply_option_filter(results, options):
 
         return filtered if filtered else results
 
-    # options can be dict
     if isinstance(options, dict):
 
         goal = options.get("goal")
 
         if goal:
+
             goal = goal.lower()
 
             filtered = [
@@ -166,7 +171,7 @@ def search_knowledge(query, options=None):
 
     results = semantic_filter(query, results)
 
-    results = rank_results(query, results)
+    results = rank_results(results)
 
     results = apply_option_filter(results, options)
 
