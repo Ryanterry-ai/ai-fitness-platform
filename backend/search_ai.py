@@ -1,21 +1,61 @@
 """
-search_ai.py  —  FitSearch AI  World-Class Research Engine  v4
-===============================================================
+search_ai.py  —  FitSearch AI  World-Class Hybrid Search Engine  v3
+====================================================================
 
-Architecture:
-  User Query → Intent Detection → Domain Routing → Entity Extraction
-  → Cache Lookup → Knowledge Retrieval → Live Research Sources
-  → AI Answer Generation → Rich Structured Output
+Perplexity-style retrieval  +  ChatGPT-style analysis  +  Google-style speed
 
-Output always includes:
-  What it is · How it works · Types/Forms · Dosage · Timing
-  How to take · Side effects · Best ways to use · Who should use
-  Who should avoid · Research evidence · Articles · Magazines · Books · Videos · AI Summary
+TWO ROOT-CAUSE FIXES
+────────────────────
+FIX 1 — IRRELEVANT RESULTS (entity-strict filtering)
+  Old bug:  _score_kb scored every KB item using word-fuzzy match.
+            Query "best creatine for muscle gain" → matched whey / testosterone
+            because they share the tag "muscle_gain".
+  Fix:      extract_primary_entity() identifies the exact compound family.
+            ENTITY_GROUPS maps each entity key to an allow-list of KB IDs.
+            _score_strict() returns 0 immediately for any item NOT in the
+            allow-list — hard exclusion, no fuzzy bleed-through.
 
-Supported domains:
-  Health · Fitness · Bodybuilding · Muscle Gain · Fat Loss · Strength
-  Supplements · Vitamins · Nutrition · Diet · Recovery
-  Anabolic Steroids · PEDs · HGH · Peptides · SARMs · Sports Performance
+FIX 2 — FILTERS DON'T RE-SEARCH
+  Old bug:  togF() in the frontend just toggled CSS + pushed to AF[].
+            It never re-sent the query, so results never changed.
+  Fix (backend side):
+            _cache_key() includes sorted(filters) in the hash.
+            A different filter combo → different cache key → fresh ranking.
+  Fix (frontend side — see index.html):
+            togF() now calls doSearch() immediately after toggling.
+            Each filter chip click triggers a full re-rank POST to /search.
+            Within the entity set, filter-matching items get a +60 boost,
+            making the dominant results visibly different within ~300 ms.
+
+INTENT CLASSIFICATION  (ChatGPT-style analysis)
+────────────────────────────────────────────────
+  research   → 10-section scientific report
+  product    → ranked product list with price / rating / badge
+  training   → day-wise plan / structured table
+  dosage     → focused dosage deep-dive
+  compare    → side-by-side table
+  side_effects → risk / safety report
+  cycle      → cycle protocol + PCT
+  explain    → definition + mechanism
+  recommend  → ranked recommendation list with evidence scores
+
+PIPELINE
+────────
+  User Query
+    │  1. Intent classification  (rule-based, < 1 ms)
+    │  2. Entity extraction      (longest-match, < 1 ms)
+    │  3. Cache lookup           (includes filters in key)
+    │  4. Strict KB scoring      (entity-locked)
+    │  5. Parallel live retrieval (PubMed · Examine · OpenFDA · SerpAPI)
+    │  6. Evidence trust-scoring
+    │  7. Claude synthesis       (intent-specific structured output)
+    │  8. Cache write            (24 h TTL)
+    └→ Structured result
+
+Environment variables:
+  ANTHROPIC_API_KEY   — Claude API (required for AI reports)
+  PUBMED_API_KEY      — optional, raises rate limit from 3→10 req/s
+  SERP_API_KEY        — optional, enables live Google results
 """
 
 from __future__ import annotations
@@ -38,44 +78,6 @@ PUBMED_FETCH  = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 OPENFDA_URL   = "https://api.fda.gov/drug/event.json"
 CACHE_TTL_SEC = 86_400          # 24 h
 _cache_lock   = threading.Lock()
-
-# ═══════════════════════════════════════════════════════════════════════════
-# QUERY INTELLIGENCE — domain routing
-# ═══════════════════════════════════════════════════════════════════════════
-
-QUERY_DOMAINS: dict[str, list[str]] = {
-    "muscle_gain":  ["muscle gain", "bulking", "hypertrophy", "build muscle", "lean mass"],
-    "fat_loss":     ["fat loss", "cutting", "weight loss", "shred", "fat burning", "burn fat"],
-    "strength":     ["strength", "powerlifting", "power", "strong", "1rm", "maximal strength"],
-    "endurance":    ["endurance", "cardio", "stamina", "aerobic", "running", "cycling"],
-    "recovery":     ["recovery", "healing", "injury", "soreness", "doms", "joint pain"],
-    "supplements":  ["creatine", "whey", "protein", "pre workout", "bcaa", "amino acid",
-                     "supplement", "beta alanine", "citrulline", "caffeine", "fish oil",
-                     "vitamin", "zinc", "magnesium"],
-    "steroids":     ["testosterone", "tren", "trenbolone", "anavar", "dbol", "dianabol",
-                     "nandrolone", "deca", "winstrol", "steroid", "anabolic", "aas", "pct"],
-    "peptides":     ["mk677", "bpc", "bpc-157", "ipamorelin", "cjc", "tb500", "tb-500",
-                     "sermorelin", "ghrp", "peptide", "healing peptide"],
-    "hgh":          ["hgh", "growth hormone", "somatropin", "human growth", "gh", "igf"],
-    "sarms":        ["ostarine", "lgd", "ligandrol", "rad140", "testolone", "cardarine",
-                     "sarm", "sarms", "selective androgen", "mk-2866"],
-    "nutrition":    ["diet", "nutrition", "meal plan", "macros", "protein intake",
-                     "carbs", "calories", "food", "eating", "keto"],
-    "exercise":     ["exercise", "workout", "training", "gym", "lifting",
-                     "sets", "reps", "program", "routine", "split", "exercises for"],
-}
-
-def detect_domain(query: str) -> str:
-    q = query.lower()
-    scores: dict[str, int] = {}
-    for domain, keywords in QUERY_DOMAINS.items():
-        sc = sum(1 for kw in keywords if kw in q)
-        if sc > 0:
-            scores[domain] = sc
-    if not scores:
-        return "supplements"
-    return max(scores, key=lambda x: scores[x])
-
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -246,13 +248,10 @@ _INTENT_RULES: list[tuple[list[str], str]] = [
       "best supplement india", "best whey india", "best creatine india",
       "recommend brand", "affordable", "value for money"], "product"),
     # Training / diet
-    (["workout plan", "training plan", "training split", "exercise plan",
-     "diet plan", "meal plan",
+    (["workout plan", "training plan", "training split", "diet plan", "meal plan",
       "hypertrophy split", "push pull legs", "4 day split", "5 day split",
       "high protein diet", "macro plan", "calorie plan", "ppl split",
-      "cutting diet", "bulking diet",
-      "best exercises", "exercise for", "exercises for",
-      "workout for", "fat loss workout", "muscle building workout"], "training"),
+      "cutting diet", "bulking diet"], "training"),
     # Dosage
     (["dosage", "dose", "how much", "how many mg", "how many grams",
       "mcg", "iu per day", "serving size", "intake amount",
@@ -335,42 +334,8 @@ KB: list[dict] = [
         "cycling": "No cycling required. Long-term continuous use (5+ years) is well-documented as safe. No washout period needed.",
         "benefits": ["Strength increase 5–15%", "Power output improvement (PCr resynthesis)", "Faster inter-set recovery", "Lean mass support (volumisation + synthesis)", "Cognitive support (emerging research)"],
         "side_effects": [{"effect": "Mild water retention (intracellular — cosmetic only)", "severity": "low"}, {"effect": "GI discomfort if full loading dose taken at once", "severity": "medium"}],
-        "how_it_works": "Creatine increases phosphocreatine (PCr) stores in muscles. During high-intensity exercise, PCr donates a phosphate group to ADP to rapidly regenerate ATP. More PCr = more ATP = more reps, heavier lifts, faster sprints.",
-        "types": [
-            {"name": "Creatine Monohydrate", "best_for": "Muscle gain, strength, overall performance", "evidence": "Very High", "note": "Most studied, most cost-effective"},
-            {"name": "Creatine HCL", "best_for": "GI sensitivity, no bloating", "evidence": "High", "note": "Smaller dose needed"},
-            {"name": "Buffered Creatine (Kre-Alkalyn)", "best_for": "Reduced bloating", "evidence": "Moderate", "note": "pH-buffered, comparable to monohydrate"},
-        ],
-        "best_ways_to_use": [
-            "Take daily — consistency is more important than exact timing",
-            "Combine with resistance training for maximum ATP benefit",
-            "Stay hydrated (3+ L/day)",
-            "Pair with post-workout carbs + protein for optimal uptake",
-            "Loading phase optional — skip if GI sensitive",
-        ],
-        "who_should_use": ["Bodybuilders and powerlifters", "Athletes in explosive sports", "Beginners wanting faster strength gains", "Vegetarians/vegans (lower dietary creatine)"],
-        "who_should_avoid": ["Individuals with kidney disease (consult physician)", "Anyone with creatine metabolism disorders"],
-        "research_evidence": [
-            {"study": "ISSN Position Stand (Buford et al. 2007)", "finding": "Creatine is the most effective ergogenic supplement for increasing high-intensity exercise capacity and lean body mass", "year": "2007"},
-            {"study": "Rawson & Volek (2003) JSCR", "finding": "Short-term creatine supplementation increases strength and endurance by 5–15%", "year": "2003"},
-        ],
-        "articles": [
-            {"title": "Creatine Supplementation and Exercise Performance", "author": "Jose Antonio PhD", "source": "J Int Soc Sports Nutr", "url": "https://pubmed.ncbi.nlm.nih.gov/28615996/"},
-        ],
-        "magazines": [
-            {"title": "The Complete Creatine Guide", "publisher": "Muscle & Fitness", "url": "https://www.muscleandfitness.com"},
-            {"title": "Creatine: Everything You Need to Know", "publisher": "Men's Health", "url": "https://www.menshealth.com"},
-        ],
-        "books": [
-            {"title": "Sports Nutrition Handbook", "author": "Luc van Loon", "note": "Comprehensive coverage of creatine mechanisms"},
-        ],
-        "videos": [
-            {"title": "Creatine: Everything You Need To Know", "channel": "Jeff Nippard", "platform": "YouTube", "url": "https://www.youtube.com/results?search_query=creatine+explained+jeff+nippard"},
-            {"title": "The Science of Creatine", "channel": "Andrew Huberman", "platform": "YouTube", "url": "https://www.youtube.com/results?search_query=huberman+creatine+science"},
-        ],
-        "ai_summary": "Creatine Monohydrate is the single most effective and best-researched supplement for muscle gain, strength, and performance. With 200+ studies confirming its safety and efficacy, 3–5 g daily is safe, effective, and sustainable long-term.",
         "stacking": ["Beta-alanine (complementary energy systems)", "Caffeine", "Whey protein"],
-        "final_recommendation": "Take 3–5 g creatine monohydrate daily with a post-workout carb + protein meal. Loading phase optional. Expect strength gains in 2–4 weeks.",
+        "final_recommendation": "Pair 3–5 g creatine monohydrate with a post-workout carb + protein meal. Start progressive overload the same week. Expect strength gains in 2–4 weeks.",
         "evidence_tier": "very_high", "safe_for_beginners": True,
         "pubmed_ids": ["28615996", "11509496", "14636102"],
         "examine_url": "https://examine.com/supplements/creatine/",
