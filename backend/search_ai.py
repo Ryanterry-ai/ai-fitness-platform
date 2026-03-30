@@ -1,101 +1,178 @@
-import re
 from typing import List, Dict, Any
 
 
-# ================================
+# ========================================
+# Indian Multi-Language Intent Intelligence
+# ========================================
+
+INDIAN_QUERY_PATTERNS = {
+
+    "supplement": [
+        "creatine","whey","protein","pre workout",
+        "fat burner","bcaa","mass gainer",
+        "best creatine","best protein"
+    ],
+
+    "ped": [
+        "steroid","testosterone","tren",
+        "anavar","dianabol","cycle",
+        "test","trenbolone"
+    ],
+
+    "gh": [
+        "hgh","growth hormone","gh"
+    ],
+
+    "peptides": [
+        "peptide","bpc","ipamorelin",
+        "cjc","tb500","mk677"
+    ],
+
+    "fat_loss": [
+        "fat loss","weight loss","cutting",
+        "belly fat","lose weight",
+        "fat burner"
+    ],
+
+    "muscle_gain": [
+        "muscle gain","bulking",
+        "hypertrophy","gain muscle"
+    ],
+
+    "training": [
+        "workout","exercise","routine",
+        "training","split"
+    ]
+}
+
+
+# ========================================
 # Intent Detection
-# ================================
-def detect_intent(query: str) -> str:
+# ========================================
+
+def detect_intent(query):
+
     q = query.lower()
 
-    if any(x in q for x in ["best", "top", "recommend", "which"]):
-        return "product"
+    for intent, keywords in INDIAN_QUERY_PATTERNS.items():
 
-    if any(x in q for x in [
-        "what", "how", "cycle", "dosage",
-        "benefits", "side effects"
-    ]):
-        return "research"
-
-    if any(x in q for x in [
-        "workout", "exercise", "routine",
-        "fat loss", "muscle gain"
-    ]):
-        return "training"
+        for word in keywords:
+            if word in q:
+                return intent
 
     return "general"
 
 
-# ================================
+# ========================================
 # Fast Search Dataset
-# ================================
-def fast_results(query):
+# ========================================
+
+def fast_results():
 
     return [
+
         {
             "title": "Creatine Monohydrate",
             "category": "supplement",
-            "description": "Best supplement for muscle gain"
+            "description": "Best supplement for muscle gain and strength"
         },
+
         {
             "title": "Pre Workout Supplements",
             "category": "supplement",
-            "description": "Best pre workout for energy and pumps"
+            "description": "Energy and performance boosting supplements"
         },
-        {
-            "title": "HIIT Fat Loss Workout",
-            "category": "exercise",
-            "description": "High intensity fat loss training"
-        },
-        {
-            "title": "Push Pull Legs Split",
-            "category": "exercise",
-            "description": "Best hypertrophy workout"
-        },
-        {
-            "title": "Testosterone Cycle",
-            "category": "ped",
-            "description": "Anabolic steroid cycle"
-        },
+
         {
             "title": "Whey Protein",
             "category": "supplement",
-            "description": "Protein for muscle growth"
+            "description": "Protein powder for muscle building"
+        },
+
+        {
+            "title": "HIIT Fat Loss Workout",
+            "category": "exercise",
+            "description": "High intensity fat loss workout"
+        },
+
+        {
+            "title": "Push Pull Legs Workout",
+            "category": "exercise",
+            "description": "Best hypertrophy training split"
+        },
+
+        {
+            "title": "Testosterone Cycle",
+            "category": "ped",
+            "description": "Anabolic steroid cycle for muscle gain"
+        },
+
+        {
+            "title": "Trenbolone Cycle",
+            "category": "ped",
+            "description": "Advanced anabolic steroid cycle"
+        },
+
+        {
+            "title": "HGH Growth Hormone",
+            "category": "gh",
+            "description": "Growth hormone for fat loss and recovery"
+        },
+
+        {
+            "title": "MK677",
+            "category": "gh",
+            "description": "Growth hormone secretagogue"
+        },
+
+        {
+            "title": "BPC-157",
+            "category": "peptides",
+            "description": "Healing peptide for recovery"
+        },
+
+        {
+            "title": "CJC-1295",
+            "category": "peptides",
+            "description": "Growth hormone releasing peptide"
         }
+
     ]
 
 
-# ================================
-# Semantic Search (Improved)
-# ================================
+# ========================================
+# Semantic Search
+# ========================================
+
 def semantic_filter(query, results):
 
     words = query.lower().split()
 
-    filtered = []
+    scored = []
 
     for r in results:
+
         text = (
-            r.get("title", "").lower() +
-            r.get("description", "").lower()
+            r.get("title","").lower() +
+            r.get("description","").lower()
         )
 
         score = sum(1 for w in words if w in text)
 
         if score > 0:
             r["score"] = score
-            filtered.append(r)
+            scored.append(r)
 
-    # fallback if empty
-    if not filtered:
+    if not scored:
         return results
 
-    return filtered
+    return scored
 
 
-# ================================
+# ========================================
 # Ranking
-# ================================
+# ========================================
+
 def rank_results(results):
 
     return sorted(
@@ -105,9 +182,10 @@ def rank_results(results):
     )
 
 
-# ================================
+# ========================================
 # Option Filtering
-# ================================
+# ========================================
+
 def apply_option_filter(results, options):
 
     if not options:
@@ -124,14 +202,15 @@ def apply_option_filter(results, options):
             for r in results:
 
                 text = (
-                    r.get("title", "").lower() +
-                    r.get("description", "").lower()
+                    r.get("title","").lower() +
+                    r.get("description","").lower()
                 )
 
                 if opt in text:
                     filtered.append(r)
 
         return filtered if filtered else results
+
 
     if isinstance(options, dict):
 
@@ -144,8 +223,8 @@ def apply_option_filter(results, options):
             filtered = [
                 r for r in results
                 if goal in (
-                    r.get("title", "").lower() +
-                    r.get("description", "").lower()
+                    r.get("title","").lower() +
+                    r.get("description","").lower()
                 )
             ]
 
@@ -154,9 +233,10 @@ def apply_option_filter(results, options):
     return results
 
 
-# ================================
-# Main Search
-# ================================
+# ========================================
+# Main Search Engine
+# ========================================
+
 def search_knowledge(query, options=None):
 
     if not query:
@@ -167,7 +247,16 @@ def search_knowledge(query, options=None):
 
     intent = detect_intent(query)
 
-    results = fast_results(query)
+    results = fast_results()
+
+    # filter by intent category
+    intent_filtered = [
+        r for r in results
+        if intent in r.get("category","")
+    ]
+
+    if intent_filtered:
+        results = intent_filtered
 
     results = semantic_filter(query, results)
 
@@ -181,9 +270,10 @@ def search_knowledge(query, options=None):
     }
 
 
-# ================================
+# ========================================
 # Recommendations
-# ================================
+# ========================================
+
 def get_recommendations(query, options=None):
 
     return search_knowledge(query, options)
