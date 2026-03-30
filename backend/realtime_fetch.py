@@ -1,14 +1,9 @@
 
-def fetch_realtime_results(query, domain, goal=None):
-
-    # Placeholder for real-time data integration
-    # Connect APIs here later
-
-    return [
-        {
-            "title": f"Real-time {domain} result for: {query}",
-            "description": "World class intent-based search result",
-            "domain": domain,
-            "score": 1.0
-        }
-    ]
+def fetch_realtime_results(query, domain):
+    if domain == "exercise":
+        return [
+            {"title":"HIIT Training","category":"exercise","evidence":"High"},
+            {"title":"Squats","category":"exercise","evidence":"High"},
+            {"title":"Walking Lunges","category":"exercise","evidence":"Moderate"}
+        ]
+    return []

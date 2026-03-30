@@ -1,34 +1,17 @@
 
-from typing import List, Dict, Optional
+from backend.intent_classifier import classify_intent
+from backend.realtime_fetch import fetch_realtime_results
+from backend.vector_search import vector_search
+from backend.ai_ranker import rank_results
+from backend.knowledge_learning import learn
 
-try:
-    from .intent_classifier import classify_intent
-    from .domain_router import route_domain
-    from .realtime_fetch import fetch_realtime_results
-except:
-    from intent_classifier import classify_intent
-    from domain_router import route_domain
-    from realtime_fetch import fetch_realtime_results
-
-
-def world_class_search(query: str, goal: Optional[str] = None) -> List[Dict]:
-
+def search_knowledge(query):
     intent = classify_intent(query)
-
-    domain = route_domain(intent)
-
-    results = fetch_realtime_results(
-        query=query,
-        domain=domain,
-        goal=goal
-    )
-
+    results = fetch_realtime_results(query, intent)
+    results = vector_search(query, results)
+    results = rank_results(results)
+    learn(query, results)
     return results
 
-
-def search_knowledge(query: str, goal: Optional[str] = None):
-    return world_class_search(query, goal)
-
-
-def get_recommendations(query: str, goal: Optional[str] = None):
-    return world_class_search(query, goal)
+def get_recommendations(query):
+    return search_knowledge(query)
