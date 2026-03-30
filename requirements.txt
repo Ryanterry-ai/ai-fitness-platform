@@ -2,18 +2,3 @@ flask==3.0.2
 flask-cors==4.0.0
 gunicorn==21.2.0
 requests==2.31.0
-
-# Claude AI
-anthropic>=0.34.0
-
-# Optional but recommended
-python-dotenv==1.0.1
-
-# File Upload Support
-werkzeug>=3.0.0
-
-# JSON / performance helpers
-orjson>=3.9.15
-
-# SQLite performance (optional safe)
-aiosqlite>=0.20.0
