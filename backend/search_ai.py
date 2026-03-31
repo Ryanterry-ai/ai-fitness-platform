@@ -1,44 +1,59 @@
 import os
 import requests
+import sqlite3
+import json
 from datetime import datetime
 
-
 # ============================================
-# Environment Variables
+# ENV
 # ============================================
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY") or os.getenv("NEW_SECRET")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 
-
 # ============================================
-# Intent Detection
+# CACHE
 # ============================================
 
-def detect_query_intent(query):
+CACHE_DB = "search_cache.db"
 
-    query = query.lower()
 
-    if "best" in query or "top" in query:
-        return "recommendation"
+def init_cache():
 
-    if "side effect" in query:
-        return "safety"
+    conn = sqlite3.connect(CACHE_DB)
 
-    if "cycle" in query or "plan" in query:
-        return "planning"
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS report_cache(
+        query TEXT PRIMARY KEY,
+        data TEXT,
+        created TEXT
+    )
+    """)
 
-    if "vs" in query or "compare" in query:
-        return "comparison"
+    conn.close()
 
-    return "general"
+
+init_cache()
+
+
+def _cache_stats():
+
+    conn = sqlite3.connect(CACHE_DB)
+
+    count = conn.execute(
+        "SELECT count(*) FROM report_cache"
+    ).fetchone()[0]
+
+    conn.close()
+
+    return {"cached": count}
 
 
 # ============================================
 # Claude Research
 # ============================================
 
-def claude_research(query, deep=False):
+def claude_research(query):
 
     if not ANTHROPIC_API_KEY:
         return None
@@ -51,34 +66,23 @@ def claude_research(query, deep=False):
             "content-type": "application/json"
         }
 
-        mode = "Deep Research" if deep else "Standard Research"
-
         prompt = f"""
-You are a Professional Health & Fitness AI.
+Explain {query} in fitness and bodybuilding.
 
-User Query: {query}
+Provide:
 
-Mode: {mode}
-
-Generate response in this format:
-
-Conversational Answer:
-
-What It Is:
-How It Works:
-Benefits:
-Dosage:
-Timing:
-Side Effects:
-Who Should Avoid:
-Best Use Cases:
-
-Return clean text.
+What it is
+How it works
+Benefits
+Dosage
+Timing
+Side Effects
+Best Use Cases
 """
 
         payload = {
             "model": "claude-3-sonnet-20240229",
-            "max_tokens": 2000,
+            "max_tokens": 1500,
             "messages": [
                 {
                     "role": "user",
@@ -87,31 +91,32 @@ Return clean text.
             ]
         }
 
-        response = requests.post(
+        r = requests.post(
             "https://api.anthropic.com/v1/messages",
             headers=headers,
             json=payload,
-            timeout=40
+            timeout=30
         )
 
-        if response.status_code != 200:
-            print("Claude Error:", response.text)
+        if r.status_code != 200:
             return None
 
-        data = response.json()
+        data = r.json()
 
         return data["content"][0]["text"]
 
     except Exception as e:
-        print("Claude Exception:", str(e))
+
+        print("Claude error:", e)
+
         return None
 
 
 # ============================================
-# Real Time Sources
+# Sources
 # ============================================
 
-def real_time_sources(query):
+def get_sources(query):
 
     if not SERPAPI_KEY:
         return []
@@ -126,130 +131,121 @@ def real_time_sources(query):
             "engine": "google"
         }
 
-        response = requests.get(url, params=params)
+        r = requests.get(url, params=params)
 
-        data = response.json()
+        data = r.json()
 
         sources = []
 
         if "organic_results" in data:
 
-            for r in data["organic_results"][:5]:
+            for s in data["organic_results"][:5]:
 
                 sources.append({
-                    "title": r.get("title"),
-                    "link": r.get("link"),
-                    "snippet": r.get("snippet")
+
+                    "title": s.get("title"),
+                    "link": s.get("link"),
+                    "snippet": s.get("snippet")
+
                 })
 
         return sources
 
     except:
+
         return []
 
 
 # ============================================
-# Fallback Answer
+# fallback
 # ============================================
 
-def fallback_answer(query):
+def fallback(query):
 
     return f"""
-Here is information about {query}.
-
-{query} is commonly used in fitness and health.
+{query} is commonly used in fitness and bodybuilding.
 
 Benefits:
-• Improves performance
-• Supports muscle growth
-• Helps recovery
+• Muscle growth
+• Fat loss
+• Better recovery
 
 Dosage:
-Depends on individual needs
+Depends on user goal
 
 Side Effects:
-Usually mild if used properly
+Usually mild when used properly
 """
-
-
-# ============================================
-# Product Recommendations
-# ============================================
-
-def get_recommendations(query):
-
-    return [
-
-        {
-            "name": "Optimum Nutrition Whey",
-            "rating": 4.8,
-            "price": "₹4500"
-        },
-
-        {
-            "name": "MuscleBlaze Whey",
-            "rating": 4.6,
-            "price": "₹3200"
-        }
-
-    ]
 
 
 # ============================================
 # Main Search
 # ============================================
 
-def search_knowledge(query):
+def search_knowledge(query, filters=None):
 
-    intent = detect_query_intent(query)
+    conn = sqlite3.connect(CACHE_DB)
+
+    row = conn.execute(
+        "SELECT data FROM report_cache WHERE query=?",
+        (query,)
+    ).fetchone()
+
+    if row:
+
+        conn.close()
+
+        return json.loads(row[0])
 
     answer = claude_research(query)
 
     if not answer:
-        answer = fallback_answer(query)
+        answer = fallback(query)
 
-    sources = real_time_sources(query)
+    sources = get_sources(query)
 
-    return {
+    results = [
 
-        "query": query,
-        "answer": answer,
-        "intent": intent,
-        "sources": sources,
-        "products": get_recommendations(query),
-        "timestamp": datetime.now().isoformat()
+        {
 
-    }
+            "title": query,
 
+            "content": answer,
 
-# ============================================
-# Deep Research
-# ============================================
+            "sources": sources,
 
-def deep_research(query):
+            "timestamp": datetime.now().isoformat()
 
-    answer = claude_research(query, deep=True)
+        }
 
-    if not answer:
-        answer = fallback_answer(query)
+    ]
 
-    return {
+    conn.execute(
+        "INSERT OR REPLACE INTO report_cache VALUES (?,?,?)",
+        (query, json.dumps(results), datetime.now().isoformat())
+    )
 
-        "query": query,
-        "answer": answer,
-        "sources": real_time_sources(query),
-        "timestamp": datetime.now().isoformat()
+    conn.commit()
 
-    }
+    conn.close()
+
+    return results
 
 
 # ============================================
-# Main API Entry
+# Recommendations
 # ============================================
 
-def search_ai(query, deep=False):
+def get_recommendations(queries, user):
 
-    if deep:
-        return deep_research(query)
+    return [
 
-    return search_knowledge(query)
+        {
+            "title": "Creatine Guide"
+        },
+
+        {
+            "title": "Best Whey Protein"
+        }
+
+    ]
