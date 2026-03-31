@@ -1,709 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FitSearch AI — World-Class Fitness Search</title>
+
+<title>AI Fitness Search</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-  :root{--sb:#0a1120;--acc:#3b82f6;--acc-h:#2563eb;--bg:#0f172a;--bg2:#1e293b;--br:rgba(255,255,255,.08);}
-  *{box-sizing:border-box;}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:#e2e8f0;margin:0;}
-  .sidebar{width:230px;min-height:100vh;background:var(--sb);flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--br);}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;color:#64748b;border-radius:8px;cursor:pointer;font-size:13.5px;transition:all .14s;margin:1px 8px;border:none;background:none;width:calc(100% - 16px);text-align:left;}
-  .nav-item:hover{background:rgba(255,255,255,.06);color:#94a3b8;}
-  .nav-item.active{background:var(--acc);color:#fff;}
-  .ni{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
-  .card{background:var(--bg2);border:1px solid var(--br);border-radius:12px;padding:18px 20px;}
-  .card+.card{margin-top:12px;}
-  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;}
-  .b-blue{background:#1d3557;color:#60a5fa;}.b-green{background:#14532d;color:#4ade80;}
-  .b-teal{background:#134e4a;color:#2dd4bf;}.b-purple{background:#3b0764;color:#c084fc;}
-  .b-amber{background:#451a03;color:#fbbf24;}.b-red{background:#450a0a;color:#f87171;}
-  .b-gray{background:#1e293b;color:#94a3b8;}
-  /* ── Filter pills ── */
-  .pill{padding:5px 12px;font-size:12px;border:1px solid rgba(255,255,255,.12);border-radius:99px;cursor:pointer;color:#64748b;background:transparent;transition:all .18s;user-select:none;}
-  .pill:hover{border-color:rgba(255,255,255,.25);color:#94a3b8;}
-  .pill.on{background:#1d3557;color:#60a5fa;border-color:#2563eb;box-shadow:0 0 0 2px rgba(59,130,246,.18);}
-  /* ── Buttons ── */
-  .btn{padding:8px 16px;font-size:13px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:transparent;color:#94a3b8;transition:all .12s;}
-  .btn:hover{background:rgba(255,255,255,.06);color:#e2e8f0;}
-  .btn-primary{background:var(--acc);color:#fff;border-color:var(--acc);}
-  .btn-primary:hover{background:var(--acc-h);}
-  .inp{width:100%;padding:9px 12px;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:14px;outline:none;background:var(--bg);color:#e2e8f0;}
-  .inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
-  select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7 7l3 3 3-3' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px;padding-right:30px;}
-  .lbl{display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:5px;}
-  .metric{background:rgba(255,255,255,.04);border-radius:10px;padding:12px 14px;text-align:center;}
-  .metric-v{font-size:22px;font-weight:700;}
-  .metric-l{font-size:11px;color:#475569;margin-top:2px;}
-  .skel{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:sk 1.5s infinite;border-radius:8px;}
-  @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  #toast-el{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;display:none;color:#fff;max-width:340px;}
-  .upload-zone{border:1.5px dashed rgba(255,255,255,.15);border-radius:10px;padding:18px;display:flex;align-items:center;gap:14px;transition:border-color .15s;}
-  .upload-zone:hover{border-color:var(--acc);}
-  input[type="file"]{font-size:13px;color:#94a3b8;}
-  input[type="file"]::file-selector-button{padding:5px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#94a3b8;cursor:pointer;font-size:12px;margin-right:10px;}
-  /* ── Report card styles ── */
-  .report-card{background:var(--bg2);border:1px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:border-color .2s;}
-  .report-card:hover{border-color:rgba(59,130,246,.25);}
-  .report-header{padding:20px 22px 16px;cursor:pointer;user-select:none;}
-  .report-header:hover{background:rgba(255,255,255,.02);}
-  .report-name{font-size:19px;font-weight:700;color:#f1f5f9;margin-bottom:6px;}
-  .report-tagline{font-size:13px;color:#64748b;margin-bottom:10px;line-height:1.5;}
-  .report-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-  .report-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:#3b82f6;margin-top:4px;}
-  .report-body{border-top:1px solid var(--br);padding:0;}
-  .report-body.hidden{display:none;}
-  .section-row{display:flex;align-items:stretch;border-bottom:1px solid rgba(255,255,255,.04);}
-  .section-row:last-child{border-bottom:none;}
-  .section-num{width:34px;min-width:34px;display:flex;align-items:flex-start;justify-content:center;padding:16px 0 0;font-size:11px;font-weight:700;color:#334155;}
-  .section-inner{flex:1;padding:14px 18px 14px 0;}
-  .section-title{font-size:12px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:6px;}
-  .section-title:hover{color:#93c5fd;}
-  .section-content{font-size:13px;color:#94a3b8;line-height:1.7;}
-  .benefit-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#94a3b8;padding:2px 0;}
-  .benefit-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;margin-top:5px;}
-  .se-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;font-size:12px;margin:2px 3px 2px 0;}
-  .se-low{background:#14532d20;color:#4ade80;border:1px solid #14532d;}
-  .se-medium{background:#451a0320;color:#fbbf24;border:1px solid #854d0e;}
-  .se-high{background:#450a0a20;color:#f87171;border:1px solid #7f1d1d;}
-  .ref-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:12px;}
-  .ref-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
-  .ref-link{color:#60a5fa;text-decoration:none;line-height:1.4;}
-  .ref-link:hover{color:#93c5fd;text-decoration:underline;}
-  .final-rec{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:14px 16px;margin:16px 22px;}
-  .cached-banner{background:rgba(255,255,255,.03);border-bottom:1px solid var(--br);padding:6px 22px;font-size:11px;color:#475569;display:flex;align-items:center;gap:6px;}
-  .source-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .src-ai{background:#4ade80;}.src-kb{background:#60a5fa;}.src-cached{background:#fbbf24;}
-  .stacking-pill{display:inline-block;padding:3px 10px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.25);border-radius:99px;font-size:11px;color:#c084fc;margin:2px;}
-  /* ── Product card ── */
-  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;padding:16px 22px;}
-  .product-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;}
-  .product-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;margin-bottom:8px;}
-  .badge-premium{background:#451a0330;color:#fbbf24;border:1px solid #854d0e;}
-  .badge-popular{background:#450a0a30;color:#f87171;border:1px solid #7f1d1d;}
-  .badge-balanced{background:#1d345730;color:#60a5fa;border:1px solid #1d4ed8;}
-  .product-name{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;}
-  .product-price{font-size:18px;font-weight:700;color:#4ade80;margin-bottom:4px;}
-  .product-rating{font-size:12px;color:#fbbf24;margin-bottom:6px;}
-  .product-benefit{font-size:12px;color:#64748b;line-height:1.5;}
-  /* ── Intent banner ── */
-  .intent-banner{padding:8px 14px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-  .intent-research{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#60a5fa;}
-  .intent-product{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:#fbbf24;}
-  .intent-training{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);color:#4ade80;}
-  /* ── Filter row active state ── */
-  .filter-row-active{padding:8px 12px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:8px;margin-bottom:10px;font-size:12px;color:#60a5fa;}
-  /* ── Other ── */
-  .phase-on{background:#1d3557;color:#60a5fa;}.phase-pct{background:#14532d;color:#4ade80;}.phase-off{background:rgba(255,255,255,.05);color:#475569;}
-  .week-label{font-size:11px;color:#475569;width:80px;flex-shrink:0;}
-  .auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;}
-  .auth-card{background:var(--bg2);border:1px solid var(--br);border-radius:16px;padding:28px 32px;width:420px;}
-  .auth-tabs{display:flex;border:1px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:24px;}
-  .auth-tab{flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;}
-  .auth-tab.active{background:var(--acc);color:#fff;}
-  .auth-tab.inactive{background:transparent;color:#64748b;}
+
+body{
+background:#0b0f17;
+color:white;
+font-family:Inter,system-ui,-apple-system;
+margin:0;
+padding:0;
+}
+
+.main{
+max-width:900px;
+margin:120px auto 40px;
+padding:0 20px;
+}
+
+.search-wrapper{
+display:flex;
+gap:10px;
+background:#0f172a;
+padding:10px;
+border-radius:14px;
+border:1px solid #1e293b;
+}
+
+.search-input{
+flex:1;
+background:transparent;
+border:none;
+outline:none;
+color:white;
+font-size:16px;
+padding:12px;
+}
+
+.search-btn{
+background:#3b82f6;
+border:none;
+padding:12px 26px;
+border-radius:10px;
+color:white;
+font-weight:600;
+cursor:pointer;
+}
+
+.search-btn:hover{
+background:#2563eb;
+}
+
+.results{
+max-width:900px;
+margin:30px auto;
+padding:0 20px;
+}
+
+.loader{
+text-align:center;
+margin-top:40px;
+color:#94a3b8;
+}
+
+.answer-card{
+background:#0f172a;
+border:1px solid #1e293b;
+border-radius:12px;
+padding:20px;
+margin-bottom:20px;
+}
+
+.sources-card{
+background:#0f172a;
+border:1px solid #1e293b;
+border-radius:12px;
+padding:16px;
+margin-bottom:12px;
+}
+
+.source-title{
+color:#60a5fa;
+font-weight:600;
+}
+
+.source-meta{
+font-size:13px;
+color:#94a3b8;
+margin-top:4px;
+}
+
 </style>
+
 </head>
+
 <body>
 
-<div id="toast-el"></div>
+<div class="main">
 
-<!-- ── AUTH ── -->
-<div id="auth-screen" class="auth-screen">
-  <div style="width:100%;max-width:420px;padding:20px;">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:28px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
-      <div style="font-size:13px;color:#475569;margin-top:4px;">Perplexity-style retrieval · ChatGPT-style analysis · Google-speed results</div>
-    </div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-li" onclick="switchAuth('login')">Sign in</button>
-      <button class="auth-tab inactive" id="tab-re" onclick="switchAuth('register')">Create account</button>
-    </div>
-    <div class="auth-card" id="auth-form"></div>
-  </div>
+<div class="search-wrapper">
+
+<input
+id="searchInput"
+class="search-input"
+placeholder="Search fitness, supplements, SARMs, peptides, diet plans..."
+onkeydown="if(event.key==='Enter') search()"
+/>
+
+<button
+class="search-btn"
+onclick="search()"
+>
+Search
+</button>
+
 </div>
 
-<!-- ── APP ── -->
-<div id="app" style="display:none;display:flex;min-height:100vh;">
-  <div class="sidebar">
-    <div style="padding:18px 16px;border-bottom:1px solid var(--br);">
-      <div style="font-size:17px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
-      <div style="font-size:11px;color:#334155;margin-top:2px;">Performance Intelligence</div>
-    </div>
-    <div style="padding:10px;border-bottom:1px solid var(--br);">
-      <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border-radius:10px;padding:10px;">
-        <div id="av" style="width:34px;height:34px;border-radius:50%;background:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">?</div>
-        <div><div id="uname" style="font-size:13px;font-weight:600;color:#e2e8f0;">—</div><div id="ugoal" style="font-size:11px;color:#334155;">—</div></div>
-      </div>
-    </div>
-    <nav style="padding:8px;flex:1;overflow-y:auto;">
-      <button class="nav-item active" data-page="search"  onclick="showPage('search',this)"><span class="ni">🔍</span>Search</button>
-      <button class="nav-item"        data-page="history" onclick="showPage('history',this)"><span class="ni">🕐</span>Search history</button>
-      <button class="nav-item"        data-page="diet"    onclick="showPage('diet',this)"><span class="ni">🍽</span>Diet generator</button>
-      <button class="nav-item"        data-page="cycle"   onclick="showPage('cycle',this)"><span class="ni">📈</span>Cycle planner</button>
-      <button class="nav-item"        data-page="medical" onclick="showPage('medical',this)"><span class="ni">🏥</span>Medical screen</button>
-      <button class="nav-item"        data-page="upload"  onclick="showPage('upload',this)"><span class="ni">📁</span>Upload files</button>
-    </nav>
-    <div style="padding:10px;">
-      <button class="nav-item" style="color:#ef4444;" onclick="doLogout()"><span class="ni">✕</span>Sign out</button>
-    </div>
-  </div>
-
-  <div style="flex:1;min-width:0;background:var(--bg);overflow:auto;">
-    <div id="main" style="padding:28px;max-width:900px;"></div>
-  </div>
 </div>
+
+<div id="results" class="results"></div>
+
 
 <script>
-"use strict";
-let CU=null, AF=[], _lastQuery='';
 
-// ── Toast ─────────────────────────────────────────────────────────────────
-function toast(msg,type){
-  const el=document.getElementById('toast-el');
-  el.textContent=msg;
-  el.style.background=type==='error'?'#7f1d1d':type==='success'?'#14532d':'#1e293b';
-  el.style.display='block';
-  clearTimeout(el._t); el._t=setTimeout(()=>el.style.display='none',3200);
+async function search(){
+
+let query = document.getElementById("searchInput").value;
+
+if(!query) return;
+
+document.getElementById("results").innerHTML = `
+<div class="loader">
+Searching AI fitness knowledge...
+</div>
+`;
+
+try{
+
+let response = await fetch("/search",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+query:query
+})
+});
+
+let data = await response.json();
+
+renderResults(data);
+
+}catch(e){
+
+document.getElementById("results").innerHTML = `
+<div class="loader">
+Error loading results
+</div>
+`;
+
 }
 
-// ── API ───────────────────────────────────────────────────────────────────
-async function api(path,method,body){
-  const opts={method:method||'GET',credentials:'include',headers:{}};
-  if(body){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body);}
-  const res=await fetch(path,opts);
-  const data=await res.json();
-  if(!res.ok) throw new Error(data.error||'Request failed');
-  return data;
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────
-function switchAuth(mode){
-  const li=mode==='login';
-  document.getElementById('tab-li').className='auth-tab '+(li?'active':'inactive');
-  document.getElementById('tab-re').className='auth-tab '+(!li?'active':'inactive');
-  document.getElementById('auth-form').innerHTML=li?loginHTML():registerHTML();
-}
-function loginHTML(){return`
-  <div style="margin-bottom:14px;"><label class="lbl">Email</label><input class="inp" type="email" id="le" placeholder="you@email.com"></div>
-  <div style="margin-bottom:18px;"><label class="lbl">Password</label><input class="inp" type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-  <button class="btn btn-primary" style="width:100%;padding:11px;" onclick="doLogin()">Sign in to your account</button>`;}
-function registerHTML(){return`
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-    <div><label class="lbl">Full name</label><input class="inp" id="rn" placeholder="Your name"></div>
-    <div><label class="lbl">Email</label><input class="inp" type="email" id="re" placeholder="you@email.com"></div>
-  </div>
-  <div style="margin-bottom:10px;"><label class="lbl">Password</label><input class="inp" type="password" id="rp" placeholder="Min 6 chars"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-    <div><label class="lbl">Goal</label><select class="inp" id="rg"><option value="muscle_gain">Muscle gain</option><option value="fat_loss">Fat loss</option><option value="recomp">Recomposition</option><option value="strength">Strength</option></select></div>
-    <div><label class="lbl">Experience</label><select class="inp" id="rl"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
-    <div><label class="lbl">Weight (kg)</label><input class="inp" type="number" id="rw" placeholder="80"></div>
-    <div><label class="lbl">Height (cm)</label><input class="inp" type="number" id="rh" placeholder="175"></div>
-    <div><label class="lbl">Age</label><input class="inp" type="number" id="ra" placeholder="25"></div>
-  </div>
-  <button class="btn btn-primary" style="width:100%;padding:11px;" onclick="doRegister()">Create account</button>`;}
-function val(id){return(document.getElementById(id)||{}).value||'';}
-async function doLogin(){try{const d=await api('/login','POST',{email:val('le'),password:val('lp')});CU=d.user;enterApp();}catch(e){toast(e.message,'error');}}
-async function doRegister(){try{await api('/register','POST',{name:val('rn'),email:val('re'),password:val('rp'),goal:val('rg'),experience_level:val('rl'),weight:val('rw'),height:val('rh'),age:val('ra')});toast('Account created — sign in!','success');switchAuth('login');}catch(e){toast(e.message,'error');}}
-function enterApp(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='flex';updateCard();showPage('search',document.querySelector('[data-page="search"]'));}
-function updateCard(){if(!CU)return;const ini=(CU.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);document.getElementById('av').textContent=ini;document.getElementById('uname').textContent=CU.name||CU.email;document.getElementById('ugoal').textContent=(CU.goal||'').replace(/_/g,' ')+(CU.experience_level?' · '+CU.experience_level:'');}
-async function doLogout(){await api('/logout','POST').catch(()=>{});CU=null;document.getElementById('app').style.display='none';document.getElementById('auth-screen').style.display='flex';switchAuth('login');}
 
-// ── Nav ───────────────────────────────────────────────────────────────────
-function showPage(page,el){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el)el.classList.add('active');
-  ({search:pgSearch,history:pgHistory,diet:pgDiet,cycle:pgCycle,medical:pgMedical,upload:pgUpload})[page]?.();
-}
-function setMain(h){document.getElementById('main').innerHTML=h;}
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SEARCH  —  World-Class AI Search Engine
-// ═══════════════════════════════════════════════════════════════════════════
-function pgSearch(){
-  setMain(`
-  <div style="margin-bottom:20px;">
-    <h1 style="font-size:22px;font-weight:700;margin:0 0 2px;color:#f1f5f9;">FitSearch AI</h1>
-    <p style="font-size:12px;color:#334155;margin:0;">🔎 Perplexity-style retrieval  ·  🧠 ChatGPT-style analysis  ·  ⚡ Google-speed results</p>
-  </div>
+function renderResults(data){
 
-  <!-- Search bar -->
-  <div style="display:flex;gap:10px;margin-bottom:12px;">
-    <div style="flex:1;position:relative;">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#475569;font-size:15px;">🔍</span>
-      <input class="inp" id="sq" style="padding-left:36px;font-size:15px;height:48px;" placeholder="e.g. best creatine for muscle gain, SARMs kya hai, HGH fat loss…" onkeydown="if(event.key==='Enter')doSearch()">
-    </div>
-    <button class="btn btn-primary" style="height:48px;padding:0 22px;font-size:14px;" onclick="doSearch()">Search ↗</button>
-  </div>
+if(!data){
 
-  <!-- Filter chips — FIX 2: clicking NOW triggers doSearch() immediately -->
-  <div style="margin-bottom:8px;">
-    <div style="font-size:11px;color:#334155;margin-bottom:7px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Real-time filters — click to re-rank results</div>
-    <div style="display:flex;gap:7px;flex-wrap:wrap;" id="filter-row">
-      ${[
-        ['Muscle gain','muscle_gain','💪'],
-        ['Fat loss','fat_loss','🔥'],
-        ['Strength','strength','⚡'],
-        ['Endurance','endurance','🏃'],
-        ['Beginner','beginner','🌱'],
-        ['Advanced','advanced','🎯'],
-        ['Recovery','recovery','🔄'],
-        ['Pre-workout','pre_workout','⚡'],
-      ].map(([label,val,icon])=>
-        `<span class="pill" data-filter="${val}" onclick="togF(this,'${val}')">${icon} ${label}</span>`
-      ).join('')}
-    </div>
-  </div>
-  <div id="active-filters-banner" style="display:none;" class="filter-row-active"></div>
+document.getElementById("results").innerHTML="No Results Found";
 
-  <!-- Quick search suggestions -->
-  <div style="margin-bottom:20px;display:flex;gap:7px;flex-wrap:wrap;">
-    ${[
-      'Best creatine for muscle gain',
-      'Ostarine beginner cycle',
-      'Whey protein timing',
-      'Best pre-workout India',
-      'BPC-157 injury recovery',
-      'HGH fat loss protocol',
-      'SARMs kya hai',
-    ].map(q=>`<span onclick="quickSearch('${esc(q)}')" style="padding:4px 11px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:99px;font-size:11px;color:#60a5fa;cursor:pointer;transition:all .12s;" onmouseover="this.style.background='rgba(59,130,246,.15)'" onmouseout="this.style.background='rgba(59,130,246,.08)'">${q}</span>`).join('')}
-  </div>
+return;
 
-  <!-- Results area -->
-  <div id="sr">
-    <div style="text-align:center;padding:52px 0;color:#334155;">
-      <div style="font-size:36px;margin-bottom:12px;">🔬</div>
-      <div style="font-weight:600;color:#64748b;margin-bottom:6px;font-size:15px;">Evidence-Based AI Search Engine</div>
-      <div style="color:#334155;font-size:13px;">Queries PubMed · Examine.com · OpenFDA · Claude AI</div>
-    </div>
-  </div>`);
 }
 
-// ── FIX 2 (frontend) — togF now immediately re-runs the search ────────────
-function togF(el, filterVal){
-  // Toggle UI state
-  el.classList.toggle('on');
-  const i = AF.indexOf(filterVal);
-  i > -1 ? AF.splice(i, 1) : AF.push(filterVal);
+let html = "";
 
-  // Update active filter banner
-  updateFilterBanner();
 
-  // ← THE FIX: if a search is already showing, re-run it immediately
-  const q = ((document.getElementById('sq')||{}).value||'').trim();
-  if(q) doSearch();   // re-POST with updated AF → fresh ranking from backend
+if(data.answer){
+
+html += `
+
+<div class="answer-card">
+
+<h2 style="font-size:22px;font-weight:700;margin-bottom:12px;">
+AI Answer
+</h2>
+
+<div style="line-height:1.7">
+${data.answer}
+</div>
+
+</div>
+
+`;
+
 }
 
-function updateFilterBanner(){
-  const banner = document.getElementById('active-filters-banner');
-  if(!banner) return;
-  if(AF.length === 0){
-    banner.style.display = 'none';
-    return;
-  }
-  const labels = {muscle_gain:'💪 Muscle gain',fat_loss:'🔥 Fat loss',strength:'⚡ Strength',
-                  endurance:'🏃 Endurance',beginner:'🌱 Beginner',advanced:'🎯 Advanced',
-                  recovery:'🔄 Recovery',pre_workout:'⚡ Pre-workout'};
-  banner.style.display = 'flex';
-  banner.innerHTML = `<span>🔄 Filtering by:</span> ${AF.map(f=>`<strong>${labels[f]||f}</strong>`).join(', ')} <span style="margin-left:auto;cursor:pointer;color:#475569;" onclick="clearFilters()">✕ Clear</span>`;
+
+if(data.sources && data.sources.length){
+
+html += `
+<h3 style="margin-bottom:10px;font-size:18px;font-weight:600">
+Sources
+</h3>
+`;
+
+data.sources.forEach(source=>{
+
+html += `
+
+<div class="sources-card">
+
+<a 
+href="${source.link}" 
+target="_blank"
+class="source-title"
+>
+${source.title}
+</a>
+
+<div class="source-meta">
+${source.source || ""}
+</div>
+
+</div>
+
+`;
+
+});
+
 }
 
-function clearFilters(){
-  AF = [];
-  document.querySelectorAll('.pill.on').forEach(p => p.classList.remove('on'));
-  updateFilterBanner();
-  const q = ((document.getElementById('sq')||{}).value||'').trim();
-  if(q) doSearch();
+document.getElementById("results").innerHTML = html;
+
 }
 
-function quickSearch(q){
-  const inp = document.getElementById('sq');
-  if(inp) inp.value = q;
-  doSearch();
-}
-
-// ── Main search function ──────────────────────────────────────────────────
-async function doSearch(){
-  const q = ((document.getElementById('sq')||{}).value||'').trim();
-  if(!q){ toast('Enter a search query','error'); return; }
-  _lastQuery = q;
-
-  document.getElementById('sr').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;padding:20px 0;color:#64748b;font-size:13px;">
-      <div class="skel" style="width:20px;height:20px;border-radius:50%;flex-shrink:0;"></div>
-      <div>
-        <div style="color:#94a3b8;font-weight:600;margin-bottom:2px;">Analysing intent · Extracting entities · Querying sources…</div>
-        <div style="font-size:11px;color:#334155;">PubMed · Examine.com · OpenFDA · Claude AI ${AF.length?'· Filters: '+AF.join(', '):''}</div>
-      </div>
-    </div>
-    <div class="skel" style="height:130px;margin-bottom:12px;"></div>
-    <div class="skel" style="height:80px;margin-bottom:12px;"></div>
-    <div class="skel" style="height:60px;"></div>`;
-
-  try{
-    const d = await api('/search','POST',{query:q, filters:AF});
-    renderResults(d.results||[], q, d.count||0);
-  } catch(e){
-    toast(e.message,'error');
-    document.getElementById('sr').innerHTML=`<div class="card" style="background:#450a0a20;border-color:#7f1d1d;"><div style="color:#f87171;font-size:13px;">Error: ${e.message}</div></div>`;
-  }
-}
-
-// ── Evidence / category colour maps ─────────────────────────────────────
-const evC  = {very_high:'b-green',high:'b-green',moderate:'b-amber',low:'b-red'};
-const evLb = {very_high:'⬆ Very high',high:'↑ High',moderate:'~ Moderate',low:'↓ Low'};
-const catC = {supplement:'b-blue',sarm:'b-purple',steroid:'b-red',peptide:'b-teal',
-              research:'b-gray',diet:'b-green',training:'b-teal',exercise:'b-teal',
-              nutrition:'b-green',general:'b-gray'};
-const intLb= {research:'🔬 Research',product:'🛒 Products',exercise:'🏋 Exercise Guide',
-              nutrition:'🥗 Nutrition',dosage:'💊 Dosage',compare:'⚖ Compare',
-              cycle:'🔄 Cycle',explain:'📖 Explain',recommend:'✅ Recommend',
-              side_effects:'⚠ Safety'};
-const srcLb= {ai:'🤖 AI + Live data',kb:'📚 Knowledge base',cached:'⚡ Cached',fallback:'📚 Fallback'};
-
-// ── Master result renderer ────────────────────────────────────────────────
-function renderResults(results, query, count){
-  if(!results.length){document.getElementById('sr').innerHTML=`<div style="text-align:center;padding:48px;color:#334155;">No results for "${query}"</div>`;return;}
-  const src=results[0]?._source||'kb', cached=results[0]?._cached, intent=results[0]?.intent||'research';
-  let html=`
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#334155;">
-      <span class="source-dot ${cached?'src-cached':src==='ai'?'src-ai':'src-kb'}"></span>
-      <span>${cached?'⚡ Cached':srcLb[src]||src}</span><span>·</span>
-      <span>${count} result${count!==1?'s':''} for <em style="color:#64748b;">"${query}"</em></span>
-      ${AF.length?`<span>·</span><span style="color:#60a5fa;">${AF.length} filter${AF.length>1?'s':''} active</span>`:''}
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <span style="padding:3px 10px;border-radius:99px;font-size:11px;border:1px solid rgba(255,255,255,.1);color:#64748b;">${intLb[intent]||intent}</span>
-      <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="expandAll()">Expand all</button>
-    </div>
-  </div>`;
-  results.forEach((r,idx)=>{
-    html += ((r.intent==='product'||intent==='product')&&r.products?.length)
-      ? buildProductCard(r,`rb-${idx}`,idx===0)
-      : buildResearchCard(r,`rb-${idx}`,idx===0&&!r._supplementary);
-  });
-  document.getElementById('sr').innerHTML=html;
-}
-
-// ─── World-class 17-section research report ───────────────────────────────
-function buildResearchCard(r, bodyId, open){
-  const cat=catC[r.category]||'b-gray', ev=evC[r.evidence_tier]||'b-gray';
-  const cachedBanner=r._cached?`<div class="cached-banner"><span class="source-dot src-cached"></span>⚡ Cached · 24h TTL</div>`:'';
-
-  const listItems=(arr,icon,col)=>(arr||[]).map(b=>`<div style="display:flex;gap:8px;padding:2px 0;font-size:13px;color:${col||'#94a3b8'};align-items:flex-start;"><span style="flex-shrink:0;">${icon||'✓'}</span><span>${b}</span></div>`).join('');
-
-  const typesHTML=arr=>(arr||[]).length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:6px;">${arr.map(t=>`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;">${t.name}</div><div style="font-size:11px;color:#60a5fa;margin:2px 0;">Best for: ${t.best_for}</div><div style="font-size:11px;color:#334155;">Evidence: ${t.evidence}</div></div>`).join('')}</div>`:'—';
-
-  const evidenceHTML=arr=>(arr||[]).length?arr.map(e=>`<div style="border-left:3px solid #3b82f6;padding:8px 12px;margin-bottom:8px;background:rgba(59,130,246,.04);border-radius:0 8px 8px 0;"><div style="font-size:12px;font-weight:600;color:#93c5fd;">${e.study}</div><div style="font-size:13px;color:#cbd5e1;margin:3px 0;line-height:1.5;">${e.finding}</div><div style="font-size:11px;color:#475569;">📄 ${e.source}</div></div>`).join(''):'—';
-
-  const articlesHTML=arr=>(arr||[]).length?arr.map(a=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="font-size:14px;flex-shrink:0;">📄</span><div>${a.url?`<a href="${a.url}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;font-size:13px;font-weight:500;">${a.title}</a>`:`<span style="color:#94a3b8;font-size:13px;">${a.title}</span>`}${a.author?`<div style="font-size:11px;color:#475569;margin-top:2px;">${a.author}${a.source?' · '+a.source:''}</div>`:''}</div></div>`).join(''):'—';
-
-  const magazinesHTML=arr=>(arr||[]).length?arr.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;">📰 ${m.url?`<a href="${m.url}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;font-size:13px;">${m.title}</a>`:`<span style="color:#94a3b8;font-size:13px;">${m.title}</span>`}${m.publisher?`<span style="color:#334155;font-size:11px;">— ${m.publisher}</span>`:''}</div>`).join(''):'—';
-
-  const booksHTML=arr=>(arr||[]).length?arr.map(b=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;"><span style="font-size:14px;flex-shrink:0;">📚</span><div><div style="font-size:13px;font-weight:500;color:#e2e8f0;">${b.title}</div><div style="font-size:11px;color:#475569;">${b.author||''}${b.year?' · '+b.year:''}</div></div></div>`).join(''):'—';
-
-  const videosHTML=arr=>(arr||[]).length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:4px;">${arr.map(v=>`<a href="${v.url||'#'}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:8px;text-decoration:none;"><span style="font-size:22px;flex-shrink:0;">▶</span><div><div style="font-size:12px;font-weight:600;color:#fca5a5;line-height:1.3;">${v.title}</div><div style="font-size:11px;color:#475569;margin-top:2px;">${v.channel||''} · ${v.platform||'YouTube'}</div></div></a>`).join('')}</div>`:'—';
-
-  const seHTML=arr=>(arr||[]).length?arr.map(se=>`<span class="se-badge se-${se.severity||'low'}">${se.effect}</span>`).join(''):'—';
-  const pilList=(arr,col)=>(arr||[]).length?arr.map(p=>`<span style="display:inline-flex;padding:3px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:99px;font-size:12px;color:${col||'#94a3b8'};margin:3px;">${p}</span>`).join(''):'—';
-
-  const secs=[
-    {n:1, label:'What it is',           body:`<div class="section-content">${r.what_it_is||r.overview||'—'}</div>`},
-    {n:2, label:'How it works',         body:`<div class="section-content">${r.how_it_works||'—'}</div>`},
-    {n:3, label:'Types & Forms',        body:typesHTML(r.types)},
-    {n:4, label:'Dosage',               body:`<div class="section-content">${r.dosage||'—'}</div>`},
-    {n:5, label:'Timing',               body:`<div class="section-content">${r.timing||'—'}</div>`},
-    {n:6, label:'How to take',          body:`<div class="section-content">${r.how_to_take||'—'}</div>`},
-    {n:7, label:'Best ways to use',     body:listItems(r.best_ways_to_use,'💡','#94a3b8')},
-    {n:8, label:'Who should use',       body:pilList(r.who_should_use,'#4ade80')},
-    {n:9, label:'Who should avoid',     body:pilList(r.who_should_avoid,'#f87171')},
-    {n:10,label:'Training synergy',     body:`<div class="section-content">${r.training_synergy||'—'}</div>`},
-    {n:11,label:'Expected benefits',    body:listItems(r.benefits,'✓','#4ade80')},
-    {n:12,label:'Risks & Side effects', body:seHTML(r.side_effects)},
-    {n:13,label:'Research evidence',    body:evidenceHTML(r.research_evidence)},
-    {n:14,label:'Articles & References',body:articlesHTML(r.articles)},
-    {n:15,label:'Magazines',            body:magazinesHTML(r.magazines)},
-    {n:16,label:'Books',                body:booksHTML(r.books)},
-    {n:17,label:'Videos',              body:videosHTML(r.videos)},
-  ];
-
-  const secRows=secs.map(s=>`<div class="section-row"><div class="section-num">${s.n}</div><div class="section-inner"><div class="section-title" onclick="toggleSection(this)"><span>${s.label}</span><span style="color:#334155;font-size:10px;margin-left:auto;">▾</span></div><div class="section-body">${s.body}</div></div></div>`).join('');
-  const stackHtml=(r.stacking||[]).map(s=>`<span class="stacking-pill">${s}</span>`).join('');
-  const aiSum=r.ai_summary?`<div style="margin:12px 22px 0;padding:14px 16px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:10px;"><div style="font-size:11px;font-weight:700;color:#a5b4fc;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">🤖 AI Summary</div><div style="font-size:13px;color:#c7d2fe;line-height:1.65;">${r.ai_summary}</div></div>`:'';
-  const finalRec=r.final_recommendation?`<div class="final-rec"><div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:6px;">✅ Final recommendation</div><div style="font-size:13px;color:#93c5fd;line-height:1.65;">${r.final_recommendation}</div></div>`:'';
-  const stackRow=stackHtml?`<div style="padding:10px 22px 14px;"><div style="font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Stack with / Related</div><div>${stackHtml}</div></div>`:'';
-
-  return `<div class="report-card" id="rc-${bodyId}">${cachedBanner}
-    <div class="report-header" onclick="toggleReport('${bodyId}')">
-      <div class="report-name">${r.name} <span style="font-size:14px;font-weight:400;color:#475569;">→ ${open?'Click to collapse':'Click to expand'}</span></div>
-      <div class="report-tagline">${r.tagline||''}</div>
-      <div class="report-badges">
-        <span class="badge ${cat}">${r.category||'supplement'}</span>
-        <span class="badge ${ev}">${evLb[r.evidence_tier]||'Moderate'} evidence</span>
-        ${r.safe_for_beginners===true?'<span class="badge b-green">🌱 Beginner safe</span>':r.safe_for_beginners===false?'<span class="badge b-red">⚠ Advanced only</span>':''}
-        ${r.legal_status?`<span class="badge b-amber" title="${r.legal_status}">⚖ Legal notice</span>`:''}
-        ${r._supplementary?'<span class="badge b-gray">Related</span>':''}
-        ${r._source==='ai'?'<span class="badge b-teal">🤖 AI</span>':r._cached?'<span class="badge b-amber">⚡ Cached</span>':'<span class="badge b-gray">📚 KB</span>'}
-      </div>
-      <div class="report-toggle"><span id="tt-${bodyId}">${open?'▲ Collapse':'▼ Expand full report (17 sections)'}</span></div>
-    </div>
-    <div class="report-body ${open?'':'hidden'}" id="${bodyId}">
-      ${r.legal_status?`<div style="margin:0 22px 10px;padding:8px 12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#fbbf24;">⚖ ${r.legal_status}</div>`:''}
-      ${secRows}${aiSum}${finalRec}${stackRow}
-      ${r.ai_note?`<div style="padding:0 22px 14px;font-size:11px;color:#334155;font-style:italic;">${r.ai_note}</div>`:''}
-    </div>
-  </div>`;
-}
-
-// ─── Product card ─────────────────────────────────────────────────────────
-function buildProductCard(r, bodyId, open){
-  const products=r.products||[];
-  const bC={'🏅 Premium':'badge-premium','🔥 Popular':'badge-popular','💪 Balanced':'badge-balanced'};
-  const stars=n=>'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));
-  return `<div class="report-card" id="rc-${bodyId}">
-    <div class="report-header" onclick="toggleReport('${bodyId}')">
-      <div class="report-name">${r.name} <span style="font-size:14px;font-weight:400;color:#475569;">→ ${open?'Collapse':'View products'}</span></div>
-      <div class="report-tagline">${r.tagline||''}</div>
-      <div class="report-badges"><span class="badge b-amber">🛒 Products</span><span class="badge b-blue">${products.length} products</span>${r._source==='ai'?'<span class="badge b-teal">🤖 AI</span>':r._cached?'<span class="badge b-amber">⚡ Cached</span>':''}</div>
-      <div class="report-toggle"><span id="tt-${bodyId}">${open?'▲ Collapse':'▼ View products'}</span></div>
-    </div>
-    <div class="report-body ${open?'':'hidden'}" id="${bodyId}">
-      <div class="product-grid">${products.map(p=>`<div class="product-card"><div class="product-badge ${bC[p.badge]||'badge-balanced'}">${p.badge||'💪'}</div><div class="product-name">${p.name}</div>${p.price_inr?`<div class="product-price">₹${p.price_inr.toLocaleString()}</div>`:''}<div class="product-rating">${stars(p.rating||4)} ${p.rating||4}/5</div>${p.key_benefit?`<div class="product-benefit">✓ ${p.key_benefit}</div>`:''}${p.best_for?`<div style="font-size:11px;color:#475569;margin-top:4px;">Best for: ${p.best_for}</div>`:''}</div>`).join('')}</div>
-      ${r.final_recommendation?`<div class="final-rec" style="background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.2);"><div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:6px;">🛒 Buying recommendation</div><div style="font-size:13px;color:#fde68a;">${r.final_recommendation}</div></div>`:''}
-    </div>
-  </div>`;
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────
-function toggleReport(id){
-  const body=document.getElementById(id),tt=document.getElementById('tt-'+id);
-  if(!body)return;
-  const isOpen=!body.classList.contains('hidden');
-  body.classList.toggle('hidden');
-  if(tt) tt.textContent=isOpen?'▼ Expand full report (17 sections)':'▲ Collapse';
-}
-function toggleSection(el){
-  const body=el.nextElementSibling;
-  if(!body)return;
-  body.style.display=body.style.display==='none'?'block':'none';
-  const arr=el.querySelector('span:last-child');
-  if(arr) arr.textContent=body.style.display==='none'?'▸':'▾';
-}
-function expandAll(){
-  document.querySelectorAll('.report-body.hidden').forEach(b=>b.classList.remove('hidden'));
-  document.querySelectorAll('[id^="tt-"]').forEach(t=>t.textContent='▲ Collapse');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// HISTORY
-// ═══════════════════════════════════════════════════════════════════════════
-async function pgHistory(){
-  setMain(`<h1 style="font-size:22px;font-weight:700;margin:0 0 18px;color:#f1f5f9;">Search history</h1><div id="hl"><div class="skel" style="height:180px;"></div></div>`);
-  try{
-    const rows=await api('/history');
-    const el=document.getElementById('hl');
-    if(!rows.length){el.innerHTML='<div style="text-align:center;padding:48px;color:#334155;">No searches yet</div>';return;}
-    el.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <span style="font-size:12px;color:#475569;">${rows.length} searches</span>
-      <button class="btn" style="font-size:12px;color:#f87171;border-color:#450a0a;" onclick="clrHist()">Clear all</button>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden;">
-      ${rows.map(r=>`
-      <div id="hi-${r.id}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);">
-        <div>
-          <div style="font-size:14px;font-weight:500;color:#e2e8f0;">${r.query}</div>
-          <div style="font-size:11px;color:#334155;margin-top:2px;">${new Date(r.searched_at).toLocaleString()} · ${r.results_count||0} results</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button class="btn" style="font-size:11px;padding:5px 10px;" onclick="rerun('${esc(r.query)}')">Re-run →</button>
-          <button onclick="delH(${r.id})" style="background:none;border:none;color:#475569;cursor:pointer;font-size:16px;">✕</button>
-        </div>
-      </div>`).join('')}
-    </div>`;
-  }catch(e){toast(e.message,'error');}
-}
-async function clrHist(){if(!confirm('Clear all history?'))return;await api('/history/clear','DELETE');toast('Cleared','success');pgHistory();}
-async function delH(id){await api('/history/'+id,'DELETE');const el=document.getElementById('hi-'+id);if(el)el.remove();}
-function rerun(q){showPage('search',document.querySelector('[data-page="search"]'));setTimeout(()=>{const sq=document.getElementById('sq');if(sq)sq.value=q;doSearch();},80);}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DIET
-// ═══════════════════════════════════════════════════════════════════════════
-function pgDiet(){
-  const u=CU||{};
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Diet generator</h1>
-  <p style="font-size:13px;color:#475569;margin:0 0 18px;">AI-generated meal plan based on your stats</p>
-  <div class="card" style="margin-bottom:16px;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
-      <div><label class="lbl">Weight (kg)</label><input class="inp" type="number" id="dw" value="${u.weight||80}"></div>
-      <div><label class="lbl">Height (cm)</label><input class="inp" type="number" id="dh" value="${u.height||175}"></div>
-      <div><label class="lbl">Age</label><input class="inp" type="number" id="da" value="${u.age||25}"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div><label class="lbl">Goal</label><select class="inp" id="dg"><option value="muscle_gain">Muscle gain</option><option value="fat_loss">Fat loss</option><option value="recomp">Recomposition</option></select></div>
-      <div><label class="lbl">Activity</label><select class="inp" id="dact"><option value="sedentary">Sedentary</option><option value="light">Light (1–3/wk)</option><option value="moderate" selected>Moderate (3–5/wk)</option><option value="active">Active (6–7/wk)</option><option value="very_active">Very active</option></select></div>
-      <div><label class="lbl">Sex</label><select class="inp" id="ds"><option value="male">Male</option><option value="female">Female</option></select></div>
-    </div>
-    <div style="margin-bottom:14px;"><label class="lbl">Upload BCA report (optional)</label>
-      <div class="upload-zone"><span style="font-size:20px;">📄</span><input type="file" id="bca-diet" accept=".pdf,.jpg,.jpeg,.png"><div style="font-size:11px;color:#334155;margin-top:4px;">PDF or image</div></div>
-      <div id="bca-s" style="font-size:12px;color:#4ade80;margin-top:6px;display:none;"></div>
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn" onclick="upBCADiet()">Upload BCA</button>
-      <button class="btn btn-primary" onclick="doDiet()">Generate plan ↗</button>
-    </div>
-  </div>
-  <div id="dr"></div>`);
-}
-async function upBCADiet(){const f=(document.getElementById('bca-diet')||{}).files?.[0];if(!f){toast('Select a file','error');return;}const fm=new FormData();fm.append('file',f);try{const r=await fetch('/upload_bca',{method:'POST',body:fm,credentials:'include'});const d=await r.json();if(d.status==='uploaded'){const s=document.getElementById('bca-s');s.textContent='✓ '+d.file;s.style.display='block';toast('BCA uploaded','success');}}catch(e){toast('Upload failed','error');}}
-async function doDiet(){
-  document.getElementById('dr').innerHTML='<div class="skel" style="height:400px;"></div>';
-  try{
-    const d=await api('/diet','POST',{weight:val('dw'),height:val('dh'),age:val('da'),goal:val('dg'),activity_level:val('dact'),sex:val('ds')});
-    const m=d.diet?.macros||{};
-    const meals=d.diet?.meals||[];
-    document.getElementById('dr').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
-      <div class="metric"><div class="metric-v">${(d.calories||0).toLocaleString()}</div><div class="metric-l">Calories/day</div></div>
-      <div class="metric" style="background:#14532d20;"><div class="metric-v" style="color:#4ade80;">${m.protein_g||0}g</div><div class="metric-l">Protein</div></div>
-      <div class="metric" style="background:#1d345720;"><div class="metric-v" style="color:#60a5fa;">${m.carbs_g||0}g</div><div class="metric-l">Carbs</div></div>
-      <div class="metric" style="background:#45180320;"><div class="metric-v" style="color:#fbbf24;">${m.fats_g||0}g</div><div class="metric-l">Fats</div></div>
-    </div>
-    <div class="card" style="margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Daily meal plan</div>
-      ${meals.map(meal=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);">
-        <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;">${meal.name}</div>
-        <div style="font-size:12px;color:#64748b;margin-top:3px;line-height:1.6;">${meal.foods}</div>
-        <div style="font-size:11px;color:#334155;margin-top:4px;">P:${meal.protein}g · C:${meal.carbs}g · F:${meal.fats}g</div></div>
-        <div style="font-size:13px;font-weight:600;color:#94a3b8;margin-left:14px;white-space:nowrap;">${meal.calories} kcal</div>
-      </div>`).join('')}
-    </div>
-    ${d.diet?.supplements?.length?`<div class="card" style="background:#14532d20;border-color:#14532d;"><div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">Supplements</div>${d.diet.supplements.map(s=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">✓ ${s}</div>`).join('')}</div>`:''}`;
-  }catch(e){toast(e.message,'error');}
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// CYCLE
-// ═══════════════════════════════════════════════════════════════════════════
-function pgCycle(){
-  const u=CU||{};
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Cycle planner</h1>
-  <div style="padding:8px 12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#fbbf24;margin:8px 0 18px;">⚠ Educational purposes only. Consult a physician.</div>
-  <div class="card" style="margin-bottom:16px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-      <div><label class="lbl">Experience</label><select class="inp" id="cyl"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
-      <div><label class="lbl">Compound category</label><select class="inp" id="cyc"><option value="auto">Auto (recommended)</option><option value="sarm">SARMs</option><option value="steroid">Steroids</option><option value="peptide">Peptides</option></select></div>
-    </div>
-    <div style="margin-bottom:14px;"><label class="lbl">Goal</label><select class="inp" id="cyg"><option value="muscle_gain">Muscle gain</option><option value="fat_loss">Fat loss</option><option value="recomp">Recomposition</option><option value="strength">Strength</option></select></div>
-    <div style="margin-bottom:14px;"><label class="lbl">Upload medical report (optional)</label>
-      <div class="upload-zone"><span style="font-size:20px;">🏥</span><input type="file" id="med-cycle" accept=".pdf,.jpg,.jpeg,.png"></div>
-      <div id="med-s" style="font-size:12px;color:#4ade80;margin-top:6px;display:none;"></div>
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn" onclick="upMedCycle()">Upload report</button>
-      <button class="btn btn-primary" onclick="doCycle()">Generate cycle ↗</button>
-    </div>
-  </div>
-  <div id="cyr"></div>`);
-}
-async function upMedCycle(){const f=(document.getElementById('med-cycle')||{}).files?.[0];if(!f){toast('Select a file','error');return;}const fm=new FormData();fm.append('file',f);try{const r=await fetch('/upload_medical',{method:'POST',body:fm,credentials:'include'});const d=await r.json();if(d.status==='uploaded'){const s=document.getElementById('med-s');s.textContent='✓ '+d.file;s.style.display='block';toast('Report uploaded','success');}}catch(e){toast('Upload failed','error');}}
-async function doCycle(){
-  document.getElementById('cyr').innerHTML='<div class="skel" style="height:380px;"></div>';
-  try{
-    const d=await api('/cycle','POST',{experience_level:val('cyl'),compound_category:val('cyc'),goal:val('cyg')});
-    const weeks=Array.isArray(d.weeks)?d.weeks:[];
-    const phC={on:'phase-on',pct:'phase-pct',off:'phase-off'};
-    document.getElementById('cyr').innerHTML=`
-    <div class="card" style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div><div style="font-size:16px;font-weight:700;color:#f1f5f9;">${d.cycle_name||'Cycle plan'}</div>
-        <div style="font-size:12px;color:#475569;margin-top:2px;">Total: ${d.total_weeks||'—'} weeks · ${d.category||''}</div></div>
-        <span class="badge ${d.category==='steroid'?'b-red':d.category==='sarm'?'b-purple':'b-teal'}">${d.category||''}</span>
-      </div>
-      ${weeks.map(w=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <div class="week-label">${w.range}</div>
-        <div style="flex:1;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;justify-content:space-between;" class="${phC[w.phase]||'phase-off'}">
-          <span>${w.compound}</span><span style="opacity:.75;font-weight:400;">${w.dose}</span>
-        </div>
-      </div>`).join('')}
-    </div>
-    ${d.on_cycle_support?.length?`<div class="card" style="background:#1d345720;border-color:#1d4ed8;margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:#60a5fa;margin-bottom:8px;">On-cycle support</div>${d.on_cycle_support.map(s=>`<div style="font-size:13px;color:#93c5fd;padding:3px 0;">✓ ${s}</div>`).join('')}</div>`:''}
-    ${d.bloodwork?.length?`<div class="card" style="background:#14532d20;border-color:#14532d;margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">📋 Bloodwork checkpoints</div>${d.bloodwork.map((b,i)=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">${i+1}. ${b}</div>`).join('')}</div>`:''}
-    ${d.disclaimer?`<div style="padding:12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#d97706;line-height:1.6;">${d.disclaimer}</div>`:''}`;
-  }catch(e){toast(e.message,'error');}
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// MEDICAL
-// ═══════════════════════════════════════════════════════════════════════════
-function pgMedical(){
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Medical screening</h1>
-  <p style="font-size:13px;color:#475569;margin:0 0 18px;">Basic risk assessment before starting a cycle</p>
-  <div class="card" style="margin-bottom:18px;">
-    <div style="margin-bottom:12px;"><label class="lbl">Known conditions (comma-separated)</label><input class="inp" id="mc" placeholder="e.g. hypertension, diabetes"></div>
-    <div style="margin-bottom:16px;"><label class="lbl">Current medications (comma-separated)</label><input class="inp" id="mm" placeholder="e.g. warfarin, metformin"></div>
-    <button class="btn btn-primary" onclick="doMedical()">Run screening ↗</button>
-  </div>
-  <div id="mr"></div>`);
-}
-async function doMedical(){
-  document.getElementById('mr').innerHTML='<div class="skel" style="height:200px;"></div>';
-  try{
-    const conditions=val('mc').split(',').map(s=>s.trim()).filter(Boolean);
-    const medications=val('mm').split(',').map(s=>s.trim()).filter(Boolean);
-    const d=await api('/medical','POST',{conditions,medications});
-    const rc={low_risk:'#14532d20',moderate_risk:'#451a0320',high_risk:'#450a0a20'};
-    const rt={low_risk:'#4ade80',moderate_risk:'#fbbf24',high_risk:'#f87171'};
-    const rl={low_risk:'Low risk',moderate_risk:'Moderate risk',high_risk:'High risk'};
-    document.getElementById('mr').innerHTML=`
-    <div class="card" style="background:${rc[d.overall_risk]};border-color:${rt[d.overall_risk]}40;margin-bottom:12px;">
-      <div style="font-size:15px;font-weight:700;color:${rt[d.overall_risk]};margin-bottom:3px;">${rl[d.overall_risk]}</div>
-      <div style="font-size:13px;color:${rt[d.overall_risk]}90;">Clearance: ${d.clearance?'Not required (still recommended)':'Mandatory before any cycle'}</div>
-    </div>
-    ${d.flags?.length?`<div class="card" style="margin-bottom:12px;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Risk flags</div>${d.flags.map(f=>`<div style="padding:8px 12px;background:${f.severity==='high'?'#450a0a20':f.severity==='medium'?'#451a0320':'#14532d20'};border-radius:8px;margin-bottom:6px;"><div style="font-size:12px;font-weight:600;color:#e2e8f0;">${f.flag}</div><div style="font-size:12px;color:#94a3b8;margin-top:2px;">${f.note}</div></div>`).join('')}</div>`:''}
-    <div class="card"><div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Recommendations</div>${(d.recommendations||[]).map(r=>`<div style="font-size:13px;color:#64748b;padding:4px 0;">✓ ${r}</div>`).join('')}</div>`;
-  }catch(e){toast(e.message,'error');}
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// UPLOAD
-// ═══════════════════════════════════════════════════════════════════════════
-function pgUpload(){
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 18px;color:#f1f5f9;">Upload files</h1>
-  <div class="card" style="margin-bottom:14px;">
-    <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:12px;">BCA report</div>
-    <div class="upload-zone" style="margin-bottom:12px;"><span style="font-size:22px;">📄</span><input type="file" id="bf" accept=".pdf,.jpg,.jpeg,.png"></div>
-    <button class="btn btn-primary" onclick="upBCA()">Upload BCA</button>
-    <div id="bs" style="margin-top:8px;font-size:12px;color:#4ade80;display:none;"></div>
-  </div>
-  <div class="card">
-    <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:12px;">Physique photos</div>
-    <div class="upload-zone" style="margin-bottom:12px;"><span style="font-size:22px;">📷</span><input type="file" id="pf" accept=".jpg,.jpeg,.png" multiple></div>
-    <button class="btn btn-primary" onclick="upPhysique()">Upload photos</button>
-    <div id="ps" style="margin-top:8px;font-size:12px;color:#4ade80;display:none;"></div>
-  </div>`);
-}
-async function upBCA(){const f=(document.getElementById('bf')||{}).files?.[0];if(!f){toast('Select a file','error');return;}const fm=new FormData();fm.append('file',f);try{const r=await fetch('/upload_bca',{method:'POST',body:fm,credentials:'include'});const d=await r.json();const s=document.getElementById('bs');s.textContent='✓ Uploaded: '+d.file;s.style.display='block';toast('BCA uploaded','success');}catch(e){toast('Upload failed','error');}}
-async function upPhysique(){const files=(document.getElementById('pf')||{}).files;if(!files?.length){toast('Select files','error');return;}const fm=new FormData();for(const f of files)fm.append('files',f);try{const r=await fetch('/upload_physique',{method:'POST',body:fm,credentials:'include'});const d=await r.json();const s=document.getElementById('ps');s.textContent=`✓ ${d.count} file(s)`;s.style.display='block';toast('Uploaded','success');}catch(e){toast('Failed','error');}}
-
-// ── Utils ─────────────────────────────────────────────────────────────────
-function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
-
-// ── Init ──────────────────────────────────────────────────────────────────
-(async()=>{
-  switchAuth('login');
-  try{const u=await api('/me');CU=u;enterApp();}catch{}
-})();
 </script>
+
 </body>
+
 </html>
