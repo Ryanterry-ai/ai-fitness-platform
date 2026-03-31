@@ -14,9 +14,8 @@ from datetime import datetime, timezone
 from typing import Any
 import requests
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-PUBMED_API_KEY    = os.getenv("PUBMED_API_KEY", "")
-SERP_API_KEY      = os.getenv("SERP_API_KEY", "")
+CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+CLAUDE_URL = "https://api.anthropic.com/v1/messages"
 
 BASE_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE_DB      = os.path.join(BASE_DIR, "database", "search_cache.db")
