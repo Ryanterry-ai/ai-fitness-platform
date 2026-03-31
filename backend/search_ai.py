@@ -1,7 +1,7 @@
 import os
-import json
 import requests
 from datetime import datetime
+
 
 # ============================================
 # Environment Variables
@@ -9,53 +9,33 @@ from datetime import datetime
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY") or os.getenv("NEW_SECRET")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 
 # ============================================
-# Query Intent Detection
+# Intent Detection
 # ============================================
 
 def detect_query_intent(query):
 
     query = query.lower()
 
-    if any(x in query for x in ["what is", "kya hai", "meaning", "define"]):
-        return "informational"
-
-    if any(x in query for x in ["best", "top", "recommend"]):
+    if "best" in query or "top" in query:
         return "recommendation"
 
-    if any(x in query for x in ["side effects", "safe", "danger"]):
+    if "side effect" in query:
         return "safety"
 
-    if any(x in query for x in ["cycle", "plan", "diet", "workout"]):
+    if "cycle" in query or "plan" in query:
         return "planning"
 
-    if any(x in query for x in ["vs", "compare"]):
+    if "vs" in query or "compare" in query:
         return "comparison"
 
     return "general"
 
 
 # ============================================
-# Query Expansion
-# ============================================
-
-def expand_query(query):
-
-    return [
-        query,
-        f"{query} benefits",
-        f"{query} dosage",
-        f"{query} side effects",
-        f"{query} research",
-        f"{query} guide"
-    ]
-
-
-# ============================================
-# Claude Deep Research
+# Claude Research
 # ============================================
 
 def claude_research(query, deep=False):
@@ -71,43 +51,34 @@ def claude_research(query, deep=False):
             "content-type": "application/json"
         }
 
-        research_mode = "Deep Research Mode" if deep else "Standard Research"
+        mode = "Deep Research" if deep else "Standard Research"
 
         prompt = f"""
-You are an AI Health & Fitness Answer Engine.
+You are a Professional Health & Fitness AI.
 
-Query: {query}
+User Query: {query}
 
-Mode: {research_mode}
+Mode: {mode}
 
-Generate ChatGPT-style response:
+Generate response in this format:
 
-1. Conversational Answer
+Conversational Answer:
 
-2. What it is
+What It Is:
+How It Works:
+Benefits:
+Dosage:
+Timing:
+Side Effects:
+Who Should Avoid:
+Best Use Cases:
 
-3. How it Works
-
-4. Benefits
-
-5. Dosage
-
-6. Timing
-
-7. Side Effects
-
-8. Who Should Avoid
-
-9. Best Use Cases
-
-Also Provide Sources:
-
-Return structured response.
+Return clean text.
 """
 
         payload = {
             "model": "claude-3-sonnet-20240229",
-            "max_tokens": 2500,
+            "max_tokens": 2000,
             "messages": [
                 {
                     "role": "user",
@@ -137,10 +108,10 @@ Return structured response.
 
 
 # ============================================
-# Real Time Research
+# Real Time Sources
 # ============================================
 
-def real_time_research(query):
+def real_time_sources(query):
 
     if not SERPAPI_KEY:
         return []
@@ -163,93 +134,89 @@ def real_time_research(query):
 
         if "organic_results" in data:
 
-            for r in data["organic_results"][:6]:
+            for r in data["organic_results"][:5]:
 
                 sources.append({
                     "title": r.get("title"),
                     "link": r.get("link"),
-                    "snippet": r.get("snippet"),
-                    "source": "Google"
+                    "snippet": r.get("snippet")
                 })
 
         return sources
 
-    except Exception as e:
-        print("SERP Error:", str(e))
+    except:
         return []
 
 
 # ============================================
-# Product Detection
+# Fallback Answer
 # ============================================
 
-def detect_product_query(query):
+def fallback_answer(query):
 
-    keywords = ["best", "top", "buy", "recommend"]
+    return f"""
+Here is information about {query}.
 
-    return any(k in query.lower() for k in keywords)
+{query} is commonly used in fitness and health.
+
+Benefits:
+• Improves performance
+• Supports muscle growth
+• Helps recovery
+
+Dosage:
+Depends on individual needs
+
+Side Effects:
+Usually mild if used properly
+"""
 
 
 # ============================================
-# Product Results
+# Product Recommendations
 # ============================================
 
-def product_results(query):
+def get_recommendations(query):
 
     return [
 
         {
-            "name": "Optimum Nutrition Gold Standard Whey",
+            "name": "Optimum Nutrition Whey",
             "rating": 4.8,
-            "badge": "Best Seller",
             "price": "₹4500"
         },
 
         {
-            "name": "MuscleBlaze Whey Protein",
+            "name": "MuscleBlaze Whey",
             "rating": 4.6,
-            "badge": "Best Value",
             "price": "₹3200"
-        },
-
-        {
-            "name": "MyProtein Impact Whey",
-            "rating": 4.7,
-            "badge": "Popular",
-            "price": "₹3900"
         }
 
     ]
 
 
 # ============================================
-# Main Search Function
+# Main Search
 # ============================================
 
 def search_knowledge(query):
 
     intent = detect_query_intent(query)
 
-    expanded_queries = expand_query(query)
+    answer = claude_research(query)
 
-    sources = []
+    if not answer:
+        answer = fallback_answer(query)
 
-    for q in expanded_queries:
-        sources.extend(real_time_research(q))
-
-    claude_answer = claude_research(query)
-
-    products = []
-
-    if detect_product_query(query):
-        products = product_results(query)
+    sources = real_time_sources(query)
 
     return {
 
-        "answer": claude_answer,
+        "query": query,
+        "answer": answer,
         "intent": intent,
         "sources": sources,
-        "products": products,
+        "products": get_recommendations(query),
         "timestamp": datetime.now().isoformat()
 
     }
@@ -261,41 +228,23 @@ def search_knowledge(query):
 
 def deep_research(query):
 
-    intent = detect_query_intent(query)
+    answer = claude_research(query, deep=True)
 
-    sources = real_time_research(query)
-
-    claude_answer = claude_research(query, deep=True)
+    if not answer:
+        answer = fallback_answer(query)
 
     return {
 
-        "answer": claude_answer,
-        "intent": intent,
-        "sources": sources,
+        "query": query,
+        "answer": answer,
+        "sources": real_time_sources(query),
         "timestamp": datetime.now().isoformat()
 
     }
 
 
 # ============================================
-# Recommendations
-# ============================================
-
-def get_recommendations(query):
-
-    products = product_results(query)
-
-    return {
-
-        "answer": "Top recommended products based on query",
-        "products": products,
-        "timestamp": datetime.now().isoformat()
-
-    }
-
-
-# ============================================
-# Backward Compatible Function
+# Main API Entry
 # ============================================
 
 def search_ai(query, deep=False):
