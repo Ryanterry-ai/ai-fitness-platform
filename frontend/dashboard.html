@@ -1,8 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — FitSearch AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--bg:#050810;--bg2:#0a0f1e;--bg3:#0f1629;--panel:#111827;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;--sidebar:220px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+.sidebar-logo{padding:22px 18px 16px;border-bottom:1px solid var(--border);}
+.logo-mark{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;text-decoration:none;}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.logo-sub{font-size:10px;font-weight:500;color:var(--text3);margin-top:1px;letter-spacing:.04em;}
+.sidebar-section{padding:16px 10px 8px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;margin:1px 6px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;width:calc(100% - 12px);text-align:left;transition:all .15s;text-decoration:none;}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text2);}
+.nav-item.active{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.2);}
+.nav-icon{width:18px;font-size:14px;text-align:center;flex-shrink:0;}
+.sidebar-footer{margin-top:auto;padding:14px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border);}
+.user-avatar{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:600;color:var(--text);}
+.user-plan{font-size:10px;color:var(--text3);}
+.main{margin-left:var(--sidebar);min-height:100vh;position:relative;z-index:1;}
+.page-header{padding:28px 32px 20px;border-bottom:1px solid var(--border);}
+.page-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--text2);}
+.content{padding:24px 32px;}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.metric-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+.metric-icon{font-size:20px;margin-bottom:10px;}
+.metric-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;}
+.metric-lbl{font-size:12px;color:var(--text3);font-weight:500;}
+.metric-trend{font-size:11px;color:var(--green);margin-top:6px;font-weight:600;}
+.section-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.rec-item{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.rec-item:hover{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.05);}
+.rec-icon{width:34px;height:34px;border-radius:8px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.rec-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.rec-reason{font-size:11px;color:var(--text3);line-height:1.4;}
+.hist-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;}
+.hist-item:hover{background:rgba(255,255,255,.04);}
+.hist-query{font-size:13px;color:var(--text);}
+.hist-meta{font-size:11px;color:var(--text3);}
+.profile-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field{margin-bottom:0;}
+.lbl{display:block;font-size:11px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.inp,.sel{width:100%;padding:10px 12px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:9px;font-size:13px;font-family:'Space Grotesk',sans-serif;color:var(--text);outline:none;transition:all .2s;}
+.inp:focus,.sel:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12);}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7 7l3 3 3-3' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px;padding-right:30px;background-color:var(--bg3);}
+.btn{padding:10px 18px;border-radius:9px;cursor:pointer;border:none;font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;transition:all .15s;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-danger{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.btn-danger:hover{background:rgba(239,68,68,.2);}
+.tab-row{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.03);padding:4px;border-radius:10px;width:fit-content;}
+.tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border:none;background:none;font-family:'Space Grotesk',sans-serif;transition:all .15s;}
+.tab.active{background:var(--panel);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a class="logo-mark" href="/">
+      <div class="logo-icon">⚡</div>
+      <div><div>FitSearch AI</div><div class="logo-sub">Research Engine v5</div></div>
+    </a>
+  </div>
+  <div class="sidebar-section">Search</div>
+  <a class="nav-item" href="/"><span class="nav-icon">🔍</span> AI Search</a>
+  <button class="nav-item active"><span class="nav-icon">📊</span> Dashboard</button>
+  <div class="sidebar-section">Tools</div>
+  <a class="nav-item" href="/diet.html"><span class="nav-icon">🥗</span> Diet Planner</a>
+  <a class="nav-item" href="/cycle.html"><span class="nav-icon">🔬</span> Cycle Planner</a>
+  <a class="nav-item" href="/medical.html"><span class="nav-icon">🏥</span> Medical Screen</a>
+  <a class="nav-item" href="/bca.html"><span class="nav-icon">📏</span> Body Analysis</a>
+  <a class="nav-item" href="/physique.html"><span class="nav-icon">💪</span> Physique Tracker</a>
+  <a class="nav-item" href="/grocery.html"><span class="nav-icon">🛒</span> Grocery AI</a>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="user-avatar" id="uAvatar">U</div>
+      <div><div class="user-name" id="uName">Loading…</div><div class="user-plan" id="uPlan">Free plan</div></div>
+    </div>
+  </div>
+</aside>
 
-<h2>Dashboard</h2>
-<a href="diet.html">Diet</a><br>
-<a href="grocery.html">Grocery</a><br>
-<a href="bca.html">Upload BCA</a><br>
-<a href="physique.html">Upload Physique</a><br>
-<a href="medical.html">Medical Analysis</a><br>
-<a href="cycle.html">Cycle Planner</a>
+<main class="main">
+  <div class="page-header">
+    <div class="page-title" id="pageTitle">👋 Welcome back</div>
+    <div class="page-sub">Your fitness research command center</div>
+  </div>
+  <div class="content">
+    <div class="tab-row">
+      <button class="tab active" onclick="showTab('overview')">Overview</button>
+      <button class="tab" onclick="showTab('profile')">Profile</button>
+      <button class="tab" onclick="showTab('history')">History</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="tab-overview">
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-icon">🔍</div><div class="metric-val" id="totalSearches">—</div><div class="metric-lbl">Total Searches</div><div class="metric-trend">↑ This week</div></div>
+        <div class="metric-card"><div class="metric-icon">🎯</div><div class="metric-val" id="topGoal">—</div><div class="metric-lbl">Current Goal</div></div>
+        <div class="metric-card"><div class="metric-icon">💪</div><div class="metric-val" id="expLevel">—</div><div class="metric-lbl">Experience Level</div></div>
+        <div class="metric-card"><div class="metric-icon">⭐</div><div class="metric-val" id="planTier">Free</div><div class="metric-lbl">Current Plan</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">✨ Recommended For You</div>
+          <div id="recList"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title">🕒 Recent Searches</div>
+          <div id="recentList"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="tab-profile" style="display:none">
+      <div class="card">
+        <div class="section-title">👤 Your Profile</div>
+        <div class="profile-form">
+          <div class="field"><label class="lbl">Name</label><input class="inp" id="pName" type="text"></div>
+          <div class="field"><label class="lbl">Email</label><input class="inp" id="pEmail" type="email" disabled style="opacity:.5"></div>
+          <div class="field"><label class="lbl">Experience</label>
+            <select class="sel" id="pExp">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Goal</label>
+            <select class="sel" id="pGoal">
+              <option value="muscle_gain">Muscle Gain</option>
+              <option value="fat_loss">Fat Loss</option>
+              <option value="strength">Strength</option>
+              <option value="endurance">Endurance</option>
+              <option value="recomposition">Body Recomp</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Sex</label>
+            <select class="sel" id="pSex">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Age</label><input class="inp" id="pAge" type="number"></div>
+          <div class="field"><label class="lbl">Weight (kg)</label><input class="inp" id="pWeight" type="number"></div>
+          <div class="field"><label class="lbl">Height (cm)</label><input class="inp" id="pHeight" type="number"></div>
+          <div class="field"><label class="lbl">Activity Level</label>
+            <select class="sel" id="pActivity">
+              <option value="sedentary">Sedentary</option>
+              <option value="light">Light</option>
+              <option value="moderate">Moderate</option>
+              <option value="active">Active</option>
+              <option value="very_active">Very Active</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+          <button class="btn btn-danger" onclick="doLogout()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tab-history" style="display:none">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div class="section-title" style="margin:0">🕒 Search History</div>
+          <button class="btn btn-danger" onclick="clearAllHistory()">Clear All</button>
+        </div>
+        <div id="histFull"><div style="color:var(--text3);font-size:13px">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+let currentUser = null;
+
+async function init() {
+  try {
+    const r = await fetch('/me', {credentials:'include'});
+    if (!r.ok) { location.href='/login.html'; return; }
+    currentUser = await r.json();
+    renderUser(currentUser);
+    loadOverview();
+  } catch(e) { location.href='/login.html'; }
+}
+
+function renderUser(u) {
+  const initial = (u.name||'U')[0].toUpperCase();
+  document.getElementById('uAvatar').textContent = initial;
+  document.getElementById('uName').textContent = u.name||'User';
+  document.getElementById('uPlan').textContent = (u.tier||'free')+' plan';
+  document.getElementById('pageTitle').textContent = `👋 Welcome back, ${u.name?.split(' ')[0]||'there'}`;
+  document.getElementById('topGoal').textContent = (u.goal||'—').replace('_',' ');
+  document.getElementById('expLevel').textContent = u.experience_level||'—';
+  document.getElementById('planTier').textContent = u.tier||'Free';
+  // Profile form
+  document.getElementById('pName').value = u.name||'';
+  document.getElementById('pEmail').value = u.email||'';
+  document.getElementById('pExp').value = u.experience_level||'beginner';
+  document.getElementById('pGoal').value = u.goal||'muscle_gain';
+  document.getElementById('pSex').value = u.sex||'male';
+  document.getElementById('pAge').value = u.age||'';
+  document.getElementById('pWeight').value = u.weight||'';
+  document.getElementById('pHeight').value = u.height||'';
+  document.getElementById('pActivity').value = u.activity_level||'moderate';
+}
+
+async function loadOverview() {
+  // History count + recent
+  const histRes = await fetch('/history?limit=5', {credentials:'include'});
+  const hist = await histRes.json();
+  document.getElementById('totalSearches').textContent = hist.length;
+  document.getElementById('recentList').innerHTML = hist.length ? hist.map(h=>`
+    <div class="hist-item" onclick="location.href='/?q=${encodeURIComponent(h.query)}'">
+      <span style="color:var(--text3);font-size:14px">🔍</span>
+      <div><div class="hist-query">${escHtml(h.query)}</div><div class="hist-meta">${new Date(h.searched_at).toLocaleDateString()} · ${h.results_count} results</div></div>
+    </div>`).join('') : '<div style="color:var(--text3);font-size:13px">No history yet</div>';
+
+  // Recommendations
+  const recRes = await fetch('/recommendations', {credentials:'include'});
+  const recs = await recRes.json();
+  const catIcons = {supplement:'💊',sarm:'🔬',steroid:'⚗️',peptide:'🧬',exercise:'💪',nutrition:'🥗'};
+  document.getElementById('recList').innerHTML = (recs||[]).slice(0,4).map(r=>`
+    <div class="rec-item" onclick="location.href='/?q=${encodeURIComponent(r.name)}'">
+      <div class="rec-icon">${catIcons[r.category]||'⚡'}</div>
+      <div><div class="rec-name">${escHtml(r.name)}</div><div class="rec-reason">${escHtml(r.recommendation_reason||r.summary||'')}</div></div>
+    </div>`).join('') || '<div style="color:var(--text3);font-size:13px">Start searching to get recommendations</div>';
+}
+
+async function loadFullHistory() {
+  const r = await fetch('/history?limit=100', {credentials:'include'});
+  const rows = await r.json();
+  document.getElementById('histFull').innerHTML = rows.length ? rows.map(h=>`
+    <div class="hist-item" style="margin-bottom:6px" onclick="location.href='/?q=${encodeURIComponent(h.query)}'">
+      <span style="color:var(--text3)">🔍</span>
+      <div style="flex:1"><div class="hist-query">${escHtml(h.query)}</div><div class="hist-meta">${new Date(h.searched_at).toLocaleString()} · ${h.results_count} results</div></div>
+      <button onclick="event.stopPropagation();delHistItem(${h.id},this.closest('.hist-item'))" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;font-size:12px">✕</button>
+    </div>`).join('') : '<div style="color:var(--text3);font-size:13px">No history yet — start searching!</div>';
+}
+
+async function clearAllHistory() {
+  if (!confirm('Clear all search history?')) return;
+  await fetch('/history/clear', {method:'DELETE', credentials:'include'});
+  await loadFullHistory();
+}
+async function delHistItem(id, el) {
+  await fetch(`/history/${id}`, {method:'DELETE', credentials:'include'});
+  el.remove();
+}
+
+async function saveProfile() {
+  const data = {
+    name: document.getElementById('pName').value,
+    experience_level: document.getElementById('pExp').value,
+    goal: document.getElementById('pGoal').value,
+    sex: document.getElementById('pSex').value,
+    age: parseInt(document.getElementById('pAge').value)||null,
+    weight: parseFloat(document.getElementById('pWeight').value)||null,
+    height: parseFloat(document.getElementById('pHeight').value)||null,
+    activity_level: document.getElementById('pActivity').value,
+  };
+  const r = await fetch('/profile', {method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'include', body:JSON.stringify(data)});
+  if (r.ok) {
+    currentUser = await r.json();
+    renderUser(currentUser);
+    alert('Profile saved!');
+  }
+}
+
+async function doLogout() {
+  await fetch('/logout', {method:'POST', credentials:'include'});
+  location.href = '/login.html';
+}
+
+function showTab(tab) {
+  ['overview','profile','history'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach((el,i) => {
+    el.classList.toggle('active', ['overview','profile','history'][i]===tab);
+  });
+  if (tab==='history') loadFullHistory();
+}
+
+function escHtml(s) { return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''; }
+
+init();
+</script>
+</body>
+</html>

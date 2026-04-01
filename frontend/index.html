@@ -3,707 +3,1231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FitSearch AI — World-Class Fitness Search</title>
+<title>FitSearch AI — World-Class Fitness Intelligence Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  :root{--sb:#0a1120;--acc:#3b82f6;--acc-h:#2563eb;--bg:#0f172a;--bg2:#1e293b;--br:rgba(255,255,255,.08);}
-  *{box-sizing:border-box;}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:#e2e8f0;margin:0;}
-  .sidebar{width:230px;min-height:100vh;background:var(--sb);flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--br);}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;color:#64748b;border-radius:8px;cursor:pointer;font-size:13.5px;transition:all .14s;margin:1px 8px;border:none;background:none;width:calc(100% - 16px);text-align:left;}
-  .nav-item:hover{background:rgba(255,255,255,.06);color:#94a3b8;}
-  .nav-item.active{background:var(--acc);color:#fff;}
-  .ni{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
-  .card{background:var(--bg2);border:1px solid var(--br);border-radius:12px;padding:18px 20px;}
-  .card+.card{margin-top:12px;}
-  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;}
-  .b-blue{background:#1d3557;color:#60a5fa;}.b-green{background:#14532d;color:#4ade80;}
-  .b-teal{background:#134e4a;color:#2dd4bf;}.b-purple{background:#3b0764;color:#c084fc;}
-  .b-amber{background:#451a03;color:#fbbf24;}.b-red{background:#450a0a;color:#f87171;}
-  .b-gray{background:#1e293b;color:#94a3b8;}
-  /* ── Filter pills ── */
-  .pill{padding:5px 12px;font-size:12px;border:1px solid rgba(255,255,255,.12);border-radius:99px;cursor:pointer;color:#64748b;background:transparent;transition:all .18s;user-select:none;}
-  .pill:hover{border-color:rgba(255,255,255,.25);color:#94a3b8;}
-  .pill.on{background:#1d3557;color:#60a5fa;border-color:#2563eb;box-shadow:0 0 0 2px rgba(59,130,246,.18);}
-  /* ── Buttons ── */
-  .btn{padding:8px 16px;font-size:13px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:transparent;color:#94a3b8;transition:all .12s;}
-  .btn:hover{background:rgba(255,255,255,.06);color:#e2e8f0;}
-  .btn-primary{background:var(--acc);color:#fff;border-color:var(--acc);}
-  .btn-primary:hover{background:var(--acc-h);}
-  .inp{width:100%;padding:9px 12px;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:14px;outline:none;background:var(--bg);color:#e2e8f0;}
-  .inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
-  select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7 7l3 3 3-3' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px;padding-right:30px;}
-  .lbl{display:block;font-size:12px;font-weight:500;color:#64748b;margin-bottom:5px;}
-  .metric{background:rgba(255,255,255,.04);border-radius:10px;padding:12px 14px;text-align:center;}
-  .metric-v{font-size:22px;font-weight:700;}
-  .metric-l{font-size:11px;color:#475569;margin-top:2px;}
-  .skel{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:sk 1.5s infinite;border-radius:8px;}
-  @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  #toast-el{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;display:none;color:#fff;max-width:340px;}
-  .upload-zone{border:1.5px dashed rgba(255,255,255,.15);border-radius:10px;padding:18px;display:flex;align-items:center;gap:14px;transition:border-color .15s;}
-  .upload-zone:hover{border-color:var(--acc);}
-  input[type="file"]{font-size:13px;color:#94a3b8;}
-  input[type="file"]::file-selector-button{padding:5px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#94a3b8;cursor:pointer;font-size:12px;margin-right:10px;}
-  /* ── Report card styles ── */
-  .report-card{background:var(--bg2);border:1px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:border-color .2s;}
-  .report-card:hover{border-color:rgba(59,130,246,.25);}
-  .report-header{padding:20px 22px 16px;cursor:pointer;user-select:none;}
-  .report-header:hover{background:rgba(255,255,255,.02);}
-  .report-name{font-size:19px;font-weight:700;color:#f1f5f9;margin-bottom:6px;}
-  .report-tagline{font-size:13px;color:#64748b;margin-bottom:10px;line-height:1.5;}
-  .report-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-  .report-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:#3b82f6;margin-top:4px;}
-  .report-body{border-top:1px solid var(--br);padding:0;}
-  .report-body.hidden{display:none;}
-  .section-row{display:flex;align-items:stretch;border-bottom:1px solid rgba(255,255,255,.04);}
-  .section-row:last-child{border-bottom:none;}
-  .section-num{width:34px;min-width:34px;display:flex;align-items:flex-start;justify-content:center;padding:16px 0 0;font-size:11px;font-weight:700;color:#334155;}
-  .section-inner{flex:1;padding:14px 18px 14px 0;}
-  .section-title{font-size:12px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:6px;}
-  .section-title:hover{color:#93c5fd;}
-  .section-content{font-size:13px;color:#94a3b8;line-height:1.7;}
-  .benefit-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#94a3b8;padding:2px 0;}
-  .benefit-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0;margin-top:5px;}
-  .se-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;font-size:12px;margin:2px 3px 2px 0;}
-  .se-low{background:#14532d20;color:#4ade80;border:1px solid #14532d;}
-  .se-medium{background:#451a0320;color:#fbbf24;border:1px solid #854d0e;}
-  .se-high{background:#450a0a20;color:#f87171;border:1px solid #7f1d1d;}
-  .ref-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:12px;}
-  .ref-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
-  .ref-link{color:#60a5fa;text-decoration:none;line-height:1.4;}
-  .ref-link:hover{color:#93c5fd;text-decoration:underline;}
-  .final-rec{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:14px 16px;margin:16px 22px;}
-  .cached-banner{background:rgba(255,255,255,.03);border-bottom:1px solid var(--br);padding:6px 22px;font-size:11px;color:#475569;display:flex;align-items:center;gap:6px;}
-  .source-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .src-ai{background:#4ade80;}.src-kb{background:#60a5fa;}.src-cached{background:#fbbf24;}
-  .stacking-pill{display:inline-block;padding:3px 10px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.25);border-radius:99px;font-size:11px;color:#c084fc;margin:2px;}
-  /* ── Product card ── */
-  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;padding:16px 22px;}
-  .product-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;}
-  .product-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;margin-bottom:8px;}
-  .badge-premium{background:#451a0330;color:#fbbf24;border:1px solid #854d0e;}
-  .badge-popular{background:#450a0a30;color:#f87171;border:1px solid #7f1d1d;}
-  .badge-balanced{background:#1d345730;color:#60a5fa;border:1px solid #1d4ed8;}
-  .product-name{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;}
-  .product-price{font-size:18px;font-weight:700;color:#4ade80;margin-bottom:4px;}
-  .product-rating{font-size:12px;color:#fbbf24;margin-bottom:6px;}
-  .product-benefit{font-size:12px;color:#64748b;line-height:1.5;}
-  /* ── Intent banner ── */
-  .intent-banner{padding:8px 14px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-  .intent-research{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#60a5fa;}
-  .intent-product{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:#fbbf24;}
-  .intent-training{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);color:#4ade80;}
-  /* ── Filter row active state ── */
-  .filter-row-active{padding:8px 12px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:8px;margin-bottom:10px;font-size:12px;color:#60a5fa;}
-  /* ── Other ── */
-  .phase-on{background:#1d3557;color:#60a5fa;}.phase-pct{background:#14532d;color:#4ade80;}.phase-off{background:rgba(255,255,255,.05);color:#475569;}
-  .week-label{font-size:11px;color:#475569;width:80px;flex-shrink:0;}
-  .auth-screen{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;}
-  .auth-card{background:var(--bg2);border:1px solid var(--br);border-radius:16px;padding:28px 32px;width:420px;}
-  .auth-tabs{display:flex;border:1px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:24px;}
-  .auth-tab{flex:1;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;}
-  .auth-tab.active{background:var(--acc);color:#fff;}
-  .auth-tab.inactive{background:transparent;color:#64748b;}
+/* ─── Design System ─── */
+:root {
+  --bg:       #050810;
+  --bg2:      #0a0f1e;
+  --bg3:      #0f1629;
+  --panel:    #111827;
+  --border:   rgba(255,255,255,.07);
+  --border2:  rgba(255,255,255,.12);
+  --accent:   #6366f1;
+  --accent2:  #8b5cf6;
+  --accent3:  #06b6d4;
+  --green:    #10b981;
+  --amber:    #f59e0b;
+  --red:      #ef4444;
+  --text:     #e2e8f0;
+  --text2:    #94a3b8;
+  --text3:    #475569;
+  --sidebar:  220px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ─── Background grid ─── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* ─── Sidebar ─── */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;
+  width:var(--sidebar);
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  z-index:100;
+  overflow-y:auto;
+}
+.sidebar-logo{
+  padding:22px 18px 16px;
+  border-bottom:1px solid var(--border);
+}
+.logo-mark{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;
+  font-size:17px;font-weight:800;
+  color:#fff;text-decoration:none;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.logo-sub{font-size:10px;font-weight:500;color:var(--text3);margin-top:1px;letter-spacing:.04em;}
+
+.sidebar-section{padding:16px 10px 8px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;margin:1px 6px;
+  border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text3);
+  border:none;background:none;width:calc(100% - 12px);text-align:left;
+  transition:all .15s;text-decoration:none;
+}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text2);}
+.nav-item.active{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.2);}
+.nav-icon{width:18px;font-size:14px;text-align:center;flex-shrink:0;}
+
+.sidebar-footer{margin-top:auto;padding:14px;border-top:1px solid var(--border);}
+.user-pill{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:8px;
+  cursor:pointer;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+}
+.user-avatar{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.user-name{font-size:12px;font-weight:600;color:var(--text);}
+.user-plan{font-size:10px;color:var(--text3);}
+
+/* ─── Main content ─── */
+.main{
+  margin-left:var(--sidebar);
+  min-height:100vh;
+  position:relative;z-index:1;
+}
+
+/* ─── Search header ─── */
+.search-header{
+  padding:28px 32px 20px;
+  border-bottom:1px solid var(--border);
+  background:rgba(10,15,30,.8);
+  backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:50;
+}
+.search-row{
+  display:flex;gap:10px;align-items:center;
+  max-width:860px;
+}
+.search-wrap{
+  flex:1;position:relative;
+}
+.search-input{
+  width:100%;
+  padding:13px 46px 13px 18px;
+  background:var(--panel);
+  border:1.5px solid var(--border2);
+  border-radius:12px;
+  font-size:15px;font-family:'Space Grotesk',sans-serif;
+  font-weight:500;color:var(--text);
+  outline:none;
+  transition:all .2s;
+}
+.search-input::placeholder{color:var(--text3);}
+.search-input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(99,102,241,.12);
+  background:var(--bg3);
+}
+.search-icon{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:16px;pointer-events:none;
+}
+.search-btn{
+  padding:13px 22px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:12px;cursor:pointer;
+  color:#fff;font-size:14px;font-weight:600;
+  font-family:'Space Grotesk',sans-serif;
+  display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
+  transition:all .2s;
+  box-shadow:0 4px 15px rgba(99,102,241,.25);
+}
+.search-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.35);}
+.search-btn:active{transform:translateY(0);}
+
+/* ─── Filter bar ─── */
+.filter-bar{
+  display:flex;gap:8px;flex-wrap:wrap;
+  padding:14px 32px;
+  border-bottom:1px solid var(--border);
+  align-items:center;
+}
+.filter-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;}
+.pill{
+  padding:5px 13px;font-size:12px;font-weight:500;
+  border:1.5px solid var(--border2);
+  border-radius:99px;cursor:pointer;
+  color:var(--text3);background:transparent;
+  transition:all .18s;user-select:none;
+}
+.pill:hover{border-color:rgba(255,255,255,.25);color:var(--text2);}
+.pill.on{
+  background:rgba(99,102,241,.15);color:#818cf8;
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(99,102,241,.12);
+}
+
+/* ─── Content area ─── */
+.content{padding:24px 32px;}
+.content-max{max-width:860px;}
+
+/* ─── Hero / Empty state ─── */
+.hero{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  min-height:60vh;
+  text-align:center;
+  padding:60px 32px;
+}
+.hero-glow{
+  position:absolute;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 70%);
+  pointer-events:none;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 14px;border-radius:99px;
+  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
+  font-size:12px;font-weight:600;color:#818cf8;
+  margin-bottom:22px;
+}
+.hero-title{
+  font-family:'Syne',sans-serif;
+  font-size:38px;font-weight:800;
+  line-height:1.15;
+  background:linear-gradient(135deg,#fff 40%,#818cf8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:14px;
+  max-width:580px;
+}
+.hero-sub{font-size:15px;color:var(--text2);max-width:500px;line-height:1.7;margin-bottom:36px;}
+
+.suggestion-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:10px;max-width:580px;width:100%;
+  margin:0 auto;
+}
+.suggestion-card{
+  padding:14px 16px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;cursor:pointer;text-align:left;
+  transition:all .18s;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.suggestion-card:hover{
+  border-color:rgba(99,102,241,.35);
+  background:rgba(99,102,241,.06);
+  transform:translateY(-2px);
+}
+.sg-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.sg-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.sg-sub{font-size:11px;color:var(--text3);line-height:1.4;}
+
+/* ─── Results area ─── */
+.results-meta{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 0 16px;
+  font-size:12px;color:var(--text3);
+  border-bottom:1px solid var(--border);
+  margin-bottom:18px;
+}
+.results-count{
+  font-size:12px;font-weight:700;
+  color:var(--accent);
+  background:rgba(99,102,241,.1);
+  padding:3px 10px;border-radius:99px;
+}
+.results-query{font-size:13px;font-weight:600;color:var(--text2);}
+
+/* ─── Report Card ─── */
+.report-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:16px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.report-card:hover{
+  border-color:rgba(99,102,241,.25);
+  box-shadow:0 4px 24px rgba(99,102,241,.08);
+}
+.report-header{
+  padding:22px 24px 18px;
+  cursor:pointer;user-select:none;
+}
+.report-header:hover{background:rgba(255,255,255,.015);}
+.report-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.report-name{
+  font-family:'Syne',sans-serif;
+  font-size:20px;font-weight:700;color:#f1f5f9;
+  margin-bottom:6px;line-height:1.25;
+}
+.report-tagline{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;}
+.b-violet{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.2);}
+.b-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.2);}
+.b-green{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+.b-amber{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+.b-red{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+.b-gray{background:rgba(71,85,105,.15);color:#94a3b8;border:1px solid rgba(71,85,105,.2);}
+.b-teal{background:rgba(6,182,212,.15);color:#22d3ee;border:1px solid rgba(6,182,212,.2);}
+
+.source-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 24px;
+  background:rgba(0,0,0,.2);
+  border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--text3);
+}
+.source-dot{width:6px;height:6px;border-radius:50%;}
+.src-ai{background:#34d399;}.src-kb{background:#60a5fa;}.src-cached{background:#fbbf24;}
+
+.expand-toggle{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--accent);margin-top:8px;
+  font-weight:500;
+}
+.toggle-icon{transition:transform .25s;}
+.report-body{border-top:1px solid var(--border);display:none;}
+.report-body.open{display:block;}
+
+/* ─── Section rows ─── */
+.section-row{
+  display:flex;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.section-row:last-child{border-bottom:none;}
+.section-num{
+  width:40px;min-width:40px;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:18px 0 0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;color:rgba(99,102,241,.4);
+}
+.section-inner{flex:1;padding:16px 22px 16px 0;}
+.section-label{
+  font-size:10px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.section-icon{font-size:12px;}
+.section-text{font-size:13px;color:var(--text2);line-height:1.75;}
+
+/* ─── Types grid ─── */
+.types-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:4px;}
+.type-card{
+  padding:10px 12px;border-radius:10px;
+  background:rgba(255,255,255,.025);
+  border:1px solid var(--border);
+}
+.type-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.type-best{font-size:11px;color:var(--text3);line-height:1.4;margin-bottom:4px;}
+.type-ev{font-size:10px;font-weight:700;color:var(--green);}
+
+/* ─── Benefits & side effects ─── */
+.benefit-list{display:flex;flex-direction:column;gap:4px;}
+.benefit-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);}
+.benefit-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:6px;}
+.se-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:8px;font-size:12px;
+  margin:3px;
+}
+.se-low{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+.se-medium{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+.se-high{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+
+/* ─── Research evidence ─── */
+.evidence-item{
+  padding:10px 12px;border-radius:10px;
+  background:rgba(6,182,212,.04);
+  border:1px solid rgba(6,182,212,.1);
+  margin-bottom:6px;
+}
+.ev-study{font-size:12px;font-weight:600;color:var(--accent3);margin-bottom:3px;}
+.ev-finding{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:3px;}
+.ev-source{font-size:10px;font-weight:600;color:var(--text3);}
+
+/* ─── References ─── */
+.ref-section{display:flex;flex-direction:column;gap:4px;}
+.ref-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;}
+.ref-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.ref-link{color:#60a5fa;text-decoration:none;font-size:12px;line-height:1.5;}
+.ref-link:hover{color:#93c5fd;text-decoration:underline;}
+.ref-meta{font-size:10px;color:var(--text3);}
+
+/* ─── Video refs ─── */
+.video-list{display:flex;flex-direction:column;gap:6px;}
+.video-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:8px;
+  background:rgba(239,68,68,.04);
+  border:1px solid rgba(239,68,68,.1);
+}
+.video-icon{font-size:16px;color:#f87171;flex-shrink:0;}
+.video-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.video-channel{font-size:11px;color:var(--text3);}
+.video-link{color:#60a5fa;font-size:11px;text-decoration:none;}
+.video-link:hover{text-decoration:underline;}
+
+/* ─── Stacking pills ─── */
+.stack-list{display:flex;flex-wrap:wrap;gap:6px;}
+.stack-pill{
+  display:inline-block;padding:4px 12px;
+  background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);
+  border-radius:99px;font-size:12px;color:#c084fc;font-weight:500;
+}
+
+/* ─── Final recommendation ─── */
+.final-rec{
+  margin:16px 22px 16px 0;
+  padding:16px 18px;
+  background:rgba(99,102,241,.06);
+  border:1px solid rgba(99,102,241,.2);
+  border-radius:12px;
+}
+.final-rec-label{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.final-rec-text{font-size:13px;color:var(--text2);line-height:1.7;}
+
+/* ─── Product cards ─── */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;}
+.product-card{
+  padding:14px;border-radius:12px;
+  background:rgba(255,255,255,.025);
+  border:1px solid var(--border);
+  transition:border-color .2s;
+}
+.product-card:hover{border-color:rgba(99,102,241,.3);}
+.product-badge-lbl{font-size:10px;font-weight:700;margin-bottom:8px;}
+.product-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.product-price{font-size:17px;font-weight:700;color:var(--green);}
+.product-rating{font-size:12px;color:var(--amber);margin:3px 0;}
+.product-for{font-size:11px;color:var(--text3);}
+
+/* ─── Loading ─── */
+.skel{
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.04) 75%);
+  background-size:200% 100%;
+  animation:sk 1.4s infinite;border-radius:8px;
+}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.spinner{
+  display:inline-block;width:20px;height:20px;
+  border:2px solid rgba(99,102,241,.2);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─── Dosage / cycle highlight ─── */
+.dose-highlight{
+  display:inline-block;padding:2px 8px;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);
+  border-radius:6px;font-family:'JetBrains Mono',monospace;
+  font-size:12px;color:var(--accent3);
+}
+
+/* ─── AI summary box ─── */
+.ai-summary-box{
+  padding:16px 18px;
+  background:rgba(99,102,241,.04);
+  border:1px solid rgba(99,102,241,.15);
+  border-radius:12px;
+  position:relative;overflow:hidden;
+}
+.ai-summary-box::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));
+}
+.ai-label{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;
+}
+.ai-text{font-size:13px;color:var(--text2);line-height:1.75;}
+
+/* ─── Legal warning ─── */
+.legal-warning{
+  padding:10px 14px;
+  background:rgba(239,68,68,.06);
+  border:1px solid rgba(239,68,68,.2);
+  border-radius:8px;
+  font-size:12px;color:#f87171;
+  display:flex;gap:8px;align-items:flex-start;
+}
+
+/* ─── Toast ─── */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  padding:12px 18px;border-radius:10px;
+  font-size:13px;z-index:9999;
+  display:none;max-width:340px;
+  backdrop-filter:blur(10px);
+}
+
+/* ─── Supplementary card styling ─── */
+.supplementary-card{
+  opacity:.85;transform:scale(.99);
+  border:1px dashed var(--border);
+}
+.supplementary-label{
+  font-size:10px;font-weight:700;color:var(--text3);
+  padding:5px 22px;background:rgba(0,0,0,.2);
+  border-bottom:1px solid var(--border);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+
+/* ─── Safety disclaimer ─── */
+.safety-banner{
+  padding:10px 14px;
+  background:rgba(245,158,11,.05);
+  border:1px solid rgba(245,158,11,.15);
+  border-radius:10px;
+  font-size:12px;color:#fbbf24;
+  display:flex;gap:8px;align-items:flex-start;
+  margin-bottom:16px;
+}
+
+/* ─── Mobile ─── */
+@media(max-width:768px){
+  :root{--sidebar:0px;}
+  .sidebar{transform:translateX(-100%);transition:transform .3s;}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .search-header,.filter-bar,.content{padding-left:16px;padding-right:16px;}
+  .suggestion-grid{grid-template-columns:1fr;}
+  .hero-title{font-size:26px;}
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
 </style>
 </head>
 <body>
 
-<div id="toast-el"></div>
-
-<!-- ── AUTH ── -->
-<div id="auth-screen" class="auth-screen">
-  <div style="width:100%;max-width:420px;padding:20px;">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:28px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
-      <div style="font-size:13px;color:#475569;margin-top:4px;">Perplexity-style retrieval · ChatGPT-style analysis · Google-speed results</div>
-    </div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-li" onclick="switchAuth('login')">Sign in</button>
-      <button class="auth-tab inactive" id="tab-re" onclick="switchAuth('register')">Create account</button>
-    </div>
-    <div class="auth-card" id="auth-form"></div>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a class="logo-mark" href="/">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div>FitSearch AI</div>
+        <div class="logo-sub">Research Engine v5</div>
+      </div>
+    </a>
   </div>
-</div>
 
-<!-- ── APP ── -->
-<div id="app" style="display:none;display:flex;min-height:100vh;">
-  <div class="sidebar">
-    <div style="padding:18px 16px;border-bottom:1px solid var(--br);">
-      <div style="font-size:17px;font-weight:800;color:#fff;">FitSearch <span style="color:#3b82f6;">AI</span></div>
-      <div style="font-size:11px;color:#334155;margin-top:2px;">Performance Intelligence</div>
-    </div>
-    <div style="padding:10px;border-bottom:1px solid var(--br);">
-      <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border-radius:10px;padding:10px;">
-        <div id="av" style="width:34px;height:34px;border-radius:50%;background:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">?</div>
-        <div><div id="uname" style="font-size:13px;font-weight:600;color:#e2e8f0;">—</div><div id="ugoal" style="font-size:11px;color:#334155;">—</div></div>
+  <div class="sidebar-section">Search</div>
+  <button class="nav-item active" onclick="showSection('search')">
+    <span class="nav-icon">🔍</span> AI Search
+  </button>
+  <button class="nav-item" onclick="location.href='/dashboard.html'">
+    <span class="nav-icon">📊</span> Dashboard
+  </button>
+
+  <div class="sidebar-section">Tools</div>
+  <button class="nav-item" onclick="location.href='/diet.html'">
+    <span class="nav-icon">🥗</span> Diet Planner
+  </button>
+  <button class="nav-item" onclick="location.href='/cycle.html'">
+    <span class="nav-icon">🔬</span> Cycle Planner
+  </button>
+  <button class="nav-item" onclick="location.href='/medical.html'">
+    <span class="nav-icon">🏥</span> Medical Screen
+  </button>
+  <button class="nav-item" onclick="location.href='/bca.html'">
+    <span class="nav-icon">📏</span> Body Analysis
+  </button>
+  <button class="nav-item" onclick="location.href='/physique.html'">
+    <span class="nav-icon">💪</span> Physique Tracker
+  </button>
+  <button class="nav-item" onclick="location.href='/grocery.html'">
+    <span class="nav-icon">🛒</span> Grocery AI
+  </button>
+
+  <div class="sidebar-section">Account</div>
+  <button class="nav-item" id="historyBtn" onclick="toggleHistoryPanel()">
+    <span class="nav-icon">🕒</span> History
+  </button>
+
+  <div class="sidebar-footer">
+    <div class="user-pill" id="userPill" onclick="location.href='/login.html'">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div>
+        <div class="user-name" id="userName">Sign In</div>
+        <div class="user-plan" id="userPlan">Free tier</div>
       </div>
     </div>
-    <nav style="padding:8px;flex:1;overflow-y:auto;">
-      <button class="nav-item active" data-page="search"  onclick="showPage('search',this)"><span class="ni">🔍</span>Search</button>
-      <button class="nav-item"        data-page="history" onclick="showPage('history',this)"><span class="ni">🕐</span>Search history</button>
-      <button class="nav-item"        data-page="diet"    onclick="showPage('diet',this)"><span class="ni">🍽</span>Diet generator</button>
-      <button class="nav-item"        data-page="cycle"   onclick="showPage('cycle',this)"><span class="ni">📈</span>Cycle planner</button>
-      <button class="nav-item"        data-page="medical" onclick="showPage('medical',this)"><span class="ni">🏥</span>Medical screen</button>
-      <button class="nav-item"        data-page="upload"  onclick="showPage('upload',this)"><span class="ni">📁</span>Upload files</button>
-    </nav>
-    <div style="padding:10px;">
-      <button class="nav-item" style="color:#ef4444;" onclick="doLogout()"><span class="ni">✕</span>Sign out</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- SEARCH HEADER -->
+  <div class="search-header">
+    <div class="search-row">
+      <div class="search-wrap">
+        <input
+          class="search-input"
+          id="searchInput"
+          type="text"
+          placeholder="Ask anything: What is RAD140? · Best supplements for muscle gain · Steroid cycle for beginners"
+          autocomplete="off"
+        />
+        <span class="search-icon">↵</span>
+      </div>
+      <button class="search-btn" id="searchBtn" onclick="doSearch()">
+        <span id="searchBtnIcon">⚡</span>
+        <span id="searchBtnText">Search</span>
+      </button>
     </div>
   </div>
 
-  <div style="flex:1;min-width:0;background:var(--bg);overflow:auto;">
-    <div id="main" style="padding:28px;max-width:900px;"></div>
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="pill" data-filter="muscle_gain" onclick="toggleFilter(this)">💪 Muscle Gain</button>
+    <button class="pill" data-filter="fat_loss" onclick="toggleFilter(this)">🔥 Fat Loss</button>
+    <button class="pill" data-filter="strength" onclick="toggleFilter(this)">🏋️ Strength</button>
+    <button class="pill" data-filter="endurance" onclick="toggleFilter(this)">🏃 Endurance</button>
+    <button class="pill" data-filter="recovery" onclick="toggleFilter(this)">🔄 Recovery</button>
+    <button class="pill" data-filter="beginner" onclick="toggleFilter(this)">🌱 Beginner</button>
+    <button class="pill" data-filter="advanced" onclick="toggleFilter(this)">🎯 Advanced</button>
+    <button class="pill" data-filter="female" onclick="toggleFilter(this)">👩 Female</button>
   </div>
-</div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="content-max">
+
+      <!-- HERO -->
+      <div class="hero" id="heroSection">
+        <div class="hero-badge">⚡ Powered by Claude AI + Research Databases</div>
+        <h1 class="hero-title">World-Class Fitness Intelligence Engine</h1>
+        <p class="hero-sub">Research-grade answers on supplements, steroids, SARMs, peptides, HGH, training, nutrition, and performance compounds — backed by PubMed studies.</p>
+
+        <div class="suggestion-grid">
+          <div class="suggestion-card" onclick="fillSearch('What is RAD140 and how does it work?')">
+            <div class="sg-icon" style="background:rgba(139,92,246,.15)">🔬</div>
+            <div>
+              <div class="sg-title">What is RAD140?</div>
+              <div class="sg-sub">SARM research, dosage & safety</div>
+            </div>
+          </div>
+          <div class="suggestion-card" onclick="fillSearch('Best supplements for muscle gain beginners')">
+            <div class="sg-icon" style="background:rgba(16,185,129,.15)">💊</div>
+            <div>
+              <div class="sg-title">Best supplements for muscle gain</div>
+              <div class="sg-sub">Evidence-ranked stack guide</div>
+            </div>
+          </div>
+          <div class="suggestion-card" onclick="fillSearch('Testosterone enanthate beginner cycle dosage')">
+            <div class="sg-icon" style="background:rgba(239,68,68,.15)">⚗️</div>
+            <div>
+              <div class="sg-title">Testosterone cycle guide</div>
+              <div class="sg-sub">Protocols, PCT & bloodwork</div>
+            </div>
+          </div>
+          <div class="suggestion-card" onclick="fillSearch('BPC-157 peptide for injury healing dosage')">
+            <div class="sg-icon" style="background:rgba(6,182,212,.15)">🩹</div>
+            <div>
+              <div class="sg-title">BPC-157 for injury healing</div>
+              <div class="sg-sub">Peptide protocol & research</div>
+            </div>
+          </div>
+          <div class="suggestion-card" onclick="fillSearch('Creatine monohydrate complete guide dosage benefits')">
+            <div class="sg-icon" style="background:rgba(59,130,246,.15)">⚡</div>
+            <div>
+              <div class="sg-title">Creatine monohydrate guide</div>
+              <div class="sg-sub">Dosage, timing & stacking</div>
+            </div>
+          </div>
+          <div class="suggestion-card" onclick="fillSearch('Fat loss exercises for females beginners')">
+            <div class="sg-icon" style="background:rgba(245,158,11,.15)">🔥</div>
+            <div>
+              <div class="sg-title">Fat loss exercises for women</div>
+              <div class="sg-sub">Science-based workout plan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOADING STATE -->
+      <div id="loadingState" style="display:none">
+        <div class="results-meta">
+          <div class="spinner"></div>
+          <span style="color:var(--text2)">Searching knowledge base + PubMed research…</span>
+        </div>
+        <div class="report-card" style="padding:24px">
+          <div class="skel" style="height:22px;width:60%;margin-bottom:12px"></div>
+          <div class="skel" style="height:14px;width:90%;margin-bottom:6px"></div>
+          <div class="skel" style="height:14px;width:75%"></div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="resultsArea" style="display:none">
+        <div class="results-meta" id="resultsMeta">
+          <span class="results-count" id="resultsCount">0</span>
+          results for
+          <span class="results-query" id="resultsQuery"></span>
+        </div>
+        <div id="resultCards"></div>
+      </div>
+
+      <!-- HISTORY PANEL -->
+      <div id="historyPanel" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-size:15px;font-weight:700;color:var(--text)">🕒 Search History</div>
+          <button class="pill" onclick="clearHistory()" style="font-size:11px">Clear All</button>
+        </div>
+        <div id="historyList"></div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
-"use strict";
-let CU=null, AF=[], _lastQuery='';
+// ─── State ───────────────────────────────────────────────────────────────
+let activeFilters = [];
+let currentResults = [];
 
-// ── Toast ─────────────────────────────────────────────────────────────────
-function toast(msg,type){
-  const el=document.getElementById('toast-el');
-  el.textContent=msg;
-  el.style.background=type==='error'?'#7f1d1d':type==='success'?'#14532d':'#1e293b';
-  el.style.display='block';
-  clearTimeout(el._t); el._t=setTimeout(()=>el.style.display='none',3200);
+// ─── Auth check ──────────────────────────────────────────────────────────
+async function checkAuth() {
+  try {
+    const r = await fetch('/me');
+    if (r.ok) {
+      const u = await r.json();
+      document.getElementById('userAvatar').textContent = (u.name||'U')[0].toUpperCase();
+      document.getElementById('userName').textContent = u.name || 'User';
+      document.getElementById('userPlan').textContent = (u.tier||'free').charAt(0).toUpperCase()+(u.tier||'free').slice(1)+' plan';
+      document.getElementById('userPill').onclick = () => location.href='/dashboard.html';
+    } else {
+      // Not logged in, redirect
+      location.href='/login.html';
+    }
+  } catch(e) {}
 }
+checkAuth();
 
-// ── API ───────────────────────────────────────────────────────────────────
-async function api(path,method,body){
-  const opts={method:method||'GET',credentials:'include',headers:{}};
-  if(body){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body);}
-  const res=await fetch(path,opts);
-  const data=await res.json();
-  if(!res.ok) throw new Error(data.error||'Request failed');
-  return data;
-}
-
-// ── Auth ──────────────────────────────────────────────────────────────────
-function switchAuth(mode){
-  const li=mode==='login';
-  document.getElementById('tab-li').className='auth-tab '+(li?'active':'inactive');
-  document.getElementById('tab-re').className='auth-tab '+(!li?'active':'inactive');
-  document.getElementById('auth-form').innerHTML=li?loginHTML():registerHTML();
-}
-function loginHTML(){return`
-  <div style="margin-bottom:14px;"><label class="lbl">Email</label><input class="inp" type="email" id="le" placeholder="you@email.com"></div>
-  <div style="margin-bottom:18px;"><label class="lbl">Password</label><input class="inp" type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-  <button class="btn btn-primary" style="width:100%;padding:11px;" onclick="doLogin()">Sign in to your account</button>`;}
-function registerHTML(){return`
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-    <div><label class="lbl">Full name</label><input class="inp" id="rn" placeholder="Your name"></div>
-    <div><label class="lbl">Email</label><input class="inp" type="email" id="re" placeholder="you@email.com"></div>
-  </div>
-  <div style="margin-bottom:10px;"><label class="lbl">Password</label><input class="inp" type="password" id="rp" placeholder="Min 6 chars"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-    <div><label class="lbl">Goal</label><select class="inp" id="rg"><option value="muscle_gain">Muscle gain</option><option value="fat_loss">Fat loss</option><option value="recomp">Recomposition</option><option value="strength">Strength</option></select></div>
-    <div><label class="lbl">Experience</label><select class="inp" id="rl"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
-    <div><label class="lbl">Weight (kg)</label><input class="inp" type="number" id="rw" placeholder="80"></div>
-    <div><label class="lbl">Height (cm)</label><input class="inp" type="number" id="rh" placeholder="175"></div>
-    <div><label class="lbl">Age</label><input class="inp" type="number" id="ra" placeholder="25"></div>
-  </div>
-  <button class="btn btn-primary" style="width:100%;padding:11px;" onclick="doRegister()">Create account</button>`;}
-function val(id){return(document.getElementById(id)||{}).value||'';}
-async function doLogin(){try{const d=await api('/login','POST',{email:val('le'),password:val('lp')});CU=d.user;enterApp();}catch(e){toast(e.message,'error');}}
-async function doRegister(){try{await api('/register','POST',{name:val('rn'),email:val('re'),password:val('rp'),goal:val('rg'),experience_level:val('rl'),weight:val('rw'),height:val('rh'),age:val('ra')});toast('Account created — sign in!','success');switchAuth('login');}catch(e){toast(e.message,'error');}}
-function enterApp(){document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='flex';updateCard();showPage('search',document.querySelector('[data-page="search"]'));}
-function updateCard(){if(!CU)return;const ini=(CU.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);document.getElementById('av').textContent=ini;document.getElementById('uname').textContent=CU.name||CU.email;document.getElementById('ugoal').textContent=(CU.goal||'').replace(/_/g,' ')+(CU.experience_level?' · '+CU.experience_level:'');}
-async function doLogout(){await api('/logout','POST').catch(()=>{});CU=null;document.getElementById('app').style.display='none';document.getElementById('auth-screen').style.display='flex';switchAuth('login');}
-
-// ── Nav ───────────────────────────────────────────────────────────────────
-function showPage(page,el){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el)el.classList.add('active');
-  ({search:pgSearch,history:pgHistory,diet:pgDiet,cycle:pgCycle,medical:pgMedical,upload:pgUpload})[page]?.();
-}
-function setMain(h){document.getElementById('main').innerHTML=h;}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SEARCH  —  World-Class AI Search Engine
-// ═══════════════════════════════════════════════════════════════════════════
-function pgSearch(){
-  setMain(`
-  <div style="margin-bottom:20px;">
-    <h1 style="font-size:22px;font-weight:700;margin:0 0 2px;color:#f1f5f9;">FitSearch AI</h1>
-    <p style="font-size:12px;color:#334155;margin:0;">🔎 Perplexity-style retrieval  ·  🧠 ChatGPT-style analysis  ·  ⚡ Google-speed results</p>
-  </div>
-
-  <!-- Search bar -->
-  <div style="display:flex;gap:10px;margin-bottom:12px;">
-    <div style="flex:1;position:relative;">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#475569;font-size:15px;">🔍</span>
-      <input class="inp" id="sq" style="padding-left:36px;font-size:15px;height:48px;" placeholder="e.g. best creatine for muscle gain, SARMs kya hai, HGH fat loss…" onkeydown="if(event.key==='Enter')doSearch()">
-    </div>
-    <button class="btn btn-primary" style="height:48px;padding:0 22px;font-size:14px;" onclick="doSearch()">Search ↗</button>
-  </div>
-
-  <!-- Filter chips — FIX 2: clicking NOW triggers doSearch() immediately -->
-  <div style="margin-bottom:8px;">
-    <div style="font-size:11px;color:#334155;margin-bottom:7px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Real-time filters — click to re-rank results</div>
-    <div style="display:flex;gap:7px;flex-wrap:wrap;" id="filter-row">
-      ${[
-        ['Muscle gain','muscle_gain','💪'],
-        ['Fat loss','fat_loss','🔥'],
-        ['Strength','strength','⚡'],
-        ['Endurance','endurance','🏃'],
-        ['Beginner','beginner','🌱'],
-        ['Advanced','advanced','🎯'],
-        ['Recovery','recovery','🔄'],
-        ['Pre-workout','pre_workout','⚡'],
-      ].map(([label,val,icon])=>
-        `<span class="pill" data-filter="${val}" onclick="togF(this,'${val}')">${icon} ${label}</span>`
-      ).join('')}
-    </div>
-  </div>
-  <div id="active-filters-banner" style="display:none;" class="filter-row-active"></div>
-
-  <!-- Quick search suggestions -->
-  <div style="margin-bottom:20px;display:flex;gap:7px;flex-wrap:wrap;">
-    ${[
-      'Best creatine for muscle gain',
-      'Ostarine beginner cycle',
-      'Whey protein timing',
-      'Best pre-workout India',
-      'BPC-157 injury recovery',
-      'HGH fat loss protocol',
-      'SARMs kya hai',
-    ].map(q=>`<span onclick="quickSearch('${esc(q)}')" style="padding:4px 11px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:99px;font-size:11px;color:#60a5fa;cursor:pointer;transition:all .12s;" onmouseover="this.style.background='rgba(59,130,246,.15)'" onmouseout="this.style.background='rgba(59,130,246,.08)'">${q}</span>`).join('')}
-  </div>
-
-  <!-- Results area -->
-  <div id="sr">
-    <div style="text-align:center;padding:52px 0;color:#334155;">
-      <div style="font-size:36px;margin-bottom:12px;">🔬</div>
-      <div style="font-weight:600;color:#64748b;margin-bottom:6px;font-size:15px;">Evidence-Based AI Search Engine</div>
-      <div style="color:#334155;font-size:13px;">Queries PubMed · Examine.com · OpenFDA · Claude AI</div>
-    </div>
-  </div>`);
-}
-
-// ── FIX 2 (frontend) — togF now immediately re-runs the search ────────────
-function togF(el, filterVal){
-  // Toggle UI state
+// ─── Filters ─────────────────────────────────────────────────────────────
+function toggleFilter(el) {
   el.classList.toggle('on');
-  const i = AF.indexOf(filterVal);
-  i > -1 ? AF.splice(i, 1) : AF.push(filterVal);
-
-  // Update active filter banner
-  updateFilterBanner();
-
-  // ← THE FIX: if a search is already showing, re-run it immediately
-  const q = ((document.getElementById('sq')||{}).value||'').trim();
-  if(q) doSearch();   // re-POST with updated AF → fresh ranking from backend
+  const f = el.dataset.filter;
+  if (activeFilters.includes(f)) activeFilters = activeFilters.filter(x=>x!==f);
+  else activeFilters.push(f);
 }
 
-function updateFilterBanner(){
-  const banner = document.getElementById('active-filters-banner');
-  if(!banner) return;
-  if(AF.length === 0){
-    banner.style.display = 'none';
-    return;
-  }
-  const labels = {muscle_gain:'💪 Muscle gain',fat_loss:'🔥 Fat loss',strength:'⚡ Strength',
-                  endurance:'🏃 Endurance',beginner:'🌱 Beginner',advanced:'🎯 Advanced',
-                  recovery:'🔄 Recovery',pre_workout:'⚡ Pre-workout'};
-  banner.style.display = 'flex';
-  banner.innerHTML = `<span>🔄 Filtering by:</span> ${AF.map(f=>`<strong>${labels[f]||f}</strong>`).join(', ')} <span style="margin-left:auto;cursor:pointer;color:#475569;" onclick="clearFilters()">✕ Clear</span>`;
-}
-
-function clearFilters(){
-  AF = [];
-  document.querySelectorAll('.pill.on').forEach(p => p.classList.remove('on'));
-  updateFilterBanner();
-  const q = ((document.getElementById('sq')||{}).value||'').trim();
-  if(q) doSearch();
-}
-
-function quickSearch(q){
-  const inp = document.getElementById('sq');
-  if(inp) inp.value = q;
+// ─── Search ───────────────────────────────────────────────────────────────
+function fillSearch(q) {
+  document.getElementById('searchInput').value = q;
   doSearch();
 }
 
-// ── Main search function ──────────────────────────────────────────────────
-async function doSearch(){
-  const q = ((document.getElementById('sq')||{}).value||'').trim();
-  if(!q){ toast('Enter a search query','error'); return; }
-  _lastQuery = q;
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
 
-  document.getElementById('sr').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;padding:20px 0;color:#64748b;font-size:13px;">
-      <div class="skel" style="width:20px;height:20px;border-radius:50%;flex-shrink:0;"></div>
-      <div>
-        <div style="color:#94a3b8;font-weight:600;margin-bottom:2px;">Analysing intent · Extracting entities · Querying sources…</div>
-        <div style="font-size:11px;color:#334155;">PubMed · Examine.com · OpenFDA · Claude AI ${AF.length?'· Filters: '+AF.join(', '):''}</div>
-      </div>
-    </div>
-    <div class="skel" style="height:130px;margin-bottom:12px;"></div>
-    <div class="skel" style="height:80px;margin-bottom:12px;"></div>
-    <div class="skel" style="height:60px;"></div>`;
+async function doSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
 
-  try{
-    const d = await api('/search','POST',{query:q, filters:AF});
-    renderResults(d.results||[], q, d.count||0);
-  } catch(e){
-    toast(e.message,'error');
-    document.getElementById('sr').innerHTML=`<div class="card" style="background:#450a0a20;border-color:#7f1d1d;"><div style="color:#f87171;font-size:13px;">Error: ${e.message}</div></div>`;
+  const btn = document.getElementById('searchBtn');
+  document.getElementById('searchBtnIcon').textContent = '';
+  document.getElementById('searchBtnIcon').innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px"></div>';
+  document.getElementById('searchBtnText').textContent = 'Searching…';
+  btn.disabled = true;
+
+  document.getElementById('heroSection').style.display = 'none';
+  document.getElementById('historyPanel').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('resultsArea').style.display = 'none';
+
+  try {
+    const res = await fetch('/search', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      credentials: 'include',
+      body: JSON.stringify({query, filters: activeFilters})
+    });
+    if (res.status === 401) { location.href='/login.html'; return; }
+    const data = await res.json();
+
+    currentResults = data.results || [];
+    renderResults(query, currentResults);
+  } catch(e) {
+    showToast('Search failed — please try again', 'error');
+  } finally {
+    document.getElementById('searchBtnIcon').textContent = '⚡';
+    document.getElementById('searchBtnText').textContent = 'Search';
+    btn.disabled = false;
+    document.getElementById('loadingState').style.display = 'none';
   }
 }
 
-// ── Evidence / category colour maps ─────────────────────────────────────
-const evC  = {very_high:'b-green',high:'b-green',moderate:'b-amber',low:'b-red'};
-const evLb = {very_high:'⬆ Very high',high:'↑ High',moderate:'~ Moderate',low:'↓ Low'};
-const catC = {supplement:'b-blue',sarm:'b-purple',steroid:'b-red',peptide:'b-teal',
-              research:'b-gray',diet:'b-green',training:'b-teal',exercise:'b-teal',
-              nutrition:'b-green',general:'b-gray'};
-const intLb= {research:'🔬 Research',product:'🛒 Products',exercise:'🏋 Exercise Guide',
-              nutrition:'🥗 Nutrition',dosage:'💊 Dosage',compare:'⚖ Compare',
-              cycle:'🔄 Cycle',explain:'📖 Explain',recommend:'✅ Recommend',
-              side_effects:'⚠ Safety'};
-const srcLb= {ai:'🤖 AI + Live data',kb:'📚 Knowledge base',cached:'⚡ Cached',fallback:'📚 Fallback'};
+// ─── Render results ───────────────────────────────────────────────────────
+function renderResults(query, results) {
+  document.getElementById('resultsArea').style.display = 'block';
+  document.getElementById('resultsCount').textContent = results.length;
+  document.getElementById('resultsQuery').textContent = `"${query}"`;
+  document.getElementById('resultCards').innerHTML = '';
 
-// ── Master result renderer ────────────────────────────────────────────────
-function renderResults(results, query, count){
-  if(!results.length){document.getElementById('sr').innerHTML=`<div style="text-align:center;padding:48px;color:#334155;">No results for "${query}"</div>`;return;}
-  const src=results[0]?._source||'kb', cached=results[0]?._cached, intent=results[0]?.intent||'research';
-  let html=`
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#334155;">
-      <span class="source-dot ${cached?'src-cached':src==='ai'?'src-ai':'src-kb'}"></span>
-      <span>${cached?'⚡ Cached':srcLb[src]||src}</span><span>·</span>
-      <span>${count} result${count!==1?'s':''} for <em style="color:#64748b;">"${query}"</em></span>
-      ${AF.length?`<span>·</span><span style="color:#60a5fa;">${AF.length} filter${AF.length>1?'s':''} active</span>`:''}
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <span style="padding:3px 10px;border-radius:99px;font-size:11px;border:1px solid rgba(255,255,255,.1);color:#64748b;">${intLb[intent]||intent}</span>
-      <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="expandAll()">Expand all</button>
-    </div>
-  </div>`;
-  results.forEach((r,idx)=>{
-    html += ((r.intent==='product'||intent==='product')&&r.products?.length)
-      ? buildProductCard(r,`rb-${idx}`,idx===0)
-      : buildResearchCard(r,`rb-${idx}`,idx===0&&!r._supplementary);
+  if (!results.length) {
+    document.getElementById('resultCards').innerHTML = `
+      <div style="text-align:center;padding:60px 0;color:var(--text3)">
+        <div style="font-size:36px;margin-bottom:14px">🔍</div>
+        <div style="font-size:15px;margin-bottom:8px">No results found</div>
+        <div style="font-size:13px">Try different keywords or check spelling</div>
+      </div>`;
+    return;
+  }
+
+  results.forEach((r, idx) => {
+    const el = document.createElement('div');
+    el.innerHTML = buildReportCard(r, idx);
+    document.getElementById('resultCards').appendChild(el);
   });
-  document.getElementById('sr').innerHTML=html;
 }
 
-// ─── World-class 17-section research report ───────────────────────────────
-function buildResearchCard(r, bodyId, open){
-  const cat=catC[r.category]||'b-gray', ev=evC[r.evidence_tier]||'b-gray';
-  const cachedBanner=r._cached?`<div class="cached-banner"><span class="source-dot src-cached"></span>⚡ Cached · 24h TTL</div>`:'';
+// ─── Build rich report card ───────────────────────────────────────────────
+function buildReportCard(r, idx) {
+  const isSupplementary = r._supplementary;
+  const source = r._source || 'kb';
+  const isCached = r._cached;
+  const cardClass = isSupplementary ? 'report-card supplementary-card' : 'report-card';
 
-  const listItems=(arr,icon,col)=>(arr||[]).map(b=>`<div style="display:flex;gap:8px;padding:2px 0;font-size:13px;color:${col||'#94a3b8'};align-items:flex-start;"><span style="flex-shrink:0;">${icon||'✓'}</span><span>${b}</span></div>`).join('');
+  // Evidence tier badge
+  const tierMap = {
+    very_high: ['b-green','✅ Very High Evidence'],
+    high:      ['b-blue', '🔵 High Evidence'],
+    moderate:  ['b-amber','⚡ Moderate Evidence'],
+    low:       ['b-gray', '⚠️ Low Evidence']
+  };
+  const [tierClass, tierLabel] = tierMap[r.evidence_tier] || ['b-gray','—'];
 
-  const typesHTML=arr=>(arr||[]).length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:6px;">${arr.map(t=>`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;">${t.name}</div><div style="font-size:11px;color:#60a5fa;margin:2px 0;">Best for: ${t.best_for}</div><div style="font-size:11px;color:#334155;">Evidence: ${t.evidence}</div></div>`).join('')}</div>`:'—';
+  // Category badge
+  const catMap = {
+    supplement: ['b-blue','💊 Supplement'],
+    sarm:       ['b-violet','🔬 SARM'],
+    steroid:    ['b-red','⚗️ Steroid'],
+    peptide:    ['b-teal','🧬 Peptide'],
+    exercise:   ['b-green','💪 Training'],
+    nutrition:  ['b-amber','🥗 Nutrition'],
+  };
+  const [catClass, catLabel] = catMap[r.category] || ['b-gray',r.category||''];
 
-  const evidenceHTML=arr=>(arr||[]).length?arr.map(e=>`<div style="border-left:3px solid #3b82f6;padding:8px 12px;margin-bottom:8px;background:rgba(59,130,246,.04);border-radius:0 8px 8px 0;"><div style="font-size:12px;font-weight:600;color:#93c5fd;">${e.study}</div><div style="font-size:13px;color:#cbd5e1;margin:3px 0;line-height:1.5;">${e.finding}</div><div style="font-size:11px;color:#475569;">📄 ${e.source}</div></div>`).join(''):'—';
+  // Source indicator
+  const srcDot = isCached ? 'src-cached' : (source==='ai' ? 'src-ai' : 'src-kb');
+  const srcLabel = isCached ? '⚡ Cached' : (source==='ai' ? '✨ AI Enhanced' : '📚 Knowledge Base');
 
-  const articlesHTML=arr=>(arr||[]).length?arr.map(a=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="font-size:14px;flex-shrink:0;">📄</span><div>${a.url?`<a href="${a.url}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;font-size:13px;font-weight:500;">${a.title}</a>`:`<span style="color:#94a3b8;font-size:13px;">${a.title}</span>`}${a.author?`<div style="font-size:11px;color:#475569;margin-top:2px;">${a.author}${a.source?' · '+a.source:''}</div>`:''}</div></div>`).join(''):'—';
+  // Safety warning
+  const safetyNote = r.safe_for_beginners === false ?
+    `<div class="legal-warning" style="margin-bottom:10px"><span>⚠️</span><span>Not recommended for beginners. Requires experience and bloodwork.</span></div>` : '';
 
-  const magazinesHTML=arr=>(arr||[]).length?arr.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;">📰 ${m.url?`<a href="${m.url}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;font-size:13px;">${m.title}</a>`:`<span style="color:#94a3b8;font-size:13px;">${m.title}</span>`}${m.publisher?`<span style="color:#334155;font-size:11px;">— ${m.publisher}</span>`:''}</div>`).join(''):'—';
+  // Legal status
+  const legalNote = r.legal_status ?
+    `<div class="legal-warning"><span>⚖️</span><span>${escHtml(r.legal_status)}</span></div>` : '';
 
-  const booksHTML=arr=>(arr||[]).length?arr.map(b=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;"><span style="font-size:14px;flex-shrink:0;">📚</span><div><div style="font-size:13px;font-weight:500;color:#e2e8f0;">${b.title}</div><div style="font-size:11px;color:#475569;">${b.author||''}${b.year?' · '+b.year:''}</div></div></div>`).join(''):'—';
+  // Types grid
+  const typesHtml = (r.types||[]).map(t => `
+    <div class="type-card">
+      <div class="type-name">${escHtml(t.name||'')}</div>
+      <div class="type-best">${escHtml(t.best_for||'')}</div>
+      <div class="type-ev">${escHtml(t.evidence||'')}</div>
+    </div>`).join('');
 
-  const videosHTML=arr=>(arr||[]).length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:4px;">${arr.map(v=>`<a href="${v.url||'#'}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:8px;text-decoration:none;"><span style="font-size:22px;flex-shrink:0;">▶</span><div><div style="font-size:12px;font-weight:600;color:#fca5a5;line-height:1.3;">${v.title}</div><div style="font-size:11px;color:#475569;margin-top:2px;">${v.channel||''} · ${v.platform||'YouTube'}</div></div></a>`).join('')}</div>`:'—';
+  // Benefits
+  const benefitsHtml = (r.benefits||[]).map(b => `
+    <div class="benefit-item">
+      <div class="benefit-dot"></div>
+      <span>${escHtml(typeof b==='string'?b:(b.benefit||b.name||String(b)))}</span>
+    </div>`).join('');
 
-  const seHTML=arr=>(arr||[]).length?arr.map(se=>`<span class="se-badge se-${se.severity||'low'}">${se.effect}</span>`).join(''):'—';
-  const pilList=(arr,col)=>(arr||[]).length?arr.map(p=>`<span style="display:inline-flex;padding:3px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:99px;font-size:12px;color:${col||'#94a3b8'};margin:3px;">${p}</span>`).join(''):'—';
+  // Side effects
+  const seHtml = (r.side_effects||[]).map(s => {
+    const sev = (s.severity||'low').toLowerCase();
+    return `<span class="se-chip se-${sev}"><span>${sev==='high'?'🔴':sev==='medium'?'🟡':'🟢'}</span>${escHtml(s.effect||s)}</span>`;
+  }).join('');
 
-  const secs=[
-    {n:1, label:'What it is',           body:`<div class="section-content">${r.what_it_is||r.overview||'—'}</div>`},
-    {n:2, label:'How it works',         body:`<div class="section-content">${r.how_it_works||'—'}</div>`},
-    {n:3, label:'Types & Forms',        body:typesHTML(r.types)},
-    {n:4, label:'Dosage',               body:`<div class="section-content">${r.dosage||'—'}</div>`},
-    {n:5, label:'Timing',               body:`<div class="section-content">${r.timing||'—'}</div>`},
-    {n:6, label:'How to take',          body:`<div class="section-content">${r.how_to_take||'—'}</div>`},
-    {n:7, label:'Best ways to use',     body:listItems(r.best_ways_to_use,'💡','#94a3b8')},
-    {n:8, label:'Who should use',       body:pilList(r.who_should_use,'#4ade80')},
-    {n:9, label:'Who should avoid',     body:pilList(r.who_should_avoid,'#f87171')},
-    {n:10,label:'Training synergy',     body:`<div class="section-content">${r.training_synergy||'—'}</div>`},
-    {n:11,label:'Expected benefits',    body:listItems(r.benefits,'✓','#4ade80')},
-    {n:12,label:'Risks & Side effects', body:seHTML(r.side_effects)},
-    {n:13,label:'Research evidence',    body:evidenceHTML(r.research_evidence)},
-    {n:14,label:'Articles & References',body:articlesHTML(r.articles)},
-    {n:15,label:'Magazines',            body:magazinesHTML(r.magazines)},
-    {n:16,label:'Books',                body:booksHTML(r.books)},
-    {n:17,label:'Videos',              body:videosHTML(r.videos)},
-  ];
+  // Research evidence
+  const evidenceHtml = (r.research_evidence||[]).slice(0,4).map(e => `
+    <div class="evidence-item">
+      <div class="ev-study">${escHtml(e.study||'')}</div>
+      <div class="ev-finding">${escHtml(e.finding||'')}</div>
+      <div class="ev-source">📰 ${escHtml(e.source||'')}</div>
+    </div>`).join('');
 
-  const secRows=secs.map(s=>`<div class="section-row"><div class="section-num">${s.n}</div><div class="section-inner"><div class="section-title" onclick="toggleSection(this)"><span>${s.label}</span><span style="color:#334155;font-size:10px;margin-left:auto;">▾</span></div><div class="section-body">${s.body}</div></div></div>`).join('');
-  const stackHtml=(r.stacking||[]).map(s=>`<span class="stacking-pill">${s}</span>`).join('');
-  const aiSum=r.ai_summary?`<div style="margin:12px 22px 0;padding:14px 16px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:10px;"><div style="font-size:11px;font-weight:700;color:#a5b4fc;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">🤖 AI Summary</div><div style="font-size:13px;color:#c7d2fe;line-height:1.65;">${r.ai_summary}</div></div>`:'';
-  const finalRec=r.final_recommendation?`<div class="final-rec"><div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:6px;">✅ Final recommendation</div><div style="font-size:13px;color:#93c5fd;line-height:1.65;">${r.final_recommendation}</div></div>`:'';
-  const stackRow=stackHtml?`<div style="padding:10px 22px 14px;"><div style="font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Stack with / Related</div><div>${stackHtml}</div></div>`:'';
-
-  return `<div class="report-card" id="rc-${bodyId}">${cachedBanner}
-    <div class="report-header" onclick="toggleReport('${bodyId}')">
-      <div class="report-name">${r.name} <span style="font-size:14px;font-weight:400;color:#475569;">→ ${open?'Click to collapse':'Click to expand'}</span></div>
-      <div class="report-tagline">${r.tagline||''}</div>
-      <div class="report-badges">
-        <span class="badge ${cat}">${r.category||'supplement'}</span>
-        <span class="badge ${ev}">${evLb[r.evidence_tier]||'Moderate'} evidence</span>
-        ${r.safe_for_beginners===true?'<span class="badge b-green">🌱 Beginner safe</span>':r.safe_for_beginners===false?'<span class="badge b-red">⚠ Advanced only</span>':''}
-        ${r.legal_status?`<span class="badge b-amber" title="${r.legal_status}">⚖ Legal notice</span>`:''}
-        ${r._supplementary?'<span class="badge b-gray">Related</span>':''}
-        ${r._source==='ai'?'<span class="badge b-teal">🤖 AI</span>':r._cached?'<span class="badge b-amber">⚡ Cached</span>':'<span class="badge b-gray">📚 KB</span>'}
+  // Articles
+  const articleHtml = (r.articles||[]).slice(0,6).map(a => `
+    <div class="ref-item">
+      <span class="ref-icon">📄</span>
+      <div>
+        <a href="${escAttr(a.url||'#')}" class="ref-link" target="_blank">${escHtml(a.title||'Article')}</a>
+        <div class="ref-meta">${escHtml([a.author,a.source].filter(Boolean).join(' · '))}</div>
       </div>
-      <div class="report-toggle"><span id="tt-${bodyId}">${open?'▲ Collapse':'▼ Expand full report (17 sections)'}</span></div>
+    </div>`).join('');
+
+  // Videos
+  const videoHtml = (r.videos||[]).slice(0,4).map(v => `
+    <div class="video-item">
+      <span class="video-icon">▶️</span>
+      <div style="flex:1">
+        <div class="video-title">${escHtml(v.title||'Video')}</div>
+        <div class="video-channel">${escHtml(v.channel||'')} · ${escHtml(v.platform||'YouTube')}</div>
+      </div>
+      <a href="${escAttr(v.url||'#')}" class="video-link" target="_blank">Watch →</a>
+    </div>`).join('');
+
+  // Stacking
+  const stackingHtml = (r.stacking||[]).map(s => `<span class="stack-pill">+ ${escHtml(s)}</span>`).join('');
+
+  // Products (only shown for product intent)
+  const productHtml = (r.products||[]).length > 0 ? `
+    <div class="section-row">
+      <div class="section-num">P</div>
+      <div class="section-inner">
+        <div class="section-label">🛍️ <span>Top Products</span></div>
+        <div class="product-grid">
+          ${(r.products||[]).map(p=>`
+            <div class="product-card">
+              <div class="product-badge-lbl" style="color:var(--amber)">${escHtml(p.badge||'')}</div>
+              <div class="product-name">${escHtml(p.name||'')}</div>
+              <div class="product-price">₹${(p.price_inr||0).toLocaleString()}</div>
+              <div class="product-rating">★ ${p.rating||'—'}</div>
+              <div class="product-for">${escHtml(p.best_for||'')}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>` : '';
+
+  const suppLabel = isSupplementary ? `<div class="supplementary-label">📎 Related Result</div>` : '';
+
+  return `
+  <div class="${cardClass}" id="card-${idx}">
+    ${suppLabel}
+    <div class="source-bar">
+      <div class="source-dot ${srcDot}"></div>
+      <span>${srcLabel}</span>
+      ${r.examine_url ? `<a href="${escAttr(r.examine_url)}" target="_blank" style="color:#60a5fa;text-decoration:none;font-size:11px;margin-left:auto">Examine.com →</a>` : ''}
     </div>
-    <div class="report-body ${open?'':'hidden'}" id="${bodyId}">
-      ${r.legal_status?`<div style="margin:0 22px 10px;padding:8px 12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#fbbf24;">⚖ ${r.legal_status}</div>`:''}
-      ${secRows}${aiSum}${finalRec}${stackRow}
-      ${r.ai_note?`<div style="padding:0 22px 14px;font-size:11px;color:#334155;font-style:italic;">${r.ai_note}</div>`:''}
+    <div class="report-header" onclick="toggleCard('card-${idx}')">
+      <div class="report-meta">
+        <span class="badge ${catClass}">${catLabel}</span>
+        <span class="badge ${tierClass}">${tierLabel}</span>
+        ${r.safe_for_beginners ? '<span class="badge b-green">✅ Beginner Safe</span>' : '<span class="badge b-red">⚠️ Advanced Only</span>'}
+      </div>
+      <div class="report-name">${escHtml(r.name||'')}</div>
+      <div class="report-tagline">${escHtml(r.tagline||'')}</div>
+      ${safetyNote}
+      <div class="expand-toggle">
+        <span class="toggle-icon" id="toggle-icon-${idx}">▼</span>
+        View Full Research Report (17 sections)
+      </div>
+    </div>
+
+    <div class="report-body" id="body-${idx}">
+
+      <!-- AI Summary -->
+      ${r.ai_summary ? `
+      <div style="padding:16px 22px 0">
+        <div class="ai-summary-box">
+          <div class="ai-label">🤖 AI Summary</div>
+          <div class="ai-text">${escHtml(r.ai_summary)}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 1: Overview -->
+      <div class="section-row">
+        <div class="section-num">01</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">📖</span> What It Is</div>
+          <div class="section-text">${escHtml(r.what_it_is||r.overview||'')}</div>
+        </div>
+      </div>
+
+      <!-- Section 2: Mechanism -->
+      <div class="section-row">
+        <div class="section-num">02</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">⚙️</span> How It Works</div>
+          <div class="section-text">${escHtml(r.how_it_works||'')}</div>
+        </div>
+      </div>
+
+      <!-- Section 3: Types -->
+      ${typesHtml ? `
+      <div class="section-row">
+        <div class="section-num">03</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">🗂️</span> Types & Variants</div>
+          <div class="types-grid">${typesHtml}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 4: Dosage -->
+      <div class="section-row">
+        <div class="section-num">04</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">💉</span> Dosage</div>
+          <div class="section-text">${escHtml(r.dosage||'')}</div>
+        </div>
+      </div>
+
+      <!-- Section 5: Timing -->
+      <div class="section-row">
+        <div class="section-num">05</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">⏱️</span> Timing & Protocol</div>
+          <div class="section-text">${escHtml(r.timing||'')} ${r.how_to_take ? '<br><br>'+escHtml(r.how_to_take) : ''}</div>
+        </div>
+      </div>
+
+      <!-- Section 6: Best ways -->
+      ${(r.best_ways_to_use||[]).length ? `
+      <div class="section-row">
+        <div class="section-num">06</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">✅</span> Best Ways to Use</div>
+          <div class="benefit-list">${(r.best_ways_to_use||[]).map(w=>`<div class="benefit-item"><div class="benefit-dot" style="background:var(--accent)"></div><span>${escHtml(w)}</span></div>`).join('')}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 7: Training Synergy -->
+      ${r.training_synergy ? `
+      <div class="section-row">
+        <div class="section-num">07</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">🏋️</span> Training Synergy</div>
+          <div class="section-text">${escHtml(r.training_synergy)}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 8: Benefits -->
+      ${benefitsHtml ? `
+      <div class="section-row">
+        <div class="section-num">08</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">📈</span> Benefits</div>
+          <div class="benefit-list">${benefitsHtml}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 9: Side Effects -->
+      ${seHtml ? `
+      <div class="section-row">
+        <div class="section-num">09</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">⚠️</span> Side Effects & Risks</div>
+          <div>${seHtml}</div>
+          ${legalNote ? '<div style="margin-top:10px">'+legalNote+'</div>' : ''}
+        </div>
+      </div>` : ''}
+
+      <!-- Section 10: Who should use -->
+      ${(r.who_should_use||[]).length || (r.who_should_avoid||[]).length ? `
+      <div class="section-row">
+        <div class="section-num">10</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">👤</span> Who Should Use / Avoid</div>
+          ${(r.who_should_use||[]).length ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px">✅ Suitable For</div><div class="benefit-list">${(r.who_should_use||[]).map(w=>`<div class="benefit-item"><div class="benefit-dot"></div><span>${escHtml(w)}</span></div>`).join('')}</div></div>` : ''}
+          ${(r.who_should_avoid||[]).length ? `<div><div style="font-size:11px;font-weight:700;color:#f87171;margin-bottom:4px">❌ Should Avoid</div><div class="benefit-list">${(r.who_should_avoid||[]).map(w=>`<div class="benefit-item"><div class="benefit-dot" style="background:#f87171"></div><span>${escHtml(w)}</span></div>`).join('')}</div></div>` : ''}
+        </div>
+      </div>` : ''}
+
+      <!-- Section 11: Cycling -->
+      ${r.cycling ? `
+      <div class="section-row">
+        <div class="section-num">11</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">🔄</span> Cycling / PCT</div>
+          <div class="section-text">${escHtml(r.cycling)}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 12: Stacking -->
+      ${stackingHtml ? `
+      <div class="section-row">
+        <div class="section-num">12</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">⚗️</span> Stack Options</div>
+          <div class="stack-list">${stackingHtml}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 13: Research evidence -->
+      ${evidenceHtml ? `
+      <div class="section-row">
+        <div class="section-num">13</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">🔬</span> Research & Studies</div>
+          ${evidenceHtml}
+        </div>
+      </div>` : ''}
+
+      <!-- Section 14: Articles -->
+      ${articleHtml ? `
+      <div class="section-row">
+        <div class="section-num">14</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">📚</span> Articles & References</div>
+          <div class="ref-section">${articleHtml}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 15: Videos -->
+      ${videoHtml ? `
+      <div class="section-row">
+        <div class="section-num">15</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">🎥</span> Videos</div>
+          <div class="video-list">${videoHtml}</div>
+        </div>
+      </div>` : ''}
+
+      <!-- Section 16: Products -->
+      ${productHtml}
+
+      <!-- Section 17: Final Recommendation -->
+      ${r.final_recommendation ? `
+      <div class="section-row">
+        <div class="section-num">17</div>
+        <div class="section-inner">
+          <div class="section-label"><span class="section-icon">🎯</span> Final Recommendation</div>
+          <div class="final-rec" style="margin:0 0 0 0">
+            <div class="final-rec-text">${escHtml(r.final_recommendation)}</div>
+          </div>
+        </div>
+      </div>` : ''}
+
     </div>
   </div>`;
 }
 
-// ─── Product card ─────────────────────────────────────────────────────────
-function buildProductCard(r, bodyId, open){
-  const products=r.products||[];
-  const bC={'🏅 Premium':'badge-premium','🔥 Popular':'badge-popular','💪 Balanced':'badge-balanced'};
-  const stars=n=>'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));
-  return `<div class="report-card" id="rc-${bodyId}">
-    <div class="report-header" onclick="toggleReport('${bodyId}')">
-      <div class="report-name">${r.name} <span style="font-size:14px;font-weight:400;color:#475569;">→ ${open?'Collapse':'View products'}</span></div>
-      <div class="report-tagline">${r.tagline||''}</div>
-      <div class="report-badges"><span class="badge b-amber">🛒 Products</span><span class="badge b-blue">${products.length} products</span>${r._source==='ai'?'<span class="badge b-teal">🤖 AI</span>':r._cached?'<span class="badge b-amber">⚡ Cached</span>':''}</div>
-      <div class="report-toggle"><span id="tt-${bodyId}">${open?'▲ Collapse':'▼ View products'}</span></div>
-    </div>
-    <div class="report-body ${open?'':'hidden'}" id="${bodyId}">
-      <div class="product-grid">${products.map(p=>`<div class="product-card"><div class="product-badge ${bC[p.badge]||'badge-balanced'}">${p.badge||'💪'}</div><div class="product-name">${p.name}</div>${p.price_inr?`<div class="product-price">₹${p.price_inr.toLocaleString()}</div>`:''}<div class="product-rating">${stars(p.rating||4)} ${p.rating||4}/5</div>${p.key_benefit?`<div class="product-benefit">✓ ${p.key_benefit}</div>`:''}${p.best_for?`<div style="font-size:11px;color:#475569;margin-top:4px;">Best for: ${p.best_for}</div>`:''}</div>`).join('')}</div>
-      ${r.final_recommendation?`<div class="final-rec" style="background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.2);"><div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:6px;">🛒 Buying recommendation</div><div style="font-size:13px;color:#fde68a;">${r.final_recommendation}</div></div>`:''}
-    </div>
-  </div>`;
+// ─── Toggle card expand ───────────────────────────────────────────────────
+function toggleCard(cardId) {
+  const body = document.getElementById('body-' + cardId.split('-')[1]);
+  const icon = document.getElementById('toggle-icon-' + cardId.split('-')[1]);
+  if (!body) return;
+  body.classList.toggle('open');
+  if (body.classList.contains('open')) {
+    icon.style.transform = 'rotate(180deg)';
+  } else {
+    icon.style.transform = '';
+  }
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────
-function toggleReport(id){
-  const body=document.getElementById(id),tt=document.getElementById('tt-'+id);
-  if(!body)return;
-  const isOpen=!body.classList.contains('hidden');
-  body.classList.toggle('hidden');
-  if(tt) tt.textContent=isOpen?'▼ Expand full report (17 sections)':'▲ Collapse';
-}
-function toggleSection(el){
-  const body=el.nextElementSibling;
-  if(!body)return;
-  body.style.display=body.style.display==='none'?'block':'none';
-  const arr=el.querySelector('span:last-child');
-  if(arr) arr.textContent=body.style.display==='none'?'▸':'▾';
-}
-function expandAll(){
-  document.querySelectorAll('.report-body.hidden').forEach(b=>b.classList.remove('hidden'));
-  document.querySelectorAll('[id^="tt-"]').forEach(t=>t.textContent='▲ Collapse');
+// ─── History panel ────────────────────────────────────────────────────────
+async function toggleHistoryPanel() {
+  const panel = document.getElementById('historyPanel');
+  const isVisible = panel.style.display !== 'none';
+  if (isVisible) {
+    panel.style.display = 'none';
+    return;
+  }
+  document.getElementById('heroSection').style.display = 'none';
+  document.getElementById('resultsArea').style.display = 'none';
+  panel.style.display = 'block';
+  await loadHistory();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// HISTORY
-// ═══════════════════════════════════════════════════════════════════════════
-async function pgHistory(){
-  setMain(`<h1 style="font-size:22px;font-weight:700;margin:0 0 18px;color:#f1f5f9;">Search history</h1><div id="hl"><div class="skel" style="height:180px;"></div></div>`);
-  try{
-    const rows=await api('/history');
-    const el=document.getElementById('hl');
-    if(!rows.length){el.innerHTML='<div style="text-align:center;padding:48px;color:#334155;">No searches yet</div>';return;}
-    el.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <span style="font-size:12px;color:#475569;">${rows.length} searches</span>
-      <button class="btn" style="font-size:12px;color:#f87171;border-color:#450a0a;" onclick="clrHist()">Clear all</button>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden;">
-      ${rows.map(r=>`
-      <div id="hi-${r.id}" style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);">
-        <div>
-          <div style="font-size:14px;font-weight:500;color:#e2e8f0;">${r.query}</div>
-          <div style="font-size:11px;color:#334155;margin-top:2px;">${new Date(r.searched_at).toLocaleString()} · ${r.results_count||0} results</div>
+async function loadHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '<div style="color:var(--text3);font-size:13px">Loading…</div>';
+  try {
+    const r = await fetch('/history', {credentials:'include'});
+    if (!r.ok) { list.innerHTML = '<div style="color:var(--text3);font-size:13px">Could not load history</div>'; return; }
+    const rows = await r.json();
+    if (!rows.length) { list.innerHTML = '<div style="color:var(--text3);font-size:13px">No search history yet</div>'; return; }
+    list.innerHTML = rows.map(h => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--border);margin-bottom:6px;cursor:pointer"
+           onclick="fillSearch('${escAttr(h.query)}')">
+        <span style="color:var(--text3);font-size:13px">🔍</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text)">${escHtml(h.query)}</div>
+          <div style="font-size:11px;color:var(--text3)">${new Date(h.searched_at).toLocaleDateString()} · ${h.results_count} results</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button class="btn" style="font-size:11px;padding:5px 10px;" onclick="rerun('${esc(r.query)}')">Re-run →</button>
-          <button onclick="delH(${r.id})" style="background:none;border:none;color:#475569;cursor:pointer;font-size:16px;">✕</button>
-        </div>
-      </div>`).join('')}
-    </div>`;
-  }catch(e){toast(e.message,'error');}
-}
-async function clrHist(){if(!confirm('Clear all history?'))return;await api('/history/clear','DELETE');toast('Cleared','success');pgHistory();}
-async function delH(id){await api('/history/'+id,'DELETE');const el=document.getElementById('hi-'+id);if(el)el.remove();}
-function rerun(q){showPage('search',document.querySelector('[data-page="search"]'));setTimeout(()=>{const sq=document.getElementById('sq');if(sq)sq.value=q;doSearch();},80);}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DIET
-// ═══════════════════════════════════════════════════════════════════════════
-function pgDiet(){
-  const u=CU||{};
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Diet generator</h1>
-  <p style="font-size:13px;color:#475569;margin:0 0 18px;">AI-generated meal plan based on your stats</p>
-  <div class="card" style="margin-bottom:16px;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
-      <div><label class="lbl">Weight (kg)</label><input class="inp" type="number" id="dw" value="${u.weight||80}"></div>
-      <div><label class="lbl">Height (cm)</label><input class="inp" type="number" id="dh" value="${u.height||175}"></div>
-      <div><label class="lbl">Age</label><input class="inp" type="number" id="da" value="${u.age||25}"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div><label class="lbl">Goal</label><select class="inp" id="dg"><option value="muscle_gain">Muscle gain</option><option value="fat_loss">Fat loss</option><option value="recomp">Recomposition</option></select></div>
-      <div><label class="lbl">Activity</label><select class="inp" id="dact"><option value="sedentary">Sedentary</option><option value="light">Light (1–3/wk)</option><option value="moderate" selected>Moderate (3–5/wk)</option><option value="active">Active (6–7/wk)</option><option value="very_active">Very active</option></select></div>
-      <div><label class="lbl">Sex</label><select class="inp" id="ds"><option value="male">Male</option><option value="female">Female</option></select></div>
-    </div>
-    <div style="margin-bottom:14px;"><label class="lbl">Upload BCA report (optional)</label>
-      <div class="upload-zone"><span style="font-size:20px;">📄</span><input type="file" id="bca-diet" accept=".pdf,.jpg,.jpeg,.png"><div style="font-size:11px;color:#334155;margin-top:4px;">PDF or image</div></div>
-      <div id="bca-s" style="font-size:12px;color:#4ade80;margin-top:6px;display:none;"></div>
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn" onclick="upBCADiet()">Upload BCA</button>
-      <button class="btn btn-primary" onclick="doDiet()">Generate plan ↗</button>
-    </div>
-  </div>
-  <div id="dr"></div>`);
-}
-async function upBCADiet(){const f=(document.getElementById('bca-diet')||{}).files?.[0];if(!f){toast('Select a file','error');return;}const fm=new FormData();fm.append('file',f);try{const r=await fetch('/upload_bca',{method:'POST',body:fm,credentials:'include'});const d=await r.json();if(d.status==='uploaded'){const s=document.getElementById('bca-s');s.textContent='✓ '+d.file;s.style.display='block';toast('BCA uploaded','success');}}catch(e){toast('Upload failed','error');}}
-async function doDiet(){
-  document.getElementById('dr').innerHTML='<div class="skel" style="height:400px;"></div>';
-  try{
-    const d=await api('/diet','POST',{weight:val('dw'),height:val('dh'),age:val('da'),goal:val('dg'),activity_level:val('dact'),sex:val('ds')});
-    const m=d.diet?.macros||{};
-    const meals=d.diet?.meals||[];
-    document.getElementById('dr').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
-      <div class="metric"><div class="metric-v">${(d.calories||0).toLocaleString()}</div><div class="metric-l">Calories/day</div></div>
-      <div class="metric" style="background:#14532d20;"><div class="metric-v" style="color:#4ade80;">${m.protein_g||0}g</div><div class="metric-l">Protein</div></div>
-      <div class="metric" style="background:#1d345720;"><div class="metric-v" style="color:#60a5fa;">${m.carbs_g||0}g</div><div class="metric-l">Carbs</div></div>
-      <div class="metric" style="background:#45180320;"><div class="metric-v" style="color:#fbbf24;">${m.fats_g||0}g</div><div class="metric-l">Fats</div></div>
-    </div>
-    <div class="card" style="margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Daily meal plan</div>
-      ${meals.map(meal=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);">
-        <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;">${meal.name}</div>
-        <div style="font-size:12px;color:#64748b;margin-top:3px;line-height:1.6;">${meal.foods}</div>
-        <div style="font-size:11px;color:#334155;margin-top:4px;">P:${meal.protein}g · C:${meal.carbs}g · F:${meal.fats}g</div></div>
-        <div style="font-size:13px;font-weight:600;color:#94a3b8;margin-left:14px;white-space:nowrap;">${meal.calories} kcal</div>
-      </div>`).join('')}
-    </div>
-    ${d.diet?.supplements?.length?`<div class="card" style="background:#14532d20;border-color:#14532d;"><div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">Supplements</div>${d.diet.supplements.map(s=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">✓ ${s}</div>`).join('')}</div>`:''}`;
-  }catch(e){toast(e.message,'error');}
+        <button onclick="event.stopPropagation();deleteHistoryItem(${h.id},this.parentElement)"
+          style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:4px">✕</button>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px">Error loading history</div>';
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// CYCLE
-// ═══════════════════════════════════════════════════════════════════════════
-function pgCycle(){
-  const u=CU||{};
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Cycle planner</h1>
-  <div style="padding:8px 12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#fbbf24;margin:8px 0 18px;">⚠ Educational purposes only. Consult a physician.</div>
-  <div class="card" style="margin-bottom:16px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-      <div><label class="lbl">Experience</label><select class="inp" id="cyl"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
-      <div><label class="lbl">Compound category</label><select class="inp" id="cyc"><option value="auto">Auto (recommended)</option><option value="sarm">SARMs</option><option value="steroid">Steroids</option><option value="peptide">Peptides</option></select></div>
-    </div>
-    <div style="margin-bottom:14px;"><label class="lbl">Goal</label><select class="inp" id="cyg"><option value="muscle_gain">Muscle gain</option><option value="fat_loss">Fat loss</option><option value="recomp">Recomposition</option><option value="strength">Strength</option></select></div>
-    <div style="margin-bottom:14px;"><label class="lbl">Upload medical report (optional)</label>
-      <div class="upload-zone"><span style="font-size:20px;">🏥</span><input type="file" id="med-cycle" accept=".pdf,.jpg,.jpeg,.png"></div>
-      <div id="med-s" style="font-size:12px;color:#4ade80;margin-top:6px;display:none;"></div>
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn" onclick="upMedCycle()">Upload report</button>
-      <button class="btn btn-primary" onclick="doCycle()">Generate cycle ↗</button>
-    </div>
-  </div>
-  <div id="cyr"></div>`);
-}
-async function upMedCycle(){const f=(document.getElementById('med-cycle')||{}).files?.[0];if(!f){toast('Select a file','error');return;}const fm=new FormData();fm.append('file',f);try{const r=await fetch('/upload_medical',{method:'POST',body:fm,credentials:'include'});const d=await r.json();if(d.status==='uploaded'){const s=document.getElementById('med-s');s.textContent='✓ '+d.file;s.style.display='block';toast('Report uploaded','success');}}catch(e){toast('Upload failed','error');}}
-async function doCycle(){
-  document.getElementById('cyr').innerHTML='<div class="skel" style="height:380px;"></div>';
-  try{
-    const d=await api('/cycle','POST',{experience_level:val('cyl'),compound_category:val('cyc'),goal:val('cyg')});
-    const weeks=Array.isArray(d.weeks)?d.weeks:[];
-    const phC={on:'phase-on',pct:'phase-pct',off:'phase-off'};
-    document.getElementById('cyr').innerHTML=`
-    <div class="card" style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div><div style="font-size:16px;font-weight:700;color:#f1f5f9;">${d.cycle_name||'Cycle plan'}</div>
-        <div style="font-size:12px;color:#475569;margin-top:2px;">Total: ${d.total_weeks||'—'} weeks · ${d.category||''}</div></div>
-        <span class="badge ${d.category==='steroid'?'b-red':d.category==='sarm'?'b-purple':'b-teal'}">${d.category||''}</span>
-      </div>
-      ${weeks.map(w=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <div class="week-label">${w.range}</div>
-        <div style="flex:1;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;justify-content:space-between;" class="${phC[w.phase]||'phase-off'}">
-          <span>${w.compound}</span><span style="opacity:.75;font-weight:400;">${w.dose}</span>
-        </div>
-      </div>`).join('')}
-    </div>
-    ${d.on_cycle_support?.length?`<div class="card" style="background:#1d345720;border-color:#1d4ed8;margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:#60a5fa;margin-bottom:8px;">On-cycle support</div>${d.on_cycle_support.map(s=>`<div style="font-size:13px;color:#93c5fd;padding:3px 0;">✓ ${s}</div>`).join('')}</div>`:''}
-    ${d.bloodwork?.length?`<div class="card" style="background:#14532d20;border-color:#14532d;margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:#4ade80;margin-bottom:8px;">📋 Bloodwork checkpoints</div>${d.bloodwork.map((b,i)=>`<div style="font-size:13px;color:#86efac;padding:3px 0;">${i+1}. ${b}</div>`).join('')}</div>`:''}
-    ${d.disclaimer?`<div style="padding:12px;background:#451a0320;border:1px solid #854d0e;border-radius:8px;font-size:12px;color:#d97706;line-height:1.6;">${d.disclaimer}</div>`:''}`;
-  }catch(e){toast(e.message,'error');}
+async function clearHistory() {
+  await fetch('/history/clear', {method:'DELETE',credentials:'include'});
+  await loadHistory();
+  showToast('History cleared');
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MEDICAL
-// ═══════════════════════════════════════════════════════════════════════════
-function pgMedical(){
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 4px;color:#f1f5f9;">Medical screening</h1>
-  <p style="font-size:13px;color:#475569;margin:0 0 18px;">Basic risk assessment before starting a cycle</p>
-  <div class="card" style="margin-bottom:18px;">
-    <div style="margin-bottom:12px;"><label class="lbl">Known conditions (comma-separated)</label><input class="inp" id="mc" placeholder="e.g. hypertension, diabetes"></div>
-    <div style="margin-bottom:16px;"><label class="lbl">Current medications (comma-separated)</label><input class="inp" id="mm" placeholder="e.g. warfarin, metformin"></div>
-    <button class="btn btn-primary" onclick="doMedical()">Run screening ↗</button>
-  </div>
-  <div id="mr"></div>`);
-}
-async function doMedical(){
-  document.getElementById('mr').innerHTML='<div class="skel" style="height:200px;"></div>';
-  try{
-    const conditions=val('mc').split(',').map(s=>s.trim()).filter(Boolean);
-    const medications=val('mm').split(',').map(s=>s.trim()).filter(Boolean);
-    const d=await api('/medical','POST',{conditions,medications});
-    const rc={low_risk:'#14532d20',moderate_risk:'#451a0320',high_risk:'#450a0a20'};
-    const rt={low_risk:'#4ade80',moderate_risk:'#fbbf24',high_risk:'#f87171'};
-    const rl={low_risk:'Low risk',moderate_risk:'Moderate risk',high_risk:'High risk'};
-    document.getElementById('mr').innerHTML=`
-    <div class="card" style="background:${rc[d.overall_risk]};border-color:${rt[d.overall_risk]}40;margin-bottom:12px;">
-      <div style="font-size:15px;font-weight:700;color:${rt[d.overall_risk]};margin-bottom:3px;">${rl[d.overall_risk]}</div>
-      <div style="font-size:13px;color:${rt[d.overall_risk]}90;">Clearance: ${d.clearance?'Not required (still recommended)':'Mandatory before any cycle'}</div>
-    </div>
-    ${d.flags?.length?`<div class="card" style="margin-bottom:12px;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Risk flags</div>${d.flags.map(f=>`<div style="padding:8px 12px;background:${f.severity==='high'?'#450a0a20':f.severity==='medium'?'#451a0320':'#14532d20'};border-radius:8px;margin-bottom:6px;"><div style="font-size:12px;font-weight:600;color:#e2e8f0;">${f.flag}</div><div style="font-size:12px;color:#94a3b8;margin-top:2px;">${f.note}</div></div>`).join('')}</div>`:''}
-    <div class="card"><div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:10px;">Recommendations</div>${(d.recommendations||[]).map(r=>`<div style="font-size:13px;color:#64748b;padding:4px 0;">✓ ${r}</div>`).join('')}</div>`;
-  }catch(e){toast(e.message,'error');}
+async function deleteHistoryItem(id, el) {
+  await fetch(`/history/${id}`, {method:'DELETE',credentials:'include'});
+  el.remove();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// UPLOAD
-// ═══════════════════════════════════════════════════════════════════════════
-function pgUpload(){
-  setMain(`
-  <h1 style="font-size:22px;font-weight:700;margin:0 0 18px;color:#f1f5f9;">Upload files</h1>
-  <div class="card" style="margin-bottom:14px;">
-    <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:12px;">BCA report</div>
-    <div class="upload-zone" style="margin-bottom:12px;"><span style="font-size:22px;">📄</span><input type="file" id="bf" accept=".pdf,.jpg,.jpeg,.png"></div>
-    <button class="btn btn-primary" onclick="upBCA()">Upload BCA</button>
-    <div id="bs" style="margin-top:8px;font-size:12px;color:#4ade80;display:none;"></div>
-  </div>
-  <div class="card">
-    <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:12px;">Physique photos</div>
-    <div class="upload-zone" style="margin-bottom:12px;"><span style="font-size:22px;">📷</span><input type="file" id="pf" accept=".jpg,.jpeg,.png" multiple></div>
-    <button class="btn btn-primary" onclick="upPhysique()">Upload photos</button>
-    <div id="ps" style="margin-top:8px;font-size:12px;color:#4ade80;display:none;"></div>
-  </div>`);
+// ─── Utilities ────────────────────────────────────────────────────────────
+function escHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-async function upBCA(){const f=(document.getElementById('bf')||{}).files?.[0];if(!f){toast('Select a file','error');return;}const fm=new FormData();fm.append('file',f);try{const r=await fetch('/upload_bca',{method:'POST',body:fm,credentials:'include'});const d=await r.json();const s=document.getElementById('bs');s.textContent='✓ Uploaded: '+d.file;s.style.display='block';toast('BCA uploaded','success');}catch(e){toast('Upload failed','error');}}
-async function upPhysique(){const files=(document.getElementById('pf')||{}).files;if(!files?.length){toast('Select files','error');return;}const fm=new FormData();for(const f of files)fm.append('files',f);try{const r=await fetch('/upload_physique',{method:'POST',body:fm,credentials:'include'});const d=await r.json();const s=document.getElementById('ps');s.textContent=`✓ ${d.count} file(s)`;s.style.display='block';toast('Uploaded','success');}catch(e){toast('Failed','error');}}
+function escAttr(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
-// ── Utils ─────────────────────────────────────────────────────────────────
-function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function showSection(name) {
+  document.getElementById('heroSection').style.display = name==='search' ? 'block' : 'none';
+  document.getElementById('resultsArea').style.display = 'none';
+  document.getElementById('historyPanel').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'none';
+}
 
-// ── Init ──────────────────────────────────────────────────────────────────
-(async()=>{
-  switchAuth('login');
-  try{const u=await api('/me');CU=u;enterApp();}catch{}
-})();
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  t.style.background = type==='error' ? 'rgba(239,68,68,.9)' : 'rgba(16,185,129,.9)';
+  t.style.color = '#fff';
+  t.style.boxShadow = '0 4px 20px rgba(0,0,0,.4)';
+  setTimeout(() => t.style.display='none', 3000);
+}
 </script>
 </body>
 </html>

@@ -1,117 +1,195 @@
-# FitSearch AI Platform v4
+# ⚡ FitSearch AI — World-Class Fitness Intelligence Engine v6
 
-AI-powered fitness and performance search engine with 6 core features.
+A production-grade AI-powered search engine for fitness, bodybuilding, supplements, steroids, SARMs, peptides, HGH, exercises, nutrition, and performance compounds.
 
-## Setup
+## 🚀 Features
+
+### Core Search Engine
+- **17-Section Structured Reports** — Every search returns comprehensive research cards
+- **AI-Enhanced Responses** — Claude AI enriches knowledge base with latest research
+- **PubMed Integration** — Live research paper retrieval via NCBI API
+- **Examine.com Links** — Auto-linked to Examine.com supplement data
+- **Smart Caching** — SQLite-based 24h cache for instant repeat queries
+- **Intent Detection** — Understands dosage/cycle/research/product/compare queries
+- **Domain Routing** — Supplements, SARMs, Steroids, Peptides, Exercise, Nutrition
+
+### Knowledge Base
+- **19 Compound Profiles** — Creatine, Whey, Beta-alanine, Caffeine, Citrulline, Ostarine, LGD-4033, RAD-140, MK-677, Testosterone, Anavar, Nandrolone, BPC-157, HGH, Vitamin D, Omega-3, ZMA, Fat Burners
+- **8 General Topics** — Fat Loss Exercise, Muscle Gain Training, Beginner Workouts, HIIT/Cardio, Protein Diet, Fat Loss Diet, Natural Testosterone, Supplement Guide
+
+### AI Pipeline
+```
+User Query
+  ↓ Intent Classification (dosage/cycle/research/product/compare)
+  ↓ Domain Detection (supplements/steroids/sarms/peptides/exercise/nutrition)
+  ↓ Entity Extraction (specific compound?)
+  ↓ Cache Check (24h SQLite cache)
+  ↓ Knowledge Base Lookup (strict scoring for compounds / topic match for general)
+  ↓ Live PubMed Retrieval (optional, requires network)
+  ↓ Claude AI Enhancement (optional, requires ANTHROPIC_API_KEY)
+  ↓ Structured 17-Section Report
+  ↓ Return to Frontend
+```
+
+### Tools
+- 🥗 **Diet Planner** — AI-generated meal plans with macros
+- 🔬 **Cycle Planner** — Steroid/SARM cycle protocols
+- 🏥 **Medical Screen** — Pre-cycle bloodwork analysis
+- 📏 **Body Composition** — BCA analysis
+- 💪 **Physique Tracker** — Progress photo upload
+- 🛒 **Grocery AI** — Supplement shopping list
+
+## 📁 Project Structure
+
+```
+ai-fitness-platform-main/
+├── frontend/
+│   ├── index.html          # Main AI Search Engine (REWRITTEN)
+│   ├── login.html          # Auth - Sign In (REWRITTEN)
+│   ├── register.html       # Auth - Register (REWRITTEN)
+│   ├── dashboard.html      # User Dashboard (REWRITTEN)
+│   ├── diet.html           # Diet Planner
+│   ├── cycle.html          # Cycle Planner
+│   ├── medical.html        # Medical Screen
+│   ├── bca.html            # Body Composition
+│   ├── physique.html       # Physique Tracker
+│   └── grocery.html        # Grocery AI
+├── backend/
+│   ├── app.py              # Flask App - All Routes (REWRITTEN v6)
+│   ├── search_ai.py        # Core Search Engine (KB + AI)
+│   ├── diet_ai.py          # Diet Generation
+│   ├── calorie_ai.py       # TDEE Calculator
+│   ├── cycle_ai.py         # Cycle Planner
+│   ├── medical_ai.py       # Medical Analysis
+│   ├── supplement_ai.py    # Supplement Data
+│   └── ...
+├── database/
+│   ├── users.db            # SQLite user database
+│   └── search_cache.db     # Search result cache
+├── uploads/                # User uploaded files
+├── static/                 # Static assets
+├── requirements.txt
+├── render.yaml             # Render.com deployment
+└── passenger_wsgi.py       # cPanel/Passenger deployment
+```
+
+## 🛠 Setup & Deployment
+
+### Local Development
 
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Initialise the database (first run only)
-python init_db.py
+# 2. Set environment variables
+export ANTHROPIC_API_KEY="your-claude-api-key"   # Optional but recommended
+export PUBMED_API_KEY="your-pubmed-key"          # Optional
+export SECRET_KEY="your-secret-key-change-this"
 
-# 3. Run the development server
-cd backend
-python app.py
+# 3. Run
+python -m backend.app
+# OR
+flask --app backend.app run --port 5000
+
+# Visit: http://localhost:5000
 ```
 
-Open `frontend/index.html` in your browser, or serve via Flask's static files.
+### Render.com (Recommended)
 
----
+1. Push repo to GitHub
+2. Create new Web Service on Render
+3. Connect your repo
+4. Set environment variables:
+   - `ANTHROPIC_API_KEY` = your Claude API key
+   - `SECRET_KEY` = random secure string (Render can generate)
+   - `PUBMED_API_KEY` = optional
+5. Build command: `pip install -r requirements.txt`
+6. Start command: `gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
 
-## Project structure
+### cPanel/Shared Hosting
+
+Uses `passenger_wsgi.py` — configure Python app to point to this file.
+
+## 🔑 Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Optional | Claude AI for enhanced responses |
+| `SECRET_KEY` | Recommended | Flask session secret (change in production!) |
+| `PUBMED_API_KEY` | Optional | Faster PubMed API requests |
+| `SERP_API_KEY` | Optional | Google search results |
+| `PORT` | Optional | Server port (default: 5000) |
+
+## 🔍 API Endpoints
+
+### Auth
+- `POST /register` — Create account
+- `POST /login` — Sign in
+- `POST /logout` — Sign out
+- `GET /me` — Get current user
+- `PUT /profile` — Update profile
+
+### Search
+- `POST /search` — Main AI search
+- `GET /search/suggestions?q=...` — Autocomplete
+- `GET /recommendations` — Personalized recs
+
+### History
+- `GET /history` — Search history
+- `DELETE /history/clear` — Clear all
+- `DELETE /history/:id` — Delete one
+
+### Tools
+- `POST /diet` — Generate diet plan
+- `POST /cycle` — Generate cycle protocol
+- `POST /medical` — Medical analysis
+- `POST /upload_bca` — Upload body scan
+- `POST /upload_medical` — Upload bloodwork
+- `POST /upload_physique` — Upload progress photo
+
+### System
+- `GET /health` — Health check
+- `GET /cache/stats` — Cache statistics
+- `DELETE /cache/clear` — Clear cache
+
+## 🔬 Query Examples
 
 ```
-AI_Platform/
-├── backend/
-│   ├── app.py            — Flask API (all routes)
-│   ├── search_ai.py      — Knowledge base search + recommendations
-│   ├── supplement_ai.py  — Supplement comparison engine
-│   ├── calorie_ai.py     — Calorie & TDEE calculator (Mifflin-St Jeor)
-│   ├── diet_ai.py        — Full meal plan generator
-│   ├── cycle_ai.py       — Cycle planner with PCT & bloodwork schedule
-│   ├── medical_ai.py     — Basic medical risk screening
-│   └── grocery_ai.py     — Weekly grocery list generator
-├── frontend/
-│   └── index.html        — Complete single-page application (SPA)
-├── database/
-│   └── users.db          — SQLite database
-├── init_db.py            — Database initialisation script
-├── passenger_wsgi.py     — WSGI entry point for shared hosting
-└── requirements.txt
+# Supplements
+"What is creatine monohydrate?"
+"Best pre-workout stack for strength"
+"Whey protein vs casein comparison"
+
+# SARMs
+"RAD-140 dosage and cycle"
+"Ostarine MK-2866 for beginners"
+"LGD-4033 side effects"
+
+# Steroids
+"Testosterone enanthate beginner cycle"
+"Anavar cutting protocol"
+"PCT after steroid cycle"
+
+# Peptides
+"BPC-157 for tendon healing"
+"Ipamorelin CJC-1295 stack"
+"MK-677 ibutamoren dosage"
+
+# Training
+"Best exercises for fat loss women"
+"Hypertrophy training program"
+"HIIT vs steady state cardio"
+
+# Nutrition
+"High protein diet muscle gain"
+"Calorie deficit for fat loss"
+"Intermittent fasting guide"
 ```
 
----
+## ⚠️ Medical Disclaimer
 
-## Features
-
-### 1. Login & registration
-- Email + password authentication with SHA-256 hashing
-- Session-based auth (cookie)
-- Profile: name, goal, experience level, weight, height, age
-
-### 2. Search with history
-- `POST /search` — searches the knowledge base, logs query
-- `GET /history` — returns last 50 searches
-- `DELETE /history/clear` — clears all history
-- Re-run any past query in one click
-
-### 3. Personalised recommendations
-- `GET /recommendations` — generates picks from recent search history
-- Filtered by user goal + experience level
-- Cold-start defaults for new users
-
-### 4. Supplement comparison
-- `POST /compare` — compare 2–4 compounds side by side
-- Table with winner highlighting per attribute
-- AI verdict based on user profile
-- Quick-pick presets
-
-### 5. Diet generator
-- `POST /diet` — Mifflin-St Jeor TDEE + macro targets
-- Full 6-meal plan with calories and macros per meal
-- Supports muscle gain / fat loss / recomp goals
-- Supplement stack included
-
-### 6. Cycle planner
-- `POST /cycle` — generates protocol from experience + category + goal
-- Week-by-week schedule with phase colour coding
-- On-cycle support compounds listed
-- Bloodwork checkpoints
-- Full safety disclaimer
+This platform is for **educational and informational purposes only**. It does not constitute medical advice. Always consult a qualified healthcare professional before starting any supplement, hormone, or performance-enhancing compound protocol. Performance-enhancing drugs carry significant health risks and may be illegal in your jurisdiction.
 
 ---
 
-## API reference (all routes require login except /register and /login)
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| POST | /register | Create account |
-| POST | /login | Sign in |
-| POST | /logout | Sign out |
-| GET | /me | Current user profile |
-| PUT | /profile | Update profile |
-| POST | /search | Search knowledge base |
-| GET | /history | Search history |
-| DELETE | /history/clear | Clear all history |
-| GET | /recommendations | Personalised recs |
-| POST | /compare | Compare compounds |
-| POST | /diet | Generate diet plan |
-| POST | /cycle | Generate cycle plan |
-| POST | /grocery | Weekly grocery list |
-| POST | /medical | Medical risk screen |
-| POST | /upload_bca | Upload BCA file |
-| POST | /upload_physique | Upload physique photos |
-
----
-
-## Upgrading to production
-
-- Replace `app.secret_key` with a random 32-byte secret from env var
-- Replace SQLite with PostgreSQL (`psycopg2`)
-- Replace `hash_password` (SHA-256) with `bcrypt` or `argon2`
-- Replace `search_ai.py` keyword scorer with Pinecone/Weaviate vector search
-- Replace AI module stubs with real LLM calls (OpenAI / Anthropic API)
-- Add rate limiting (`flask-limiter`)
-- Serve frontend via Nginx, not Flask dev server
+Built with ❤️ using Flask, Claude AI, PubMed API, and a comprehensive fitness knowledge base.
