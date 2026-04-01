@@ -2,7 +2,8 @@
 search_ai.py — FitSearch AI
 World-Class Fitness Research Engine v5 (Real-Time with Bing Web Search API)
 ================================================================================
-Uses Bing Web Search API for real-time data retrieval.
+Real-time search using Bing Web Search API + Claude AI enhancement.
+Supports ALL user intents from your Deep SEO Query Universe.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ import requests
 
 # ====================== CONFIG ======================
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-BING_API_KEY = os.getenv("BING_API_KEY", "")          # ← Your Bing Web Search API key
+BING_API_KEY = os.getenv("BING_API_KEY", "")                    # ← Bing Web Search API key
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE_DB = os.path.join(BASE_DIR, "database", "search_cache.db")
@@ -160,6 +161,7 @@ GENERAL_TOPICS: list[dict] = [
         "final_recommendation": "Focus on overall fat loss through calorie deficit, high protein, and resistance training.",
         "ai_summary": "You cannot spot-reduce belly fat. Create a calorie deficit, eat high protein, lift weights, and be consistent for 8–12 weeks.",
     },
+    # Add more topics as needed
 ]
 
 def _find_general_topic(query: str) -> dict | None:
@@ -175,7 +177,7 @@ def _find_general_topic(query: str) -> dict | None:
 
 # ====================== MAIN SEARCH FUNCTION ======================
 def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]:
-    """Main search function — now using Bing Web Search API for real-time results"""
+    """Main search function — real-time with Bing Web Search API"""
     filters = filters or []
     intent = classify_intent(query)
     domain = detect_domain(query)
@@ -200,7 +202,7 @@ def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]
             report = _to_report(topic, {}, intent, source="kb", is_general=True)
             results.append(report)
 
-    # Real-time Bing Web Search fallback for better results
+    # Real-time Bing Web Search fallback
     if not results or len(results) == 0:
         bing_results = _bing_search(query)
         if bing_results:
@@ -224,7 +226,6 @@ def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]
 
 # ====================== BING WEB SEARCH API ======================
 def _bing_search(query: str) -> list[dict]:
-    """Fetch real-time search results from Bing Web Search API"""
     if not BING_API_KEY:
         return []
     try:
