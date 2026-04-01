@@ -6,90 +6,161 @@
 <title>Sign In — FitSearch AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
   font-family:'Space Grotesk',sans-serif;
   background:#050810;
   color:#e2e8f0;
   min-height:100vh;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   padding:20px;
+  background-image: 
+    linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);
+  background-size:40px 40px;
 }
-body::before{
-  content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);
-  background-size:40px 40px;pointer-events:none;
-}
-.card{
-  width:100%;max-width:420px;
+.card {
+  width:100%;
+  max-width:420px;
   background:#0a0f1e;
   border:1px solid rgba(255,255,255,.08);
-  border-radius:20px;padding:40px;
+  border-radius:20px;
+  padding:40px;
   position:relative;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
 }
-.card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+.card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:3px;
   background:linear-gradient(90deg,#6366f1,#8b5cf6,#06b6d4);
   border-radius:20px 20px 0 0;
 }
-.logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
-.logo-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;}
-.logo-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;}
-.logo-sub{font-size:11px;color:#475569;margin-top:1px;}
-h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
-.sub{font-size:13px;color:#64748b;margin-bottom:28px;}
-.field{margin-bottom:16px;}
-.lbl{display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
-.inp{
-  width:100%;padding:12px 14px;
-  background:#111827;border:1.5px solid rgba(255,255,255,.08);
-  border-radius:10px;font-size:14px;
-  font-family:'Space Grotesk',sans-serif;color:#e2e8f0;outline:none;
+.logo {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:28px;
+}
+.logo-icon {
+  width:42px; height:42px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  color:#fff;
+}
+h1 {
+  font-family:'Syne',sans-serif;
+  font-size:26px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+.sub {
+  color:#94a3b8;
+  font-size:15px;
+  margin-bottom:32px;
+}
+.field {
+  margin-bottom:20px;
+}
+.lbl {
+  display:block;
+  font-size:11px;
+  font-weight:700;
+  color:#64748b;
+  margin-bottom:6px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.inp {
+  width:100%;
+  padding:14px 16px;
+  background:#111827;
+  border:1.5px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  font-size:15px;
+  color:#e2e8f0;
+  outline:none;
   transition:all .2s;
 }
-.inp:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12);background:#0f1629;}
-.btn{
-  width:100%;padding:13px;
-  background:linear-gradient(135deg,#6366f1,#8b5cf6);
-  border:none;border-radius:10px;cursor:pointer;
-  color:#fff;font-size:14px;font-weight:700;
-  font-family:'Space Grotesk',sans-serif;
-  transition:all .2s;margin-top:4px;
-  box-shadow:0 4px 15px rgba(99,102,241,.3);
+.inp:focus {
+  border-color:#6366f1;
+  box-shadow:0 0 0 3px rgba(99,102,241,.15);
+  background:#0f1629;
 }
-.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.4);}
-.btn:disabled{opacity:.6;transform:none;cursor:not-allowed;}
-.link{color:#818cf8;text-decoration:none;font-weight:600;}
-.link:hover{color:#a5b4fc;}
-.footer-text{font-size:13px;color:#475569;text-align:center;margin-top:20px;}
-.err{color:#f87171;font-size:12px;margin-top:6px;display:none;}
-.divider{display:flex;align-items:center;gap:10px;margin:20px 0;color:#334155;font-size:12px;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06);}
+.btn {
+  width:100%;
+  padding:15px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  border:none;
+  border-radius:12px;
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  margin-top:8px;
+}
+.btn:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(99,102,241,.3);
+}
+.footer-text {
+  text-align:center;
+  margin-top:24px;
+  font-size:14px;
+  color:#64748b;
+}
+.link {
+  color:#818cf8;
+  text-decoration:none;
+  font-weight:600;
+}
+.link:hover { color:#a5b4fc; }
+.err {
+  color:#f87171;
+  font-size:13px;
+  margin-top:6px;
+  display:none;
+}
 </style>
 </head>
 <body>
+
 <div class="card">
   <div class="logo">
     <div class="logo-icon">⚡</div>
     <div>
-      <div class="logo-text">FitSearch AI</div>
-      <div class="logo-sub">Research Engine</div>
+      <div style="font-size:22px;font-weight:800;">FitSearch AI</div>
+      <div style="font-size:11px;color:#475569;">Research Engine</div>
     </div>
   </div>
+
   <h1>Welcome back</h1>
   <p class="sub">Sign in to access the world's most advanced fitness AI.</p>
+
   <div class="field">
     <label class="lbl">Email</label>
     <input class="inp" id="email" type="email" placeholder="you@example.com" autocomplete="email">
   </div>
+
   <div class="field">
     <label class="lbl">Password</label>
     <input class="inp" id="password" type="password" placeholder="Your password" autocomplete="current-password">
     <div class="err" id="errMsg"></div>
   </div>
+
   <button class="btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
-  <div class="divider">or</div>
-  <div class="footer-text">New user? <a class="link" href="/register.html">Create free account</a></div>
+
+  <div class="footer-text">
+    New here? <a href="/register.html" class="link">Create free account</a>
+  </div>
 </div>
 
 <script>
@@ -101,7 +172,10 @@ async function doLogin() {
   const btn = document.getElementById('loginBtn');
   const err = document.getElementById('errMsg');
 
-  if (!email || !pass) { showErr('Please enter email and password'); return; }
+  if (!email || !pass) {
+    showErr('Please enter email and password');
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = 'Signing in…';
@@ -114,10 +188,11 @@ async function doLogin() {
       credentials: 'include',
       body: JSON.stringify({email, password: pass})
     });
-    const data = await r.json();
+
     if (r.ok) {
       window.location.href = '/';
     } else {
+      const data = await r.json();
       showErr(data.error || 'Login failed');
     }
   } catch(e) {
@@ -130,7 +205,8 @@ async function doLogin() {
 
 function showErr(msg) {
   const e = document.getElementById('errMsg');
-  e.textContent = msg; e.style.display = 'block';
+  e.textContent = msg;
+  e.style.display = 'block';
 }
 </script>
 </body>
