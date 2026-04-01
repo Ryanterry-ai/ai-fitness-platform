@@ -12,8 +12,8 @@ from typing import Any
 import requests
 
 # ====================== CONFIG ======================
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "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")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
 BING_API_KEY = os.getenv("BING_API_KEY", "")
 GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "AIzaSyAe6LNE1Er_KpTK4PdpTVb5OrqbD5wLZG8")
 GOOGLE_CX = os.getenv("GOOGLE_CX", "860eab761ebac4c12")   # ← Your confirmed CX
