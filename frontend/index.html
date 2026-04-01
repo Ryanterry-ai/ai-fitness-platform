@@ -7,68 +7,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background: #050810;
-            color: #e2e8f0;
-        }
-        .result-card {
-            background: #0a0f1e;
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 20px;
-            padding: 28px;
-            margin-bottom: 24px;
-        }
-        .search-input {
-            background: #0f1629;
-            border: 1px solid rgba(255,255,255,.12);
-        }
+        body { font-family: 'Space Grotesk', sans-serif; background: #050810; color: #e2e8f0; }
+        .result-card { background: #0a0f1e; border: 1px solid rgba(255,255,255,.08); border-radius: 20px; padding: 28px; margin-bottom: 24px; }
+        .search-input { background: #0f1629; border: 1px solid rgba(255,255,255,.12); }
     </style>
 </head>
 <body class="min-h-screen">
     <div class="max-w-4xl mx-auto px-6 py-8">
-        <!-- Header -->
         <div class="flex items-center justify-between mb-10">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-2xl font-bold">FS</div>
                 <h1 class="text-3xl font-bold tracking-tight">FitSearch AI</h1>
             </div>
+            <div class="text-sm text-gray-400">Public • Real-time RAG Search (Bing + Google)</div>
         </div>
 
-        <!-- Search Bar -->
         <div class="relative mb-12">
-            <input 
-                id="searchInput"
-                type="text"
-                placeholder="Ask anything about fitness, supplements, belly fat, workouts, diet..."
-                class="search-input w-full text-lg px-8 py-6 rounded-3xl focus:outline-none focus:border-indigo-500 transition-all shadow-2xl"
-                onkeydown="if(event.key === 'Enter') doSearch()">
-            <button onclick="doSearch()" 
-                    class="absolute right-4 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-semibold">
+            <input id="searchInput" type="text" placeholder="Ask anything about fitness, supplements, belly fat, workouts, diet..." 
+                   class="search-input w-full text-lg px-8 py-6 rounded-3xl focus:outline-none focus:border-indigo-500 transition-all shadow-2xl"
+                   onkeydown="if(event.key === 'Enter') doSearch()">
+            <button onclick="doSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-semibold">
                 Search
             </button>
         </div>
 
-        <!-- Results Area -->
         <div id="results" class="space-y-8"></div>
 
-        <!-- Empty State -->
         <div id="emptyState" class="text-center py-20">
             <h2 class="text-5xl font-bold mb-4">What do you want to know?</h2>
-            <p class="text-xl text-gray-400 max-w-md mx-auto">
-                Ask about belly fat loss, supplements, workouts, meal plans, or anything fitness related.
-            </p>
+            <p class="text-xl text-gray-400 max-w-md mx-auto">Ask about belly fat loss, supplements, workouts, meal plans, or anything fitness related.</p>
         </div>
     </div>
 
     <script>
-        // Tailwind initialization
-        function initTailwind() {
-            tailwind.config = { content: [] };
-        }
-
-        // Render results in clean ChatGPT-style format
         function renderResults(results) {
             const container = document.getElementById('results');
             const empty = document.getElementById('emptyState');
@@ -96,7 +67,6 @@
             });
         }
 
-        // Main search function
         async function doSearch() {
             const input = document.getElementById('searchInput');
             const query = input.value.trim();
@@ -105,10 +75,7 @@
             const empty = document.getElementById('emptyState');
             const container = document.getElementById('results');
             empty.style.display = 'none';
-            container.innerHTML = `
-                <div class="text-center py-16">
-                    <p class="text-gray-400 text-xl">Searching for <span class="text-white">"${query}"</span>...</p>
-                </div>`;
+            container.innerHTML = `<div class="text-center py-16"><p class="text-gray-400 text-xl">Searching for <span class="text-white">"${query}"</span>...</p></div>`;
 
             try {
                 const res = await fetch('/search', {
@@ -116,24 +83,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: query })
                 });
-
                 const data = await res.json();
                 renderResults(data);
             } catch (err) {
                 console.error(err);
-                container.innerHTML = `
-                    <div class="text-center py-16 text-red-400 text-xl">
-                        Could not connect to server.<br>
-                        Please try again or check backend logs.
-                    </div>`;
+                container.innerHTML = `<div class="text-center py-16 text-red-400 text-xl">Could not connect to server.<br>Please check backend logs or try again.</div>`;
             }
         }
 
-        // Auto-init
-        window.onload = () => {
-            initTailwind();
-            console.log('✅ FitSearch AI frontend loaded successfully');
-        };
+        window.onload = () => console.log('✅ FitSearch AI public RAG version loaded');
     </script>
 </body>
 </html>
