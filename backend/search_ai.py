@@ -1,26 +1,63 @@
 """
 search_ai.py — FitSearch AI
-World-Class Fitness Research Engine v5 (Real-Time with Bing Web Search API)
+World-Class Fitness Research Engine v5 (Real-Time + RAG + Bing + Google)
 ================================================================================
-Real-time search using Bing Web Search API + Claude AI enhancement.
-Supports ALL user intents from your Deep SEO Query Universe.
+Uses Bing + Google (CX: 860eab761ebac4c12) for real-time data + OpenAI RAG.
 """
 
 from __future__ import annotations
-import os, json, re, time, hashlib, sqlite3, threading, concurrent.futures
+import os, json, re, time, hashlib, sqlite3, threading
 from datetime import datetime, timezone
 from typing import Any
 import requests
 
 # ====================== CONFIG ======================
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-BING_API_KEY = os.getenv("BING_API_KEY", "")                    # ← Bing Web Search API key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+BING_API_KEY = os.getenv("BING_API_KEY", "")
+GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "AIzaSyAe6LNE1Er_KpTK4PdpTVb5OrqbD5wLZG8")
+GOOGLE_CX = os.getenv("GOOGLE_CX", "860eab761ebac4c12")   # ← Your confirmed CX
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE_DB = os.path.join(BASE_DIR, "database", "search_cache.db")
 CACHE_TTL_SEC = 86400
 
 _cache_lock = threading.Lock()
+
+# ====================== OPTIMIZED DATABASE INIT ======================
+def init_db():
+    os.makedirs(os.path.dirname(CACHE_DB), exist_ok=True)
+    with sqlite3.connect(CACHE_DB) as conn:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA synchronous=NORMAL;")
+        conn.execute("PRAGMA cache_size=-64000;")
+        conn.execute("PRAGMA temp_store=MEMORY;")
+        conn.execute("PRAGMA auto_vacuum=INCREMENTAL;")
+        conn.execute("PRAGMA mmap_size=300000000;")
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS report_cache (
+                cache_key TEXT PRIMARY KEY,
+                query TEXT,
+                report_json TEXT,
+                source TEXT,
+                created_at REAL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS query_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                query TEXT NOT NULL,
+                result_json TEXT NOT NULL,
+                timestamp REAL NOT NULL,
+                source TEXT DEFAULT 'kb',
+                last_updated REAL NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_query_history_query ON query_history(query);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_query_history_timestamp ON query_history(timestamp);")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_report_cache_created ON report_cache(created_at);")
+init_db()
 
 # ====================== INTENT CLASSIFICATION ======================
 _INTENT_RULES: list[tuple[list[str], str]] = [
@@ -86,7 +123,6 @@ def detect_domain(query: str) -> str:
             scores[domain] = sc
     return max(scores, key=lambda x: scores[x]) if scores else "general_fitness"
 
-# ENTITY (kept from your original)
 ENTITY_GROUPS: dict[str, list[str]] = {
     "creatine":["crm_mono","crm_hcl"], "creatine_mono":["crm_mono"], "creatine_hcl":["crm_hcl"],
     "whey":["whey"], "protein":["whey"],
@@ -161,7 +197,6 @@ GENERAL_TOPICS: list[dict] = [
         "final_recommendation": "Focus on overall fat loss through calorie deficit, high protein, and resistance training.",
         "ai_summary": "You cannot spot-reduce belly fat. Create a calorie deficit, eat high protein, lift weights, and be consistent for 8–12 weeks.",
     },
-    # Add more topics as needed
 ]
 
 def _find_general_topic(query: str) -> dict | None:
@@ -175,9 +210,8 @@ def _find_general_topic(query: str) -> dict | None:
             best_match = topic
     return best_match
 
-# ====================== MAIN SEARCH FUNCTION ======================
+# ====================== MAIN SEARCH FUNCTION (RAG) ======================
 def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]:
-    """Main search function — real-time with Bing Web Search API"""
     filters = filters or []
     intent = classify_intent(query)
     domain = detect_domain(query)
@@ -191,38 +225,39 @@ def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]
 
     results: list[dict] = []
 
-    if entity_key:
-        items = _kb_strict(query, allowed_ids, goal_mods, filters, intent, limit=3)
-        for item in items:
-            report = _to_report(item, {}, intent, source="kb")
-            results.append(report)
-    else:
-        topic = _find_general_topic(query)
-        if topic:
-            report = _to_report(topic, {}, intent, source="kb", is_general=True)
-            results.append(report)
+    bing_results = _bing_search(query)
+    google_results = _google_search(query)
+    combined_context = bing_results + google_results
 
-    # Real-time Bing Web Search fallback
-    if not results or len(results) == 0:
-        bing_results = _bing_search(query)
-        if bing_results:
-            results.append({
-                "name": "Real-Time Web Results",
-                "tagline": f"Latest information for '{query}'",
-                "category": "general",
-                "evidence_tier": "high",
-                "what_it_is": "Real-time web search results from Bing",
-                "how_it_works": "Fetched live from Bing Web Search API",
-                "final_recommendation": "Here are the most relevant real-time results:",
-                "ai_summary": "Real-time web data retrieved successfully.",
-                "articles": bing_results,
-                "_source": "bing",
-            })
+    rag_report = _openai_rag_generate_report(query, intent, domain, combined_context)
+
+    if rag_report:
+        results.append(rag_report)
 
     if results:
+        _store_query(query, results)
         _cache_set(cache_key, query, results)
 
     return results
+
+# ====================== GOOGLE SEARCH API ======================
+def _google_search(query: str) -> list[dict]:
+    if not GOOGLE_SEARCH_API_KEY or not GOOGLE_CX:
+        return []
+    try:
+        url = "https://www.googleapis.com/customsearch/v1"
+        params = {"key": GOOGLE_SEARCH_API_KEY, "cx": GOOGLE_CX, "q": query, "num": 8}
+        r = requests.get(url, params=params, timeout=10)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        results = []
+        for item in data.get("items", []):
+            results.append({"title": item.get("title", ""), "url": item.get("link", ""), "snippet": item.get("snippet", ""), "source": "Google"})
+        return results
+    except Exception as e:
+        print(f"[Google Search] Error: {e}")
+        return []
 
 # ====================== BING WEB SEARCH API ======================
 def _bing_search(query: str) -> list[dict]:
@@ -237,16 +272,40 @@ def _bing_search(query: str) -> list[dict]:
         data = r.json()
         results = []
         for item in data.get("webPages", {}).get("value", []):
-            results.append({
-                "title": item.get("name", ""),
-                "url": item.get("url", ""),
-                "snippet": item.get("snippet", ""),
-                "source": "Bing"
-            })
+            results.append({"title": item.get("name", ""), "url": item.get("url", ""), "snippet": item.get("snippet", ""), "source": "Bing"})
         return results
     except Exception as e:
         print(f"[Bing Search] Error: {e}")
         return []
+
+# ====================== OPENAI RAG REPORT GENERATION ======================
+def _openai_rag_generate_report(query: str, intent: str, domain: str, context: list) -> dict | None:
+    if not OPENAI_API_KEY:
+        return None
+    try:
+        system_prompt = "You are FitSearch AI, a world-class fitness research engine. Use the provided real-time search context to generate a highly accurate, structured, and helpful response. Always ground your answer in the given context."
+        user_prompt = f"Query: {query}\nIntent: {intent}\nDomain: {domain}\n\nReal-time Search Context (Bing + Google):\n{json.dumps(context, ensure_ascii=False)}\n\nGenerate a complete structured fitness report in this exact JSON format: {{ \"name\": \"Short title\", \"tagline\": \"One compelling sentence\", \"category\": \"nutrition|exercise|supplement|research|general\", \"evidence_tier\": \"very_high|high|moderate|low\", \"safe_for_beginners\": true, \"what_it_is\": \"Clear explanation\", \"how_it_works\": \"Mechanism\", \"dosage\": \"Practical advice\", \"timing\": \"When to do it\", \"best_ways_to_use\": [\"Tip 1\", \"Tip 2\"], \"who_should_use\": [\"Group 1\"], \"who_should_avoid\": [\"Group 1\"], \"benefits\": [\"Benefit 1\"], \"side_effects\": [{\"effect\": \"Description\", \"severity\": \"low|medium|high\"}], \"final_recommendation\": \"Actionable advice\", \"ai_summary\": \"Expert summary\" }}"
+
+        r = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"},
+            json={"model": "gpt-4o", "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], "temperature": 0.7, "max_tokens": 2000},
+            timeout=30
+        )
+        r.raise_for_status()
+        content = r.json()["choices"][0]["message"]["content"].strip()
+        return json.loads(content)
+    except Exception as e:
+        print(f"[OpenAI RAG] Error: {e}")
+        return None
+
+# ====================== STORE QUERY ======================
+def _store_query(query: str, results: list):
+    try:
+        with sqlite3.connect(CACHE_DB) as conn:
+            conn.execute("INSERT INTO query_history (query, result_json, timestamp, last_updated) VALUES (?, ?, ?, ?)", (query, json.dumps(results), time.time(), time.time()))
+    except Exception as e:
+        print(f"[Store Query] Error: {e}")
 
 # ====================== REPORT BUILDER ======================
 def _to_report(item: dict, ev: dict, intent: str, source: str = "kb", is_general: bool = False) -> dict:
@@ -294,6 +353,6 @@ def _cache_set(key: str, query: str, results: list, source: str = "kb") -> None:
     except Exception:
         pass
 
-print("✅ FitSearch AI v5 loaded successfully with Bing Web Search API for real-time results.")
+print("✅ FitSearch AI v5 loaded successfully with Google Search API (CX: 860eab761ebac4c12) + Full RAG.")
 
 # End of file
