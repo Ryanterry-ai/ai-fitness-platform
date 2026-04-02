@@ -69,7 +69,7 @@ def analyze_medical(data):
 
 # ── Flask ─────────────────────────────────────────────────────────────────
 app = Flask(__name__, static_folder=STATIC_DIR)
-app.secret_key = os.environ.get("NEW_SECRET", os.environ.get("SECRET_KEY", "11962aa111ff110443986c5edfa42c0d"))
+app.secret_key = os.environ.get("SECRET_KEY", "fitsearch-secret-2025-change-me")
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 CORS(app, supports_credentials=True, origins="*")
@@ -565,23 +565,70 @@ def cache_clear():
 
 @app.route("/health")
 def health():
+    try:
+        from backend.queries_db import get_query_count
+        query_count = get_query_count()
+    except Exception:
+        query_count = 0
+    
     return jsonify({
-        "status":  "ok",
-        "version": "6.0",
-        "sources": {
-            "knowledge_base": True,
-            "pubmed": True,
-            "examine": True,
-            "google": bool(os.environ.get("GOOGLE_SEARCH_API_KEY") and os.environ.get("GOOGLE_CX")),
-            "anthropic": bool(os.environ.get("ANTHROPIC_API_KEY")),
-        },
-        "api_keys": {
-            "google_search": "✓" if os.environ.get("GOOGLE_SEARCH_API_KEY") else "✗",
-            "google_cx": "✓" if os.environ.get("GOOGLE_CX") else "✗",
-            "anthropic": "✓" if os.environ.get("ANTHROPIC_API_KEY") else "✗",
-            "pubmed": "✓" if os.environ.get("PUBMED_API_KEY") else "✗ (uses free tier)",
-        }
+        "status":     "ok",
+        "version":    "6.1",
+        "ai":         bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "pubmed":     bool(os.environ.get("PUBMED_API_KEY")),
+        "google":     bool(os.environ.get("GOOGLE_SEARCH_API_KEY")),
+        "queries_db": query_count,
     })
+
+
+@app.route("/queries", methods=["GET"])
+@login_required
+def get_queries():
+    try:
+        from backend.queries_db import get_recent_queries
+        limit = min(int(request.args.get("limit", 50)), 200)
+        queries = get_recent_queries(limit)
+        return jsonify({"queries": queries, "count": len(queries)})
+    except Exception as e:
+        print(f"[Queries] {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/queries/<int:qid>", methods=["GET"])
+@login_required
+def get_query_live_results(qid):
+    try:
+        import sqlite3, json
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        DB_PATH = os.path.join(BASE_DIR, "database", "queries.db")
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM queries WHERE id=?", (qid,)
+        ).fetchone()
+        if not row:
+            conn.close()
+            return jsonify({"error": "Query not found"}), 404
+        results = conn.execute(
+            "SELECT * FROM live_results WHERE query_id=?", (qid,)
+        ).fetchall()
+        conn.close()
+        live_results = []
+        for r in results:
+            try:
+                live_results.append({
+                    "source": r["source"],
+                    "data": json.loads(r["result_data"])
+                })
+            except Exception:
+                pass
+        return jsonify({
+            "query": dict(row),
+            "live_results": live_results
+        })
+    except Exception as e:
+        print(f"[Query Results] {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 # ─── Error handlers ───────────────────────────────────────────────────────
