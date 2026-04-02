@@ -19,10 +19,12 @@ services:
         value: production
       - key: ALLOWED_ORIGINS
         value: "*"
-      # Optional API Keys (uncomment if needed)
-      # - key: OPENAI_API_KEY
-      #   sync: false
-      # - key: SERP_API_KEY
-      #   sync: false
-      # - key: PUBMED_API_KEY
-      #   sync: false
+      # ── Web Search APIs ───────────────────────────────────────────────────
+      # Get free key at: https://serper.dev (2,500 queries/month free)
+      - key: SERPER_API_KEY
+        sync: false
+      # Alternative: Google Custom Search
+      - key: SERP_API_KEY
+        sync: false
+      - key: GOOGLE_CSE_ID
+        sync: false

@@ -10,7 +10,7 @@ import time
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from urllib.parse import quote
-from models import WebSearchResult, QueryUnderstanding
+from src.models import WebSearchResult, QueryUnderstanding
 import os
 
 
