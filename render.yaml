@@ -1,12 +1,11 @@
-# Render Blueprint Configuration
-# Deploy to: https://dashboard.render.com/blueprints
-
+# Render Blueprint - Deploy FitSearch AI
 services:
   - type: web
     name: fitsearch-ai
     runtime: python
     region: oregon
     plan: free
+    rootDirectory: backend
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
     healthCheckPath: /health
@@ -15,16 +14,5 @@ services:
         value: "3.11"
       - key: PORT
         value: "8000"
-      - key: ENVIRONMENT
-        value: production
-      - key: ALLOWED_ORIGINS
-        value: "*"
-      # ── Web Search APIs ───────────────────────────────────────────────────
-      # Get free key at: https://serper.dev (2,500 queries/month free)
       - key: SERPER_API_KEY
-        sync: false
-      # Alternative: Google Custom Search
-      - key: SERP_API_KEY
-        sync: false
-      - key: GOOGLE_CSE_ID
         sync: false

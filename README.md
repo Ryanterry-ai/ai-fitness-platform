@@ -1,17 +1,17 @@
-# FitSearch AI - Multi-Agent Platform
+# FitSearch AI - Production-Grade AI Search Platform
 
-AI-powered search engine for fitness, bodybuilding, supplements, and performance compounds.
+AI-powered search engine covering the entire SEO Query Universe for fitness, bodybuilding, and performance compounds.
 
 ## Features
 
-- Multi-agent search pipeline (10 specialized agents)
-- Knowledge base with 15+ compound profiles
-- Live web search (DuckDuckGo, Serper.dev, Google CSE)
-- PubMed research integration
-- Safety analysis and warnings
-- FastAPI backend
+- **Multi-Agent Pipeline**: 11 specialized agents working in coordination
+- **SEO Query Mastery**: Handles all query types (informational, dosage, comparison, etc.)
+- **Knowledge Base**: Comprehensive database of 15+ compounds with detailed profiles
+- **Live Web Search**: DuckDuckGo, Serper.dev, Google CSE integration
+- **PubMed Research**: Real scientific papers and clinical studies
+- **Safety Analysis**: Automatic risk assessment and warnings
 
-## Quick Deploy to Render
+## Deploy to Render
 
 1. Upload to GitHub
 2. Connect to Render Blueprint
@@ -19,7 +19,7 @@ AI-powered search engine for fitness, bodybuilding, supplements, and performance
 
 ## API Endpoints
 
-- `POST /search` - Main search
+- `POST /search` - Main multi-agent search
 - `GET /search/simple?q=` - Simple search
 - `GET /search/suggestions?q=` - Autocomplete
 - `GET /knowledge-search?q=` - Knowledge base
@@ -32,5 +32,5 @@ AI-powered search engine for fitness, bodybuilding, supplements, and performance
 ```bash
 curl -X POST https://your-app.onrender.com/search \
   -H "Content-Type: application/json" \
-  -d '{"query": "RAD-140 dosage"}'
+  -d '{"query": "RAD-140 dosage for beginners"}'
 ```
