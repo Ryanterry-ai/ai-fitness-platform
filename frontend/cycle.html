@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cycle Planner — FitSearch AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050810;--bg2:#0a0f1e;--bg3:#0f1629;--panel:#111827;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;--teal:#06b6d4;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;--sidebar:220px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+.sidebar-logo{padding:22px 18px 16px;border-bottom:1px solid var(--border);}
+.logo-mark{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;text-decoration:none;}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+.sb-sec{padding:16px 10px 8px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;margin:1px 6px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text3);border:none;background:none;width:calc(100% - 12px);text-align:left;transition:all .15s;text-decoration:none;}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text2);}
+.nav-item.active{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.2);}
+.ni{width:18px;font-size:14px;text-align:center;flex-shrink:0;}
+.sb-footer{margin-top:auto;padding:14px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--border);}
+.ua{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.main{margin-left:var(--sidebar);min-height:100vh;position:relative;z-index:1;}
+.ph{padding:28px 32px 20px;border-bottom:1px solid var(--border);}
+.pt{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:4px;}
+.ps{font-size:13px;color:var(--text2);}
+.content{padding:24px 32px;}
+.two-col{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.ct{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.field{margin-bottom:14px;}
+.lbl{display:block;font-size:11px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.inp,.sel{width:100%;padding:11px 13px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:9px;font-size:13px;font-family:'Space Grotesk',sans-serif;color:var(--text);outline:none;transition:all .2s;}
+.inp:focus,.sel:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12);}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7 7l3 3 3-3' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px;padding-right:30px;background-color:var(--bg3);}
+.btn-gen{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;cursor:pointer;color:#fff;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;transition:all .2s;box-shadow:0 4px 15px rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;}
+.btn-gen:hover{transform:translateY(-1px);}
+.btn-gen:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+.sp{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* Cycle timeline */
+.cycle-header{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:20px 22px;margin-bottom:20px;}
+.cycle-nm{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px;}
+.cycle-meta{display:flex;gap:10px;flex-wrap:wrap;}
+.cycle-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;}
+.cb-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.2);}
+.cb-purple{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.2);}
+.cb-green{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+.timeline{margin-bottom:20px;}
+.week-row{display:flex;align-items:stretch;margin-bottom:6px;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.week-lbl{width:100px;min-width:100px;padding:10px 12px;font-size:11px;font-weight:700;color:var(--text3);background:rgba(255,255,255,.02);border-right:1px solid var(--border);display:flex;align-items:center;font-family:'JetBrains Mono',monospace;}
+.week-info{flex:1;padding:10px 14px;}
+.week-compound{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.week-dose{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);margin-bottom:3px;}
+.week-note{font-size:11px;color:var(--text3);line-height:1.4;}
+.phase-on{background:rgba(99,102,241,.06);}
+.phase-pct{background:rgba(16,185,129,.06);}
+.phase-off{background:rgba(255,255,255,.02);}
+.phase-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:8px;}
+.pd-on{background:var(--accent);}
+.pd-pct{background:var(--green);}
+.pd-off{background:var(--text3);}
+.info-block{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+.ib-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.ib-list{display:flex;flex-direction:column;gap:5px;}
+.ib-item{font-size:13px;color:var(--text2);display:flex;gap:7px;align-items:flex-start;}
+.bloodwork-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);}
+.bloodwork-item:last-child{border:none;}
+.danger-warn{padding:14px 16px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:12px;font-size:13px;color:#f87171;display:flex;gap:8px;margin-top:16px;line-height:1.6;}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center;}
+.uz{border:2px dashed var(--border2);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .2s;text-align:center;margin-bottom:14px;}
+.uz:hover{border-color:var(--accent);}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><a class="logo-mark" href="/"><div class="logo-icon">⚡</div><div><div>FitSearch AI</div><div class="logo-sub">Research Engine v5</div></div></a></div>
+  <div class="sb-sec">Search</div>
+  <a class="nav-item" href="/"><span class="ni">🔍</span> AI Search</a>
+  <a class="nav-item" href="/dashboard.html"><span class="ni">📊</span> Dashboard</a>
+  <div class="sb-sec">Tools</div>
+  <a class="nav-item" href="/diet.html"><span class="ni">🥗</span> Diet Planner</a>
+  <button class="nav-item active"><span class="ni">🔬</span> Cycle Planner</button>
+  <a class="nav-item" href="/medical.html"><span class="ni">🏥</span> Medical Screen</a>
+  <a class="nav-item" href="/bca.html"><span class="ni">📏</span> Body Analysis</a>
+  <a class="nav-item" href="/physique.html"><span class="ni">💪</span> Physique Tracker</a>
+  <a class="nav-item" href="/grocery.html"><span class="ni">🛒</span> Grocery AI</a>
+  <div class="sb-footer"><div class="user-pill" id="uPill"><div class="ua" id="uAv">U</div><div><div style="font-size:12px;font-weight:600;color:var(--text)" id="uNm">…</div><div style="font-size:10px;color:var(--text3)" id="uPl">Free plan</div></div></div></div>
+</aside>
+
+<main class="main">
+  <div class="ph"><div class="pt">🔬 Cycle Planner</div><div class="ps">Generate structured steroid, SARM, and peptide cycle protocols with PCT and bloodwork checkpoints</div></div>
+  <div class="content">
+    <div class="two-col">
+      <!-- FORM -->
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="ct">⚠️ Medical Disclaimer</div>
+          <div style="font-size:12px;color:#fbbf24;line-height:1.6;padding:10px 12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;">
+            This planner provides educational information only. Anabolic steroids, SARMs, and peptides carry serious health risks and are controlled substances in many jurisdictions. Always consult a physician and obtain bloodwork before starting any cycle. Minimum age 21 recommended.
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">⚙️ Configure Cycle</div>
+          <div class="field"><label class="lbl">Experience Level</label>
+            <select class="sel" id="exp">
+              <option value="beginner">Beginner (first cycle)</option>
+              <option value="intermediate">Intermediate (1–3 prior cycles)</option>
+              <option value="advanced">Advanced (4+ cycles)</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Goal</label>
+            <select class="sel" id="goal">
+              <option value="muscle_gain">💪 Muscle Gain / Bulking</option>
+              <option value="fat_loss">🔥 Fat Loss / Cutting</option>
+              <option value="recomp">⚖️ Body Recomposition</option>
+              <option value="recovery">🩹 Recovery / Healing</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Compound Category</label>
+            <select class="sel" id="cat">
+              <option value="auto">Auto-select (recommended)</option>
+              <option value="sarm">SARMs only</option>
+              <option value="steroid">Anabolic steroids</option>
+              <option value="peptide">Peptides only</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Age</label><input class="inp" id="age" type="number" placeholder="25" min="18" max="100"></div>
+          <div class="field"><label class="lbl">Weight (kg)</label><input class="inp" id="weight" type="number" placeholder="85"></div>
+          <div class="lbl">Upload Bloodwork / Medical Report (optional)</div>
+          <div class="uz" onclick="document.getElementById('medFile').click()">
+            <div style="font-size:24px;margin-bottom:4px">🩸</div>
+            <div style="font-size:12px;color:var(--text3)" id="medLbl">Click to upload bloodwork results</div>
+            <input type="file" id="medFile" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleMed(this)">
+          </div>
+          <button class="btn-gen" id="genBtn" onclick="genCycle()">
+            <span id="bi">🔬</span><span id="bt">Generate Cycle Protocol</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div>
+        <div id="emptyState" class="empty">
+          <div style="font-size:52px;margin-bottom:16px">🔬</div>
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px">Cycle protocol will appear here</div>
+          <div style="font-size:13px;color:var(--text3)">Configure your options and click Generate</div>
+        </div>
+        <div id="results" style="display:none">
+          <div class="cycle-header" id="cycleHdr"></div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="ib-title">📅 Weekly Protocol</div>
+            <div id="timeline"></div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="ib-title">🛡️ On-Cycle Support</div>
+            <div class="ib-list" id="support"></div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="ib-title">💊 PCT Protocol</div>
+            <div style="font-size:13px;color:var(--text2)" id="pct"></div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="ib-title">🩸 Bloodwork Checkpoints</div>
+            <div id="bloodwork"></div>
+          </div>
+          <div class="danger-warn" id="warn"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(async()=>{
+  try{
+    const r=await fetch('/me',{credentials:'include'});
+    if(!r.ok){location.href='/login.html';return;}
+    const u=await r.json();
+    document.getElementById('uAv').textContent=(u.name||'U')[0].toUpperCase();
+    document.getElementById('uNm').textContent=u.name||'User';
+    document.getElementById('uPl').textContent=(u.tier||'free')+' plan';
+    if(u.experience_level) document.getElementById('exp').value=u.experience_level;
+    if(u.goal && document.querySelector(`#goal option[value="${u.goal}"]`)) document.getElementById('goal').value=u.goal;
+    if(u.age) document.getElementById('age').value=u.age;
+    if(u.weight) document.getElementById('weight').value=u.weight;
+  }catch(e){location.href='/login.html';}
+})();
+
+async function handleMed(inp){
+  if(!inp.files[0])return;
+  const fd=new FormData();fd.append('file',inp.files[0]);
+  document.getElementById('medLbl').textContent='Uploading…';
+  try{
+    const r=await fetch('/upload_medical',{method:'POST',body:fd,credentials:'include'});
+    document.getElementById('medLbl').textContent=r.ok?'✅ '+inp.files[0].name:'❌ Upload failed';
+  }catch(e){document.getElementById('medLbl').textContent='❌ Upload failed';}
+}
+
+async function genCycle(){
+  const btn=document.getElementById('genBtn');
+  document.getElementById('bi').innerHTML='<div class="sp"></div>';
+  document.getElementById('bt').textContent='Generating…';
+  btn.disabled=true;
+  try{
+    const r=await fetch('/cycle',{
+      method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+      body:JSON.stringify({
+        experience_level:document.getElementById('exp').value,
+        goal:document.getElementById('goal').value,
+        compound_category:document.getElementById('cat').value,
+        age:parseInt(document.getElementById('age').value)||null,
+        weight:parseFloat(document.getElementById('weight').value)||null,
+      })
+    });
+    if(r.status===401){location.href='/login.html';return;}
+    const d=await r.json();
+    if(d.error){alert('Error: '+d.error);return;}
+    renderCycle(d);
+  }catch(e){alert('Failed to generate cycle. Please try again.');}
+  finally{document.getElementById('bi').textContent='🔬';document.getElementById('bt').textContent='Regenerate Protocol';btn.disabled=false;}
+}
+
+function renderCycle(d){
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('results').style.display='block';
+
+  const catColors={steroid:'cb-blue',sarm:'cb-purple',peptide:'cb-green'};
+  document.getElementById('cycleHdr').innerHTML=`
+    <div class="cycle-nm">${h(d.cycle_name||'Custom Protocol')}</div>
+    <div class="cycle-meta">
+      <span class="cycle-badge ${catColors[d.category]||'cb-blue'}">${h(d.category||'')}</span>
+      <span class="cycle-badge cb-purple">⏱️ ${d.total_weeks||'—'} weeks total</span>
+      <span class="cycle-badge cb-green">📊 ${h(d.experience_required||d.user_level||'—')}</span>
+    </div>`;
+
+  const phaseClass={on:'phase-on',pct:'phase-pct',off:'phase-off'};
+  const phaseDot={on:'pd-on',pct:'pd-pct',off:'pd-off'};
+  document.getElementById('timeline').innerHTML=(d.weeks||[]).map(w=>`
+    <div class="week-row ${phaseClass[w.phase]||'phase-off'}">
+      <div class="week-lbl"><span class="phase-dot ${phaseDot[w.phase]||'pd-off'}"></span>${h(w.range)}</div>
+      <div class="week-info">
+        <div class="week-compound">${h(w.compound)}</div>
+        <div class="week-dose">${h(w.dose)}</div>
+        ${w.notes?`<div class="week-note">${h(w.notes)}</div>`:''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('support').innerHTML=(d.on_cycle_support||[]).map(s=>`
+    <div class="ib-item"><span style="color:var(--teal);flex-shrink:0">→</span>${h(s)}</div>`).join('');
+
+  document.getElementById('pct').innerHTML=h(d.pct||'No PCT required for this protocol');
+
+  document.getElementById('bloodwork').innerHTML=(d.bloodwork||[]).map(b=>`
+    <div class="bloodwork-item"><span style="color:var(--amber)">🩸</span>${h(b)}</div>`).join('');
+
+  document.getElementById('warn').innerHTML=`<span style="flex-shrink:0">⚠️</span><span>${h(d.warning||d.disclaimer||'Always consult a physician before starting any cycle.')}</span>`;
+}
+function h(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+</script>
+</body>
+</html>

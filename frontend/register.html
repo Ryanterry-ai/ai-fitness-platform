@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — FitSearch AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Space Grotesk',sans-serif;background:#050810;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(99,102,241,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.card{width:100%;max-width:480px;background:#0a0f1e;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:40px;position:relative;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#06b6d4);border-radius:20px 20px 0 0;}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
+.logo-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.logo-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;}
+.logo-sub{font-size:11px;color:#475569;margin-top:1px;}
+h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
+.sub{font-size:13px;color:#64748b;margin-bottom:24px;}
+.field{margin-bottom:14px;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.lbl{display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.inp,.sel{width:100%;padding:11px 13px;background:#111827;border:1.5px solid rgba(255,255,255,.08);border-radius:9px;font-size:13.5px;font-family:'Space Grotesk',sans-serif;color:#e2e8f0;outline:none;transition:all .2s;}
+.inp:focus,.sel:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12);background:#0f1629;}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7 7l3 3 3-3' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px;padding-right:30px;background-color:#111827;}
+.btn{width:100%;padding:13px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;cursor:pointer;color:#fff;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;transition:all .2s;margin-top:6px;box-shadow:0 4px 15px rgba(99,102,241,.3);}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.4);}
+.btn:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+.link{color:#818cf8;text-decoration:none;font-weight:600;}
+.link:hover{color:#a5b4fc;}
+.footer-text{font-size:13px;color:#475569;text-align:center;margin-top:20px;}
+.err{color:#f87171;font-size:12px;margin-top:6px;display:none;}
+.section-hdr{font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.06em;margin:20px 0 12px;display:flex;align-items:center;gap:6px;}
+.section-hdr::after{content:'';flex:1;height:1px;background:rgba(99,102,241,.2);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div><div class="logo-text">FitSearch AI</div><div class="logo-sub">Research Engine</div></div>
+  </div>
+  <h1>Create your account</h1>
+  <p class="sub">Join thousands of athletes using AI-powered research.</p>
+
+  <div class="field">
+    <label class="lbl">Full Name</label>
+    <input class="inp" id="name" type="text" placeholder="Your name">
+  </div>
+  <div class="field">
+    <label class="lbl">Email</label>
+    <input class="inp" id="email" type="email" placeholder="you@example.com">
+  </div>
+  <div class="field">
+    <label class="lbl">Password</label>
+    <input class="inp" id="password" type="password" placeholder="Min 6 characters">
+    <div class="err" id="errMsg"></div>
+  </div>
+
+  <div class="section-hdr">Your Profile</div>
+
+  <div class="row-2">
+    <div class="field">
+      <label class="lbl">Experience</label>
+      <select class="sel" id="experience">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="lbl">Primary Goal</label>
+      <select class="sel" id="goal">
+        <option value="muscle_gain">Muscle Gain</option>
+        <option value="fat_loss">Fat Loss</option>
+        <option value="strength">Strength</option>
+        <option value="endurance">Endurance</option>
+        <option value="recomposition">Body Recomp</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row-2">
+    <div class="field">
+      <label class="lbl">Sex</label>
+      <select class="sel" id="sex">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="lbl">Age</label>
+      <input class="inp" id="age" type="number" placeholder="25" min="16" max="100">
+    </div>
+  </div>
+
+  <div class="row-2">
+    <div class="field">
+      <label class="lbl">Weight (kg)</label>
+      <input class="inp" id="weight" type="number" placeholder="75">
+    </div>
+    <div class="field">
+      <label class="lbl">Height (cm)</label>
+      <input class="inp" id="height" type="number" placeholder="175">
+    </div>
+  </div>
+
+  <button class="btn" id="regBtn" onclick="doRegister()">Create Account →</button>
+  <div class="footer-text">Already have an account? <a class="link" href="/login.html">Sign in</a></div>
+</div>
+
+<script>
+async function doRegister() {
+  const btn = document.getElementById('regBtn');
+  const err = document.getElementById('errMsg');
+  err.style.display = 'none';
+
+  const data = {
+    name: document.getElementById('name').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value,
+    experience_level: document.getElementById('experience').value,
+    goal: document.getElementById('goal').value,
+    sex: document.getElementById('sex').value,
+    age: parseInt(document.getElementById('age').value)||null,
+    weight: parseFloat(document.getElementById('weight').value)||null,
+    height: parseFloat(document.getElementById('height').value)||null,
+  };
+
+  if (!data.name) { showErr('Please enter your name'); return; }
+  if (!data.email) { showErr('Please enter your email'); return; }
+  if (!data.password || data.password.length < 6) { showErr('Password must be at least 6 characters'); return; }
+
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  try {
+    const r = await fetch('/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials:'include', body: JSON.stringify(data)
+    });
+    const result = await r.json();
+    if (r.ok) {
+      // Auto login
+      await fetch('/login', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify({email:data.email, password:data.password})
+      });
+      window.location.href = '/';
+    } else {
+      showErr(result.error || 'Registration failed');
+    }
+  } catch(e) {
+    showErr('Connection error — try again');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account →';
+  }
+}
+
+function showErr(msg) {
+  const e = document.getElementById('errMsg');
+  e.textContent = msg; e.style.display = 'block';
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Enter') doRegister(); });
+</script>
+</body>
+</html>
