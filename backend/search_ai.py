@@ -993,7 +993,7 @@ def _examine(name: str) -> dict | None:
 
 def _google_search(query: str) -> dict:
     if not GOOGLE_SEARCH_API_KEY or not GOOGLE_CX:
-        return {"web_results": [], "source": "google", "active": False}
+        return {"web_results": [], "source": "google", "active": False, "error": "Missing API keys"}
     try:
         url = "https://www.googleapis.com/customsearch/v1"
         params = {
@@ -1005,9 +1005,15 @@ def _google_search(query: str) -> dict:
             "hl": "en"
         }
         resp = requests.get(url, params=params, timeout=10)
+        if resp.status_code == 401:
+            return {"web_results": [], "source": "google", "active": False, "error": "Invalid API key"}
+        if resp.status_code == 403:
+            return {"web_results": [], "source": "google", "active": False, "error": "API key blocked or quota exceeded"}
         if resp.status_code != 200:
-            return {"web_results": [], "source": "google", "active": False}
+            return {"web_results": [], "source": "google", "active": False, "error": f"HTTP {resp.status_code}"}
         data = resp.json()
+        if "error" in data:
+            return {"web_results": [], "source": "google", "active": False, "error": data["error"].get("message", "API error")}
         results = []
         for item in data.get("items", [])[:10]:
             parsed = urlparse(item.get("link", ""))
@@ -1027,7 +1033,20 @@ def _google_search(query: str) -> dict:
         }
     except Exception as e:
         print(f"[Google Search] {e}")
-        return {"web_results": [], "source": "google", "active": False}
+        return {"web_results": [], "source": "google", "active": False, "error": str(e)}
+
+
+def test_google_api() -> dict:
+    test_result = _google_search("test query")
+    return {
+        "api_key_set": bool(GOOGLE_SEARCH_API_KEY),
+        "cx_set": bool(GOOGLE_CX),
+        "api_key_prefix": GOOGLE_SEARCH_API_KEY[:8] + "..." if GOOGLE_SEARCH_API_KEY else None,
+        "cx_value": GOOGLE_CX[:20] + "..." if GOOGLE_CX else None,
+        "test_result": test_result,
+        "keys_valid": test_result.get("active", False),
+        "error": test_result.get("error") if not test_result.get("active") else None
+    }
 
 def _live(query: str, entity_key: str | None) -> dict:
     term = entity_key.replace("_"," ") if entity_key else query
@@ -1215,10 +1234,6 @@ def search_knowledge(query: str, filters: list | None = None) -> list[dict]:
 
     ckey = _cache_key(query, filters)
     cached = _cache_get(ckey)
-    if cached:
-        for r in cached:
-            r["_cached"] = True
-        return cached
 
     results: list[dict] = []
     web_results: list[dict] = []
@@ -1227,19 +1242,45 @@ def search_knowledge(query: str, filters: list | None = None) -> list[dict]:
     if save_query:
         query_id = save_query(query)
 
-    def fetch_google():
-        return _google_search(query)
+    google_data = _google_search(query)
+    if google_data.get("web_results"):
+        web_results = google_data["web_results"]
+        if query_id is not None and save_live_results:
+            save_live_results(query_id, "google", web_results)
+
+    if cached:
+        for r in cached:
+            r["_cached"] = True
+            r["google_active"] = bool(web_results)
+            r["google_source"] = "Live Web Search (Google)"
+            r["web_results"] = web_results
+            r["_live_sources"] = {
+                "knowledge_base": True,
+                "pubmed": len(r.get("pubmed_refs", [])) > 0,
+                "examine": bool(r.get("examine_url")),
+                "google": bool(web_results),
+                "google_count": len(web_results)
+            }
+        if web_results:
+            web_source_report = {
+                "id": "web_search",
+                "name": "Live Web Search Results",
+                "overview": f"Found {len(web_results)} live results for: {query}",
+                "type": "web",
+                "source": "google",
+                "web_results": web_results,
+                "_timestamp": datetime.now(timezone.utc).isoformat(),
+                "_is_live_web": True
+            }
+            cached.insert(0, web_source_report)
+        return cached
 
     if entity_key:
         kb = _kb_strict(query, allowed_ids, goal_mods, filters, intent, limit=3)
         lv = _live(query, entity_key)
         ev = _evidence(lv)
-
-        if query_id is not None and save_live_results:
-            google_results = lv.get("google", {}).get("web_results", [])
-            if google_results:
-                save_live_results(query_id, "google", google_results)
-            web_results = google_results
+        google_results = lv.get("google", {}).get("web_results", [])
+        web_results = google_results
 
         if kb:
             for i, item in enumerate(kb[:3]):
@@ -1256,12 +1297,8 @@ def search_knowledge(query: str, filters: list | None = None) -> list[dict]:
         topic = _find_general_topic(query)
         lv = _live(query, None)
         ev = _evidence(lv)
-
-        if query_id is not None and save_live_results:
-            google_results = lv.get("google", {}).get("web_results", [])
-            if google_results:
-                save_live_results(query_id, "google", google_results)
-            web_results = google_results
+        google_results = lv.get("google", {}).get("web_results", [])
+        web_results = google_results
 
         if topic:
             base_report = _to_report(topic, ev, intent, source="kb", is_general=True)

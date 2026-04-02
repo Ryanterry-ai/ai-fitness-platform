@@ -581,6 +581,16 @@ def health():
     })
 
 
+@app.route("/test-google", methods=["GET"])
+def test_google():
+    try:
+        from backend.search_ai import test_google_api
+        result = test_google_api()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/queries", methods=["GET"])
 @login_required
 def get_queries():
