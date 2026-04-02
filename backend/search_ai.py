@@ -14,7 +14,6 @@ import requests
 # ====================== CONFIG ======================
 ANTHROPIC_API_KEY     = os.getenv("ANTHROPIC_API_KEY", "")
 OPENAI_API_KEY        = os.getenv("OPENAI_API_KEY", "")
-BING_API_KEY          = os.getenv("BING_API_KEY", "")
 GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "AIzaSyAe6LNE1Er_KpTK4PdpTVb5OrqbD5wLZG8")
 GOOGLE_CX             = os.getenv("GOOGLE_CX", "860eab761ebac4c12")
 
