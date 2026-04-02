@@ -16,19 +16,18 @@ from datetime import datetime, timezone
 from typing import Any
 import requests
 
-# ── API Keys (all optional — system works without them) ───────────────────
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-PUBMED_API_KEY    = os.getenv("PUBMED_API_KEY", "")
-SERP_API_KEY      = os.getenv("SERP_API_KEY", "")
+# ====================== CONFIG ======================
+ANTHROPIC_API_KEY     = os.getenv("ANTHROPIC_API_KEY", "")
+OPENAI_API_KEY        = os.getenv("OPENAI_API_KEY", "")
+BING_API_KEY          = os.getenv("BING_API_KEY", "")
+GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "AIzaSyAe6LNE1Er_KpTK4PdpTVb5OrqbD5wLZG8")
+GOOGLE_CX             = os.getenv("GOOGLE_CX", "860eab761ebac4c12")   # Your confirmed CX
 
-# ── Paths ─────────────────────────────────────────────────────────────────
-BASE_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE_DB      = os.path.join(BASE_DIR, "database", "search_cache.db")
-ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-PUBMED_SEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
-PUBMED_FETCH  = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-CACHE_TTL_SEC = 86_400
-_cache_lock   = threading.Lock()
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE_DB = os.path.join(BASE_DIR, "database", "search_cache.db")
+CACHE_TTL_SEC = 86400
+
+_cache_lock = threading.Lock()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
