@@ -12,16 +12,38 @@ from typing import Any
 import requests
 
 # ====================== CONFIG ======================
-ANTHROPIC_API_KEY     = os.getenv("ANTHROPIC_API_KEY", "")
-OPENAI_API_KEY        = os.getenv("OPENAI_API_KEY", "")
-GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "AIzaSyAe6LNE1Er_KpTK4PdpTVb5OrqbD5wLZG8")
-GOOGLE_CX             = os.getenv("GOOGLE_CX", "860eab761ebac4c12")
 
+# AI Providers
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+OPENAI_API_KEY    = os.getenv("OPENAI_API_KEY", "")
+
+# Google Search (Programmable Search API)
+GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "")
+GOOGLE_CX             = os.getenv("GOOGLE_CX", "")
+
+# Google Search Settings
+GOOGLE_SEARCH_URL     = "https://www.googleapis.com/customsearch/v1"
+GOOGLE_SEARCH_RESULTS = int(os.getenv("GOOGLE_SEARCH_RESULTS", "10"))
+GOOGLE_SEARCH_TIMEOUT = int(os.getenv("GOOGLE_SEARCH_TIMEOUT", "10"))
+
+# Base Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE_DB = os.path.join(BASE_DIR, "database", "search_cache.db")
-CACHE_TTL_SEC = 86400
+DATABASE_DIR = os.path.join(BASE_DIR, "database")
 
+# Ensure database folder exists
+os.makedirs(DATABASE_DIR, exist_ok=True)
+
+# Cache Settings
+CACHE_DB      = os.path.join(DATABASE_DIR, "search_cache.db")
+CACHE_TTL_SEC = int(os.getenv("CACHE_TTL_SEC", "86400"))  # 24 hours default
+
+# Thread Safety
 _cache_lock = threading.Lock()
+
+# Headers (Google + general requests)
+DEFAULT_HEADERS = {
+    "User-Agent": "FitSearch-AI/1.0 (Health Fitness AI Search Engine)"
+}
 
 # ====================== OPTIMIZED DATABASE INIT ======================
 def init_db():
