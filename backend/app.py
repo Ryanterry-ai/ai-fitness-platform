@@ -69,7 +69,7 @@ def analyze_medical(data):
 
 # ── Flask ─────────────────────────────────────────────────────────────────
 app = Flask(__name__, static_folder=STATIC_DIR)
-app.secret_key = os.environ.get("SECRET_KEY", "fitsearch-secret-2025-change-me")
+app.secret_key = os.environ.get("NEW_SECRET", os.environ.get("SECRET_KEY", "11962aa111ff110443986c5edfa42c0d"))
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 CORS(app, supports_credentials=True, origins="*")
