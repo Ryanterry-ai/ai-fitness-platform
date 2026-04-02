@@ -1,2 +1,0 @@
-DB_PATH = os.path.join(os.getcwd(), "database", "users.db")
-os.makedirs("database", exist_ok=True)
