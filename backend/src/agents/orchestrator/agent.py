@@ -4,14 +4,6 @@ Orchestrator Agent - Main pipeline coordinator
 import time
 from typing import List, Dict, Any
 from datetime import datetime
-from .query_understanding.agent import understand_query
-from .knowledge_base.agent import search_knowledge_base
-from .web_search.agent import search_web
-from .research.agent import search_research
-from .ranking.agent import rank_results
-from .safety.agent import analyze_safety
-from .response_generation.agent import generate_response
-from .caching.agent import caching_agent
 
 class OrchestratorAgent:
     def __init__(self):
@@ -29,6 +21,16 @@ class OrchestratorAgent:
     def search(self, query: str, filters: List[str] = None) -> Dict[str, Any]:
         start_time = time.time()
         filters = filters or []
+        
+        # Import here to avoid circular imports
+        from .query_understanding.agent import understand_query
+        from .knowledge_base.agent import search_knowledge_base
+        from .web_search.agent import search_web
+        from .research.agent import search_research
+        from .ranking.agent import rank_results
+        from .safety.agent import analyze_safety
+        from .response_generation.agent import generate_response
+        from .caching.agent import caching_agent
         
         # Check cache
         cached = caching_agent.get(query)
@@ -76,6 +78,7 @@ class OrchestratorAgent:
         return result
     
     def get_agent_status(self) -> Dict[str, Any]:
+        from .caching.agent import caching_agent
         return {
             "orchestrator": {"status": "active", "agents": self.agents},
             "knowledge_base": {"status": "active", "documents": 15},
