@@ -568,8 +568,19 @@ def health():
     return jsonify({
         "status":  "ok",
         "version": "6.0",
-        "ai":      bool(os.environ.get("ANTHROPIC_API_KEY")),
-        "pubmed":  bool(os.environ.get("PUBMED_API_KEY")),
+        "sources": {
+            "knowledge_base": True,
+            "pubmed": True,
+            "examine": True,
+            "google": bool(os.environ.get("GOOGLE_SEARCH_API_KEY") and os.environ.get("GOOGLE_CX")),
+            "anthropic": bool(os.environ.get("ANTHROPIC_API_KEY")),
+        },
+        "api_keys": {
+            "google_search": "✓" if os.environ.get("GOOGLE_SEARCH_API_KEY") else "✗",
+            "google_cx": "✓" if os.environ.get("GOOGLE_CX") else "✗",
+            "anthropic": "✓" if os.environ.get("ANTHROPIC_API_KEY") else "✗",
+            "pubmed": "✓" if os.environ.get("PUBMED_API_KEY") else "✗ (uses free tier)",
+        }
     })
 
 

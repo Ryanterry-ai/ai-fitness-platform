@@ -1346,21 +1346,77 @@ def _examine(name: str) -> dict | None:
     except Exception as e:
         print(f"[Examine] {e}"); return None
 
+def _google_search(query: str) -> dict:
+    """Live Google Custom Search API"""
+    if not GOOGLE_SEARCH_API_KEY or not GOOGLE_CX:
+        return {"web_results": [], "source": "google", "active": False}
+    
+    try:
+        url = "https://www.googleapis.com/customsearch/v1"
+        params = {
+            "key": GOOGLE_SEARCH_API_KEY,
+            "cx": GOOGLE_CX,
+            "q": query,
+            "num": 10,
+            "gl": "us",
+            "hl": "en"
+        }
+        resp = requests.get(url, params=params, timeout=10)
+        if resp.status_code != 200:
+            return {"web_results": [], "source": "google", "active": False}
+        
+        data = resp.json()
+        results = []
+        for item in data.get("items", [])[:10]:
+            results.append({
+                "title": item.get("title", ""),
+                "link": item.get("link", ""),
+                "snippet": item.get("snippet", ""),
+                "source": _extract_domain(item.get("link", "")),
+                "type": "web"
+            })
+        
+        return {
+            "web_results": results,
+            "source": "google",
+            "active": True,
+            "total_results": data.get("searchInformation", {}).get("totalResults", 0)
+        }
+    except Exception as e:
+        print(f"[Google Search] {e}")
+        return {"web_results": [], "source": "google", "active": False}
+
+def _extract_domain(url: str) -> str:
+    """Extract domain from URL"""
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        return parsed.netloc.replace("www.", "")
+    except:
+        return url
+
 def _live(query: str, entity_key: str | None) -> dict:
     term = entity_key.replace("_"," ") if entity_key else query
-    live: dict = {"pubmed":[],"examine":{}}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex:
+    live: dict = {"pubmed":[],"examine":{},"google":{}}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
         fp = ex.submit(_pubmed, term)
         fe = ex.submit(_examine, term)
+        fg = ex.submit(_google_search, query)
         live["pubmed"]  = fp.result()
         live["examine"] = fe.result() or {}
+        live["google"] = fg.result()
     return live
 
 def _evidence(live: dict) -> dict:
-    return {"pubmed_refs":live.get("pubmed",[]),
-            "pubmed_ids":[i["id"] for i in live.get("pubmed",[]) if "id" in i],
-            "examine_url":live.get("examine",{}).get("url"),
-            "examine_summary":live.get("examine",{}).get("summary","")}
+    return {
+        "pubmed_refs": live.get("pubmed",[]),
+        "pubmed_ids": [i["id"] for i in live.get("pubmed",[]) if "id" in i],
+        "examine_url": live.get("examine",{}).get("url"),
+        "examine_summary": live.get("examine",{}).get("summary",""),
+        "google_results": live.get("google",{}).get("web_results",[]),
+        "google_active": live.get("google",{}).get("active",False),
+        "google_source": "🔍 Live Web Search (Google)"
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -1432,7 +1488,7 @@ def _to_report(item: dict, ev: dict, intent: str = "research",
                source: str = "kb", is_general: bool = False) -> dict:
     """
     Universal converter: works for both compound KB items and general topic items.
-    Merges live PubMed refs into articles array.
+    Merges live PubMed refs and Google web results into the report.
     """
     articles = list(item.get("articles", []))
     # Add live PubMed refs
@@ -1441,16 +1497,28 @@ def _to_report(item: dict, ev: dict, intent: str = "research",
         url = f"https://pubmed.ncbi.nlm.nih.gov/{ref['id']}/"
         if url not in existing_urls:
             articles.append({"title":ref.get("title",f"PubMed {ref['id']}"),"author":ref.get("authors",""),
-                              "source":ref.get("journal","PubMed"),"url":url})
+                              "source":ref.get("journal","PubMed"),"url":url,"type":"pubmed"})
     # Add static pubmed_ids from KB
     for pid in item.get("pubmed_ids",[]):
         url = f"https://pubmed.ncbi.nlm.nih.gov/{pid}/"
         if url not in {a.get("url","") for a in articles}:
-            articles.append({"title":f"PubMed PMID {pid}","author":"","source":"PubMed","url":url})
+            articles.append({"title":f"PubMed PMID {pid}","author":"","source":"PubMed","url":url,"type":"pubmed"})
     # Add Examine link
     exam_url = item.get("examine_url") or ev.get("examine_url")
     if exam_url and exam_url not in {a.get("url","") for a in articles}:
-        articles.append({"title":f"Examine.com — {item['name']}","author":"Examine Team","source":"Examine.com","url":exam_url})
+        articles.append({"title":f"Examine.com — {item['name']}","author":"Examine Team","source":"Examine.com","url":exam_url,"type":"examine"})
+    
+    # Get Google web results
+    google_results = ev.get("google_results", [])
+    web_sources = []
+    for gr in google_results[:5]:
+        web_sources.append({
+            "title": gr.get("title", ""),
+            "link": gr.get("link", ""),
+            "snippet": gr.get("snippet", ""),
+            "source": gr.get("source", ""),
+            "type": "web"
+        })
 
     return {
         "name":               item["name"],
@@ -1478,16 +1546,26 @@ def _to_report(item: dict, ev: dict, intent: str = "research",
         "side_effects":       item.get("side_effects",[]),
         "research_evidence":  item.get("research_evidence",[]),
         "articles":           articles,
+        "web_sources":        web_sources,
         "magazines":          item.get("magazines",[]),
-        "books":              item.get("books",[]),
-        "videos":             item.get("videos",[]),
-        "ai_summary":         item.get("ai_summary", item.get("final_recommendation","")),
-        "stacking":           item.get("stacking",[]),
+        "books":             item.get("books",[]),
+        "videos":            item.get("videos",[]),
+        "ai_summary":        item.get("ai_summary", item.get("final_recommendation","")),
+        "stacking":          item.get("stacking",[]),
         "final_recommendation": item.get("final_recommendation",""),
-        "products":           item.get("products",[]) if intent == "product" else [],
-        "ai_note":            "Curated knowledge base. Set ANTHROPIC_API_KEY for AI-enhanced reports." if source == "kb" else "AI-enhanced report.",
+        "products":          item.get("products",[]) if intent == "product" else [],
+        "ai_note":           "Curated knowledge base + Live Web Search. Set ANTHROPIC_API_KEY for AI-enhanced reports." if source == "kb" else "AI-enhanced report.",
         "examine_url":        exam_url,
+        "google_active":      ev.get("google_active", False),
+        "google_source":      ev.get("google_source", ""),
         "_source":            source,
+        "_live_sources": {
+            "knowledge_base": True,
+            "pubmed": len(ev.get("pubmed_refs", [])) > 0,
+            "examine": bool(exam_url),
+            "google": ev.get("google_active", False),
+            "google_count": len(google_results)
+        }
     }
 
 
