@@ -1,6 +1,0 @@
-/* FitSearch AI — Shared Styles v6 */
-/* This file is optional — all critical styles are inlined in HTML pages */
-
-/* Additional utility classes */
-.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
