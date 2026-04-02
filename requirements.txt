@@ -1,18 +1,4 @@
-# FitSearch AI - Production Requirements
-# Python 3.11+ required
-
-# Web Framework
-Flask==3.0.2
-Flask-Cors==4.0.0
-
-# Production Server
+flask==3.0.2
+flask-cors==4.0.0
 gunicorn==21.2.0
-
-# HTTP Client
 requests==2.31.0
-
-# Configuration
-python-dotenv==1.0.1
-
-# Utilities
-Werkzeug==3.0.1
