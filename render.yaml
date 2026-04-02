@@ -1,22 +1,23 @@
-# Render Blueprint - FitSearch AI
 services:
   - type: web
     name: fitsearch-ai
     runtime: python
-    region: oregon
-    plan: free
-    rootDirectory: .
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
-    healthCheckPath: /health
+    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.11"
       - key: SECRET_KEY
         generateValue: true
+      - key: NEW_SECRET
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: PUBMED_API_KEY
         sync: false
-      - key: SERP_API_KEY
+      - key: GOOGLE_SEARCH_API_KEY
+        sync: false
+      - key: GOOGLE_CX
+        sync: false
+      - key: OPENAI_API_KEY
         sync: false
