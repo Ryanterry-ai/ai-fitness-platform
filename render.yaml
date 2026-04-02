@@ -1,17 +1,28 @@
+# Render Blueprint Configuration
+# Deploy to: https://dashboard.render.com/blueprints
+
 services:
   - type: web
     name: fitsearch-ai
     runtime: python
+    region: oregon
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    healthCheckPath: /health
     envVars:
-      - key: SECRET_KEY
-        generateValue: true
       - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: PUBMED_API_KEY
-        sync: false
-      - key: SERP_API_KEY
-        sync: false
+        value: "3.11"
+      - key: PORT
+        value: "8000"
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      # Optional API Keys (uncomment if needed)
+      # - key: OPENAI_API_KEY
+      #   sync: false
+      # - key: SERP_API_KEY
+      #   sync: false
+      # - key: PUBMED_API_KEY
+      #   sync: false
