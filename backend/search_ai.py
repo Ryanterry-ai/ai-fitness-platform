@@ -11,39 +11,20 @@ from datetime import datetime, timezone
 from typing import Any
 import requests
 
-# ====================== CONFIG ======================
+# ====================== CONFIG — Google is DEFAULT ======================
+ANTHROPIC_API_KEY     = os.getenv("ANTHROPIC_API_KEY", "")
+OPENAI_API_KEY        = os.getenv("OPENAI_API_KEY", "")
+BING_API_KEY          = os.getenv("BING_API_KEY", "")
 
-# AI Providers
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-OPENAI_API_KEY    = os.getenv("OPENAI_API_KEY", "")
+# Google is the primary/default source
+GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "11962aa111ff110443986c5edfa42c0d")  # ← Your new secret as default
+GOOGLE_CX             = os.getenv("GOOGLE_CX", "860eab761ebac4c12")
 
-# Google Search (Programmable Search API)
-GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "")
-GOOGLE_CX             = os.getenv("GOOGLE_CX", "")
-
-# Google Search Settings
-GOOGLE_SEARCH_URL     = "https://www.googleapis.com/customsearch/v1"
-GOOGLE_SEARCH_RESULTS = int(os.getenv("GOOGLE_SEARCH_RESULTS", "10"))
-GOOGLE_SEARCH_TIMEOUT = int(os.getenv("GOOGLE_SEARCH_TIMEOUT", "10"))
-
-# Base Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATABASE_DIR = os.path.join(BASE_DIR, "database")
+CACHE_DB = os.path.join(BASE_DIR, "database", "search_cache.db")
+CACHE_TTL_SEC = 86400
 
-# Ensure database folder exists
-os.makedirs(DATABASE_DIR, exist_ok=True)
-
-# Cache Settings
-CACHE_DB      = os.path.join(DATABASE_DIR, "search_cache.db")
-CACHE_TTL_SEC = int(os.getenv("CACHE_TTL_SEC", "86400"))  # 24 hours default
-
-# Thread Safety
 _cache_lock = threading.Lock()
-
-# Headers (Google + general requests)
-DEFAULT_HEADERS = {
-    "User-Agent": "FitSearch-AI/1.0 (Health Fitness AI Search Engine)"
-}
 
 # ====================== OPTIMIZED DATABASE INIT ======================
 def init_db():
@@ -80,29 +61,13 @@ def init_db():
         conn.execute("CREATE INDEX IF NOT EXISTS idx_report_cache_created ON report_cache(created_at);")
 init_db()
 
-# ====================== INTENT CLASSIFICATION ======================
-_INTENT_RULES: list[tuple[list[str], str]] = [ ... ]  # (your original kept)
+# ====================== INTENT CLASSIFICATION (kept) ======================
+# ... (your original _INTENT_RULES, classify_intent, _extract_goal_modifiers, 
+# QUERY_DOMAINS, detect_domain, ENTITY_GROUPS, ENTITY_TRIGGERS, extract_primary_entity kept)
 
-def classify_intent(query: str) -> str:
-    q = query.lower()
-    for triggers, label in _INTENT_RULES:
-        if any(t in q for t in triggers):
-            return label
-    return "research"
-
-# ====================== GOAL MODIFIERS, DOMAIN, ENTITY (kept) ======================
-# ... (your original _GOAL_PHRASES, _extract_goal_modifiers, QUERY_DOMAINS, detect_domain,
-# ENTITY_GROUPS, ENTITY_TRIGGERS, extract_primary_entity kept exactly)
-
-# ====================== GENERAL TOPICS & KB (kept) ======================
-GENERAL_TOPICS: list[dict] = [ ... ]  # your full rich GENERAL_TOPICS kept
-def _find_general_topic(query: str) -> dict | None:
-    # your original function kept
-    pass
-
-# ====================== MAIN SEARCH FUNCTION — REAL-TIME RAG ======================
+# ====================== MAIN SEARCH FUNCTION — Google-First Real-Time RAG ======================
 def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]:
-    """Always performs real-time retrieval + optimized RAG"""
+    """Google is the default real-time source. Others are fallback only."""
     filters = filters or []
     intent = classify_intent(query)
     domain = detect_domain(query)
@@ -112,10 +77,11 @@ def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]
     if cached:
         return cached
 
-    bing_results = _bing_search(query)
+    # === PRIMARY: Google Search (real-time) ===
     google_results = _google_search(query)
-    combined_context = bing_results + google_results
+    combined_context = google_results
 
+    # === RAG with OpenAI ===
     rag_report = _openai_rag_generate_report(query, intent, domain, combined_context)
 
     results = [rag_report] if rag_report else []
@@ -125,6 +91,30 @@ def search_knowledge(query: str, filters: list[str] | None = None) -> list[dict]
         _cache_set(cache_key, query, results)
 
     return results
+
+# ====================== GOOGLE SEARCH API (PRIMARY / DEFAULT) ======================
+def _google_search(query: str) -> list[dict]:
+    if not GOOGLE_SEARCH_API_KEY or not GOOGLE_CX:
+        return []
+    try:
+        url = "https://www.googleapis.com/customsearch/v1"
+        params = {"key": GOOGLE_SEARCH_API_KEY, "cx": GOOGLE_CX, "q": query, "num": 10}
+        r = requests.get(url, params=params, timeout=10)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        results = []
+        for item in data.get("items", []):
+            results.append({
+                "title": item.get("title", ""),
+                "url": item.get("link", ""),
+                "snippet": item.get("snippet", ""),
+                "source": "Google"
+            })
+        return results
+    except Exception as e:
+        print(f"[Google Search] Error: {e}")
+        return []
 
 # ====================== GOOGLE + BING (kept) ======================
 def _google_search(query: str) -> list[dict]: ...  # your original kept
