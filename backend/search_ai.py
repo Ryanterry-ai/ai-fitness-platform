@@ -19,7 +19,8 @@ import requests
 # ── API Keys (all optional — system works without them) ───────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 PUBMED_API_KEY    = os.getenv("PUBMED_API_KEY", "")
-SERP_API_KEY      = os.getenv("SERP_API_KEY", "")
+GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "")
+GOOGLE_CX         = os.getenv("GOOGLE_CX", "")
 
 # ── Paths ─────────────────────────────────────────────────────────────────
 BASE_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
