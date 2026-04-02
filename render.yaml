@@ -13,10 +13,12 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
       - key: SECRET_KEY
-        generateValue: true
+        value: "11962aa111ff110443986c5edfa42c0d"
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: PUBMED_API_KEY
-        sync: false
-      - key: SERP_API_KEY
+      - key: GOOGLE_SEARCH_API_KEY
+        value: "AIzaSyAe6LNE1Er_KpTK4PdpTVb5OrqbD5wLZG8"
+      - key: GOOGLE_CX
+        value: "860eab761ebac4c12"
+      - key: OPENAI_API_KEY
         sync: false
