@@ -158,7 +158,7 @@ async def cache_stats():
 
 @app.delete("/cache/clear")
 async def clear_cache():
-    caching_agent.clear_all()
+    caching_agent.clear()
     return {"status": "cleared"}
 
 @app.get("/health")
