@@ -1,0 +1,20 @@
+# Render Blueprint
+# Deploy AI Website Cloner to Render
+
+services:
+  - type: web
+    name: ai-website-cloner
+    env: python
+    region: oregon
+    buildCommand: |
+      pip install -r requirements.txt
+      playwright install chromium --with-deps
+    startCommand: uvicorn backend.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: /var/cache/playwright
