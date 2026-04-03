@@ -1,21 +1,17 @@
 services:
   - type: web
-    name: fitsearch-ai
+    name: fitsearch-mcp
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    startCommand: gunicorn mcp_server:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: SECRET_KEY
         generateValue: true
-      - key: NEW_SECRET
-        generateValue: true
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: ZENSERP_API_KEY
+        sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: PUBMED_API_KEY
-        sync: false
-      - key: ZENSERP_API_KEY
-        sync: false
-      - key: OPENAI_API_KEY
         sync: false
