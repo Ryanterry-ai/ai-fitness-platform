@@ -1,12 +1,18 @@
 services:
   - type: web
     name: fitsearch-mcp
-    env: python
+    runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2
+    startCommand: gunicorn mcp_service.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     healthCheckPath: /health
     envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: ZENSERP_API_KEY
-        value: 48aaf4f0-2f18-11f1-a074-2981387cadb9
-      - key: PORT
-        value: "5000"
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PUBMED_API_KEY
+        sync: false
