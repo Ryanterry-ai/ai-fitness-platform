@@ -4,617 +4,155 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FitSearch AI — MCP Server</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #030712;
-  --bg2: #0f172a;
-  --bg3: #1e293b;
-  --panel: #1e293b;
-  --border: rgba(255,255,255,.08);
-  --border2: rgba(255,255,255,.15);
-  --accent: #6366f1;
-  --accent2: #8b5cf6;
-  --accent3: #06b6d4;
-  --green: #10b981;
-  --amber: #f59e0b;
-  --red: #ef4444;
-  --text: #f1f5f9;
-  --text2: #94a3b8;
-  --text3: #64748b;
+  --bg: #030712; --bg2: #0f172a; --bg3: #1e293b; --border: rgba(255,255,255,.08);
+  --border2: rgba(255,255,255,.15); --accent: #6366f1; --accent2: #8b5cf6;
+  --green: #10b981; --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Space Grotesk', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
-.header {
-  padding: 20px 24px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: 'Syne', sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  color: #fff;
-}
-.logo-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-.logo-sub {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text3);
-  letter-spacing: .04em;
-}
-.health-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: rgba(16, 185, 129, .15);
-  border: 1px solid rgba(16, 185, 129, .3);
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #34d399;
-}
-.main-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 24px;
-}
-.search-section {
-  margin-bottom: 24px;
-}
-.search-box {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.search-input {
-  flex: 1;
-  padding: 16px 20px;
-  background: var(--bg2);
-  border: 1.5px solid var(--border2);
-  border-radius: 14px;
-  font-size: 16px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 500;
-  color: var(--text);
-  outline: none;
-  transition: all .2s;
-}
-.search-input::placeholder { color: var(--text3); }
-.search-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, .15);
-}
-.search-btn {
-  padding: 16px 28px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all .2s;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, .3);
-}
-.search-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99, 102, 241, .4); }
-.search-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.deep-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text2);
-  transition: all .2s;
-}
-.deep-toggle.active {
-  background: rgba(139, 92, 246, .15);
-  border-color: rgba(139, 92, 246, .3);
-  color: #a78bfa;
-}
-.intent-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: rgba(99, 102, 241, .15);
-  border: 1px solid rgba(99, 102, 241, .25);
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #a5b4fc;
-}
-.confidence-bar {
-  width: 60px;
-  height: 4px;
-  background: var(--bg3);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.confidence-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  border-radius: 2px;
-  transition: width .3s;
-}
-.results-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 20px;
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-}
-.card-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  font-family: 'Syne', sans-serif;
-}
-.source-stats {
-  display: flex;
-  gap: 16px;
-  margin-left: auto;
-}
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text3);
-}
-.stat-value {
-  font-weight: 600;
-  color: var(--text);
-}
-.stat-verified { color: #34d399; }
-.stat-scientific { color: #a78bfa; }
-.web-result {
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-}
+body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.header { padding: 20px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 12px; font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #fff; }
+.logo-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.logo-sub { font-size: 11px; font-weight: 500; color: var(--text3); }
+.health-badge { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(16, 185, 129, .15); border: 1px solid rgba(16, 185, 129, .3); border-radius: 99px; font-size: 12px; font-weight: 600; color: #34d399; }
+.main-container { max-width: 1000px; margin: 0 auto; padding: 24px; }
+.search-box { display: flex; gap: 12px; margin-bottom: 16px; }
+.search-input { flex: 1; padding: 16px 20px; background: var(--bg2); border: 1.5px solid var(--border2); border-radius: 14px; font-size: 16px; font-weight: 500; color: var(--text); outline: none; }
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, .15); }
+.search-btn { padding: 16px 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 14px; cursor: pointer; color: #fff; font-size: 15px; font-weight: 600; }
+.search-btn:disabled { opacity: .5; cursor: not-allowed; }
+.deep-toggle { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--text2); }
+.deep-toggle.active { background: rgba(139, 92, 246, .15); border-color: rgba(139, 92, 246, .3); color: #a78bfa; }
+.intent-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(99, 102, 241, .15); border-radius: 99px; font-size: 12px; font-weight: 600; color: #a5b4fc; }
+.results-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.card-title { font-size: 18px; font-weight: 700; color: #fff; font-family: 'Syne', sans-serif; }
+.query-display { font-size: 14px; color: var(--text2); margin-bottom: 16px; padding: 12px 16px; background: var(--bg3); border-radius: 10px; }
+.query-display strong { color: var(--accent); }
+.web-result { padding: 16px 0; border-bottom: 1px solid var(--border); }
 .web-result:last-child { border-bottom: none; }
-.result-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.verified-badge {
-  padding: 4px 8px;
-  background: rgba(16, 185, 129, .15);
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 600;
-  color: #34d399;
-  white-space: nowrap;
-}
-.trust-score {
-  display: flex;
-  gap: 2px;
-}
-.trust-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--bg3);
-}
-.trust-dot.filled { background: var(--green); }
-.result-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #60a5fa;
-  text-decoration: none;
-  display: block;
-  margin-bottom: 6px;
-}
+.result-title { font-size: 15px; font-weight: 600; color: #60a5fa; text-decoration: none; display: block; margin-bottom: 6px; }
 .result-title:hover { text-decoration: underline; }
-.result-domain {
-  font-size: 12px;
-  color: var(--text3);
-  margin-bottom: 8px;
-}
-.result-snippet {
-  font-size: 14px;
-  color: var(--text2);
-  line-height: 1.6;
-}
-.result-links {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-.link-btn {
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all .2s;
-}
-.link-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-}
+.result-domain { font-size: 12px; color: var(--text3); margin-bottom: 8px; }
+.result-snippet { font-size: 14px; color: var(--text2); line-height: 1.6; margin: 8px 0; }
+.result-links { display: flex; gap: 10px; margin-top: 12px; }
+.link-btn { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all .2s; }
+.link-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
 .link-primary:hover { transform: translateY(-1px); }
-.link-secondary {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  color: var(--text2);
-}
-.verified-sources {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-.verified-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  margin-bottom: 12px;
-}
-.source-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--bg3);
-  border-radius: 10px;
-  margin-bottom: 8px;
-}
-.source-icon { font-size: 18px; }
-.source-info { flex: 1; }
-.source-name { font-size: 14px; font-weight: 500; color: var(--text); }
-.source-meta { font-size: 11px; color: var(--text3); }
-.source-link {
-  padding: 6px 12px;
-  background: rgba(99, 102, 241, .15);
-  border: 1px solid rgba(99, 102, 241, .3);
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #a5b4fc;
-  text-decoration: none;
-}
-.loading-dots {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  padding: 40px;
-}
-.loading-dots span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: bounce 1.4s infinite ease-in-out;
-}
+.link-secondary { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); }
+.loading-dots { display: flex; gap: 6px; justify-content: center; padding: 40px; }
+.loading-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: bounce 1.4s infinite ease-in-out; }
 .loading-dots span:nth-child(1) { animation-delay: -.32s; }
 .loading-dots span:nth-child(2) { animation-delay: -.16s; }
-@keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  50% { transform: scale(1); }
-}
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 1000;
-  display: none;
-}
-.error-card {
-  background: rgba(239, 68, 68, .1);
-  border: 1px solid rgba(239, 68, 68, .3);
-  border-radius: 12px;
-  padding: 20px;
-  color: #f87171;
-  text-align: center;
-}
-@media (max-width: 768px) {
-  .search-box { flex-direction: column; }
-  .search-btn { width: 100%; justify-content: center; }
-  .source-stats { flex-wrap: wrap; }
-}
+@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 50% { transform: scale(1); } }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 1000; display: none; }
 </style>
 </head>
 <body>
 <div class="header">
   <div class="logo">
     <div class="logo-icon">⚡</div>
-    <div>
-      <div>FitSearch MCP</div>
-      <div class="logo-sub">Model Context Protocol Server</div>
-    </div>
+    <div><div>FitSearch MCP</div><div class="logo-sub">Model Context Protocol Server</div></div>
   </div>
-  <div class="health-badge" id="healthBadge">
-    <span>●</span>
-    <span>Checking...</span>
-  </div>
+  <div class="health-badge" id="healthBadge"><span>●</span><span>Checking...</span></div>
 </div>
 
 <div class="main-container">
-  <div class="search-section">
-    <div class="search-box">
-      <input type="text" class="search-input" id="searchInput" placeholder="Ask about any supplement, workout, diet..." onkeypress="if(event.key==='Enter')doSearch()">
-      <button class="search-btn" id="searchBtn" onclick="doSearch()">
-        <span>🔍</span>
-        <span>Search</span>
-      </button>
-    </div>
-    <div style="display: flex; gap: 12px; align-items: center;">
-      <label class="deep-toggle" id="deepToggle" onclick="toggleDeep()">
-        <span id="deepIcon">○</span>
-        <span>Deep Research Mode</span>
-      </label>
-      <div class="intent-badge" id="intentBadge" style="display: none;">
-        <span id="intentText">supplement</span>
-        <div class="confidence-bar">
-          <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
-        </div>
-      </div>
-    </div>
+  <div class="search-box">
+    <input type="text" class="search-input" id="searchInput" placeholder="Ask about supplements, workouts, diet..." onkeypress="if(event.key==='Enter')doSearch()">
+    <button class="search-btn" id="searchBtn" onclick="doSearch()"><span>🔍</span><span>Search</span></button>
   </div>
-
+  <div style="display:flex;gap:12px;align-items:center;">
+    <label class="deep-toggle" id="deepToggle" onclick="toggleDeep()"><span id="deepIcon">○</span><span>Deep Research</span></label>
+    <div class="intent-badge" id="intentBadge" style="display:none;"><span id="intentText">supplement</span></div>
+  </div>
   <div id="resultsContainer"></div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-let isDeepResearch = false;
-let isSearching = false;
-
-document.addEventListener('DOMContentLoaded', () => {
-  checkHealth();
-  document.getElementById('searchInput').focus();
-});
+let isDeepResearch = false, currentQuery = '';
+document.addEventListener('DOMContentLoaded', () => { checkHealth(); document.getElementById('searchInput').focus(); });
 
 async function checkHealth() {
   try {
     const r = await fetch('/health');
     const data = await r.json();
-    const badge = document.getElementById('healthBadge');
-    if (data.status === 'ok') {
-      badge.innerHTML = '<span style="color:#34d399">●</span><span>All Systems OK</span>';
-    } else {
-      badge.innerHTML = '<span style="color:#f87171">●</span><span>Error</span>';
-    }
-  } catch (e) {
-    document.getElementById('healthBadge').innerHTML = '<span style="color:#f87171">●</span><span>Offline</span>';
-  }
+    document.getElementById('healthBadge').innerHTML = data.status === 'ok' 
+      ? '<span style="color:#34d399">●</span><span>All Systems OK</span>'
+      : '<span style="color:#f87171">●</span><span>Error</span>';
+  } catch { document.getElementById('healthBadge').innerHTML = '<span style="color:#f87171">●</span><span>Offline</span>'; }
 }
 
 function toggleDeep() {
   isDeepResearch = !isDeepResearch;
-  const toggle = document.getElementById('deepToggle');
-  const icon = document.getElementById('deepIcon');
-  if (isDeepResearch) {
-    toggle.classList.add('active');
-    icon.textContent = '●';
-  } else {
-    toggle.classList.remove('active');
-    icon.textContent = '○';
-  }
+  const t = document.getElementById('deepToggle'), i = document.getElementById('deepIcon');
+  isDeepResearch ? (t.classList.add('active'), i.textContent = '●') : (t.classList.remove('active'), i.textContent = '○');
 }
 
 async function doSearch() {
-  if (isSearching) return;
   const query = document.getElementById('searchInput').value.trim();
   if (!query) return;
-
-  isSearching = true;
+  currentQuery = query;
   const btn = document.getElementById('searchBtn');
   btn.disabled = true;
-
-  showLoading();
-  document.getElementById('searchInput').value = '';
-
+  document.getElementById('resultsContainer').innerHTML = '<div class="results-card"><div class="loading-dots"><span></span><span></span><span></span></div></div>';
   try {
-    const endpoint = isDeepResearch ? '/mcp/deep_research' : '/mcp/web_search';
-    const r = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query })
+    const r = await fetch(isDeepResearch ? '/mcp/deep_research' : '/mcp/web_search', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query })
     });
-
     const data = await r.json();
     renderResults(data);
-  } catch (e) {
-    showToast('Search failed. Please try again.', 'error');
-    console.error(e);
-  } finally {
-    isSearching = false;
-    btn.disabled = false;
-    document.getElementById('searchInput').focus();
-  }
-}
-
-function showLoading() {
-  const container = document.getElementById('resultsContainer');
-  container.innerHTML = `
-    <div class="results-card">
-      <div class="loading-dots">
-        <span></span><span></span><span></span>
-      </div>
-    </div>
-  `;
+  } catch (e) { showToast('Search failed', 'error'); }
+  btn.disabled = false;
 }
 
 function renderResults(data) {
-  const container = document.getElementById('resultsContainer');
+  const c = document.getElementById('resultsContainer');
+  if (data.error) { c.innerHTML = '<div class="results-card" style="color:#f87171">'+data.error+'</div>'; return; }
   
-  if (data.error) {
-    container.innerHTML = `<div class="error-card">${escHtml(data.error)}</div>`;
-    return;
-  }
-
-  // Show intent badge
   const intentBadge = document.getElementById('intentBadge');
-  const intentText = document.getElementById('intentText');
-  const confidenceFill = document.getElementById('confidenceFill');
+  if (data.intent) { intentBadge.style.display = 'inline-flex'; document.getElementById('intentText').textContent = data.intent.primary_intent || 'general'; }
   
-  if (data.intent) {
-    intentBadge.style.display = 'inline-flex';
-    intentText.textContent = data.intent.primary_intent || 'general';
-    confidenceFill.style.width = ((data.intent.confidence || 0) * 100) + '%';
-  }
-
   const results = data.results || data.research || {};
   const webResults = results.results || results.articles || [];
-  const verifiedSources = results.verified_sources || results.references || [];
-
-  let html = `
-    <div class="results-card">
-      <div class="card-header">
-        <span style="font-size: 24px">⚡</span>
-        <span class="card-title">${isDeepResearch ? 'Deep Research' : 'Search'} Results</span>
-        <div class="source-stats">
-          <div class="stat-item">
-            <span>Total:</span>
-            <span class="stat-value">${webResults.length}</span>
-          </div>
-          <div class="stat-item stat-verified">
-            <span>✓</span>
-            <span class="stat-value">${results.verified_count || verifiedSources.length}</span>
-            <span>Verified</span>
-          </div>
-          ${results.source_stats?.scientific ? `
-          <div class="stat-item stat-scientific">
-            <span>🔬</span>
-            <span class="stat-value">${results.source_stats.scientific}</span>
-            <span>Scientific</span>
-          </div>
-          ` : ''}
-        </div>
-      </div>
-  `;
-
-  // Web Results
+  
+  let html = `<div class="results-card">
+    <div class="card-header">
+      <span style="font-size:24px">⚡</span>
+      <span class="card-title">${isDeepResearch ? 'Deep Research' : 'Search'} Results</span>
+    </div>
+    <div class="query-display">Searching for: <strong>"${escHtml(currentQuery)}"</strong></div>`;
+  
   if (webResults.length > 0) {
-    html += `<div style="margin-bottom: 20px;">`;
-    webResults.forEach((result, i) => {
-      const isVerified = result.is_verified || result.verified;
-      html += `
-        <div class="web-result">
-          <div class="result-header">
-            ${isVerified ? `<span class="verified-badge">✓ ${result.verified_source || result.source || 'Verified'}</span>` : ''}
-            ${result.trust_score ? `
-            <div class="trust-score">
-              ${[1,2,3,4,5].map(n => `<div class="trust-dot ${n <= result.trust_score ? 'filled' : ''}"></div>`).join('')}
-            </div>
-            ` : ''}
-          </div>
-          <a href="${escAttr(result.url)}" target="_blank" class="result-title">${escHtml(result.title)}</a>
-          <div class="result-domain">${escHtml(result.domain || result.source || '')}</div>
-          ${result.snippet ? `<div class="result-snippet">${escHtml(result.snippet)}</div>` : ''}
-          <div class="result-links">
-            <a href="${escAttr(result.url)}" target="_blank" class="link-btn link-primary">🔗 Visit Website</a>
-            <a href="${escAttr(result.url)}" target="_blank" class="link-btn link-secondary">📄 Read Article</a>
-          </div>
+    webResults.forEach(r => {
+      const link = r.url || '#';
+      html += `<div class="web-result">
+        <a href="${escAttr(link)}" target="_blank" class="result-title">${escHtml(r.title || 'No title')}</a>
+        <div class="result-domain">${escHtml(r.domain || r.source || '')}</div>
+        ${r.snippet ? `<div class="result-snippet">${escHtml(r.snippet)}</div>` : ''}
+        <div class="result-links">
+          <a href="${escAttr(link)}" target="_blank" class="link-btn link-primary">🔗 Visit Website</a>
+          <a href="${escAttr(link)}" target="_blank" class="link-btn link-secondary">📄 Read Article</a>
         </div>
-      `;
+      </div>`;
     });
-    html += `</div>`;
+  } else {
+    html += '<p style="color:var(--text2)">No results found.</p>';
   }
-
-  // Verified Sources
-  if (verifiedSources.length > 0) {
-    html += `
-      <div class="verified-sources">
-        <div class="verified-title">🔒 Verified Sources</div>
-        ${verifiedSources.map(src => `
-          <div class="source-item">
-            <span class="source-icon">${getSourceIcon(src.type || src.source_type)}</span>
-            <div class="source-info">
-              <div class="source-name">${escHtml(src.name || src.title || '')}</div>
-              <div class="source-meta">${escHtml(src.domain || src.journal || src.source || '')} ${src.pubdate ? `• ${src.pubdate}` : ''}</div>
-            </div>
-            <a href="${escAttr(src.url)}" target="_blank" class="source-link">View</a>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  html += `</div>`;
-  container.innerHTML = html;
+  
+  c.innerHTML = html + '</div>';
 }
 
-function getSourceIcon(type) {
-  const icons = {
-    scientific: '🔬',
-    journal: '📰',
-    medical: '🏥',
-    fitness: '💪',
-    health: '❤️',
-    academic: '🎓'
-  };
-  return icons[type] || '🌐';
-}
-
-function escHtml(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function escAttr(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function showToast(msg, type = 'info') {
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return String(s||'').replace(/"/g,'&quot;'); }
+function showToast(msg, type) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.display = 'block';
-  t.style.background = type === 'error' ? 'rgba(239, 68, 68, .95)' : 'rgba(16, 185, 129, .95)';
-  t.style.color = '#fff';
-  t.style.boxShadow = '0 4px 20px rgba(0,0,0,.4)';
+  t.textContent = msg; t.style.display = 'block';
+  t.style.background = type === 'error' ? 'rgba(239,68,68,.95)' : 'rgba(16,185,129,.95)';
   setTimeout(() => t.style.display = 'none', 3000);
 }
 </script>
