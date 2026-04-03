@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
 ZENSERP_API_KEY = os.getenv("ZENSERP_API_KEY", "")
 
@@ -14,7 +15,7 @@ from deep_research import deep_research
 from intent_detection import detect_intent
 from source_verification import verify_source
 
-app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"))
+app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "fitsearch-mcp-2026")
 CORS(app, supports_credentials=True, origins="*")
 
@@ -87,14 +88,14 @@ def api_health():
 
 @app.route("/")
 def home():
-    return send_from_directory(os.path.join(BASE_DIR, "frontend"), "index.html")
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 @app.route("/<path:path>")
 def static_files(path):
-    frontend_path = os.path.join(BASE_DIR, "frontend", path)
-    if os.path.isfile(frontend_path):
-        return send_from_directory(os.path.join(BASE_DIR, "frontend"), path)
-    return send_from_directory(os.path.join(BASE_DIR, "frontend"), "index.html")
+    file_path = os.path.join(FRONTEND_DIR, path)
+    if os.path.isfile(file_path):
+        return send_from_directory(FRONTEND_DIR, path)
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
