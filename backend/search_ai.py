@@ -15,7 +15,7 @@ from __future__ import annotations
 import os, json, re, time, hashlib, sqlite3, threading, concurrent.futures
 from datetime import datetime, timezone
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote
 import requests
 
 try:
@@ -26,8 +26,7 @@ except ImportError:
 # ── API Keys (all optional — system works without them) ───────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 PUBMED_API_KEY    = os.getenv("PUBMED_API_KEY", "")
-GOOGLE_SEARCH_API_KEY = os.getenv("GOOGLE_SEARCH_API_KEY", "")
-GOOGLE_CX         = os.getenv("GOOGLE_CX", "")
+ZENSERP_API_KEY   = os.getenv("ZENSERP_API_KEY", "")
 
 # ── Paths ─────────────────────────────────────────────────────────────────
 BASE_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -991,58 +990,53 @@ def _examine(name: str) -> dict | None:
     except Exception as e:
         print(f"[Examine] {e}"); return None
 
-def _google_search(query: str) -> dict:
-    if not GOOGLE_SEARCH_API_KEY or not GOOGLE_CX:
-        return {"web_results": [], "source": "google", "active": False, "error": "Missing API keys"}
+def _zenserp_search(query: str) -> dict:
+    if not ZENSERP_API_KEY:
+        return {"web_results": [], "source": "zenserp", "active": False, "error": "Missing Zenserp API key"}
     try:
-        url = "https://www.googleapis.com/customsearch/v1"
-        params = {
-            "key": GOOGLE_SEARCH_API_KEY,
-            "cx": GOOGLE_CX,
-            "q": query,
-            "num": 10,
-            "gl": "us",
-            "hl": "en"
-        }
-        resp = requests.get(url, params=params, timeout=10)
+        url = f"https://app.zenserp.com/api/v2/search?q={quote(query)}&apikey={ZENSERP_API_KEY}"
+        resp = requests.get(url, timeout=15)
         if resp.status_code == 401:
-            return {"web_results": [], "source": "google", "active": False, "error": "Invalid API key"}
+            return {"web_results": [], "source": "zenserp", "active": False, "error": "Invalid API key"}
         if resp.status_code == 403:
-            return {"web_results": [], "source": "google", "active": False, "error": "API key blocked or quota exceeded"}
+            return {"web_results": [], "source": "zenserp", "active": False, "error": "API access forbidden"}
         if resp.status_code != 200:
-            return {"web_results": [], "source": "google", "active": False, "error": f"HTTP {resp.status_code}"}
+            return {"web_results": [], "source": "zenserp", "active": False, "error": f"HTTP {resp.status_code}"}
         data = resp.json()
         if "error" in data:
-            return {"web_results": [], "source": "google", "active": False, "error": data["error"].get("message", "API error")}
+            return {"web_results": [], "source": "zenserp", "active": False, "error": data.get("error", "API error")}
         results = []
-        for item in data.get("items", [])[:10]:
-            parsed = urlparse(item.get("link", ""))
+        organic = data.get("organic", [])
+        for item in organic[:10]:
+            parsed = urlparse(item.get("url", ""))
             domain = parsed.netloc.replace("www.", "")
             results.append({
                 "title": item.get("title", ""),
-                "link": item.get("link", ""),
-                "snippet": item.get("snippet", ""),
+                "link": item.get("url", ""),
+                "snippet": item.get("description", ""),
                 "source": domain,
                 "type": "web"
             })
         return {
             "web_results": results,
-            "source": "google",
+            "source": "zenserp",
             "active": True,
-            "total_results": data.get("searchInformation", {}).get("totalResults", 0)
+            "total_results": len(results)
         }
     except Exception as e:
-        print(f"[Google Search] {e}")
-        return {"web_results": [], "source": "google", "active": False, "error": str(e)}
+        print(f"[Zenserp Search] {e}")
+        return {"web_results": [], "source": "zenserp", "active": False, "error": str(e)}
+
+
+def _google_search(query: str) -> dict:
+    return _zenserp_search(query)
 
 
 def test_google_api() -> dict:
-    test_result = _google_search("test query")
+    test_result = _zenserp_search("test query")
     return {
-        "api_key_set": bool(GOOGLE_SEARCH_API_KEY),
-        "cx_set": bool(GOOGLE_CX),
-        "api_key_prefix": GOOGLE_SEARCH_API_KEY[:8] + "..." if GOOGLE_SEARCH_API_KEY else None,
-        "cx_value": GOOGLE_CX[:20] + "..." if GOOGLE_CX else None,
+        "api_key_set": bool(ZENSERP_API_KEY),
+        "api_key_prefix": ZENSERP_API_KEY[:12] + "..." if ZENSERP_API_KEY else None,
         "test_result": test_result,
         "keys_valid": test_result.get("active", False),
         "error": test_result.get("error") if not test_result.get("active") else None

@@ -573,16 +573,16 @@ def health():
     
     return jsonify({
         "status":     "ok",
-        "version":    "6.1",
+        "version":    "6.2",
         "ai":         bool(os.environ.get("ANTHROPIC_API_KEY")),
         "pubmed":     bool(os.environ.get("PUBMED_API_KEY")),
-        "google":     bool(os.environ.get("GOOGLE_SEARCH_API_KEY")),
+        "zenserp":    bool(os.environ.get("ZENSERP_API_KEY")),
         "queries_db": query_count,
     })
 
 
-@app.route("/test-google", methods=["GET"])
-def test_google():
+@app.route("/test-zenserp", methods=["GET"])
+def test_zenserp():
     try:
         from backend.search_ai import test_google_api
         result = test_google_api()
