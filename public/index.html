@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Website Builder + Cloner</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f5f6fa; color: #333; }
+        
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 20px; text-align: center; }
+        .hero h1 { font-size: 42px; margin-bottom: 15px; }
+        .hero p { font-size: 18px; opacity: 0.9; }
+        
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-top: 30px; }
+        .tab-btn { padding: 12px 30px; background: rgba(255,255,255,0.2); border: none; border-radius: 30px; color: white; cursor: pointer; font-size: 16px; transition: all 0.3s; }
+        .tab-btn.active { background: white; color: #667eea; }
+        
+        .main-box { background: white; max-width: 700px; margin: -40px auto 40px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #666; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: border-color 0.3s; }
+        .input-group input:focus, .input-group textarea:focus { outline: none; border-color: #667eea; }
+        .input-group textarea { min-height: 100px; resize: vertical; }
+        
+        .btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .progress-container { display: none; margin-top: 25px; }
+        .progress-container.active { display: block; }
+        .progress-bar { width: 100%; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); width: 0%; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; }
+        .progress-text { text-align: center; margin-top: 12px; color: #666; font-size: 14px; }
+        
+        .result { display: none; margin-top: 25px; padding: 20px; background: #d4edda; border-radius: 10px; color: #155724; }
+        .result.active { display: block; }
+        .result h3 { margin-bottom: 10px; }
+        .result-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .result-actions a { padding: 10px 20px; background: #155724; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; }
+        
+        .features { padding: 60px 20px; background: white; }
+        .features h2 { text-align: center; margin-bottom: 40px; font-size: 32px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; }
+        .feature-card { background: #f8f9fa; padding: 25px; border-radius: 12px; text-align: center; transition: transform 0.3s; }
+        .feature-card:hover { transform: translateY(-5px); }
+        .feature-icon { font-size: 40px; margin-bottom: 15px; }
+        .feature-card h3 { color: #667eea; margin-bottom: 10px; }
+        
+        .how-it-works { padding: 60px 20px; background: #f5f6fa; }
+        .how-it-works h2 { text-align: center; margin-bottom: 40px; font-size: 32px; }
+        .steps { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .step { display: flex; gap: 20px; background: white; padding: 20px; border-radius: 12px; align-items: flex-start; }
+        .step-num { background: #667eea; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .step-content h3 { margin-bottom: 8px; }
+        .step-content p { color: #666; font-size: 14px; }
+        
+        footer { background: #2c3e50; color: white; padding: 30px 20px; text-align: center; }
+        footer a { color: #667eea; text-decoration: none; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 28px; }
+            .tabs { flex-direction: column; align-items: center; }
+            .tab-btn { width: 100%; max-width: 300px; }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>AI Website Builder + Cloner</h1>
+        <p>Clone any website OR generate from prompts. Full-stack, deployable, editable.</p>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('clone')">Clone Website</button>
+            <button class="tab-btn" onclick="switchTab('generate')">Generate Website</button>
+        </div>
+    </section>
+    
+    <div class="main-box">
+        <div id="clone-tab" class="tab-content active">
+            <h2 style="margin-bottom: 20px; text-align: center;">Clone a Website</h2>
+            <form onsubmit="startClone(event)">
+                <div class="input-group">
+                    <label>Website URL</label>
+                    <input type="url" id="clone-url" placeholder="https://example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Max Pages</label>
+                    <select id="clone-max-pages">
+                        <option value="10">Quick (10 pages)</option>
+                        <option value="50" selected>Normal (50 pages)</option>
+                        <option value="100">Full Site (100 pages)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Project Name (optional)</label>
+                    <input type="text" id="clone-name" placeholder="my-cloned-site">
+                </div>
+                <button type="submit" class="btn" id="clone-btn">Clone Website</button>
+            </form>
+        </div>
+        
+        <div id="generate-tab" class="tab-content">
+            <h2 style="margin-bottom: 20px; text-align: center;">Generate a Website</h2>
+            <form onsubmit="startGenerate(event)">
+                <div class="input-group">
+                    <label>Describe Your Website</label>
+                    <textarea id="generate-prompt" placeholder="e.g., Build a modern SaaS landing page with pricing section, features, and contact form" required></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Template (optional)</label>
+                    <select id="generate-template">
+                        <option value="">No template</option>
+                        <option value="saas">SaaS / Software</option>
+                        <option value="ecommerce">E-commerce</option>
+                        <option value="blog">Blog / News</option>
+                        <option value="portfolio">Portfolio</option>
+                        <option value="landing">Landing Page</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Project Name (optional)</label>
+                    <input type="text" id="generate-name" placeholder="my-generated-site">
+                </div>
+                <button type="submit" class="btn" id="generate-btn">Generate Website</button>
+            </form>
+        </div>
+        
+        <div class="progress-container" id="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill">0%</div>
+            </div>
+            <p class="progress-text" id="progress-text">Initializing...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h3>Project Ready!</h3>
+            <p id="result-text">Your website has been created.</p>
+            <div class="result-actions">
+                <a href="#" id="result-download">Download ZIP</a>
+                <a href="/admin" id="result-admin">Open Admin</a>
+            </div>
+        </div>
+    </div>
+    
+    <section class="features">
+        <h2>Powerful Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Website Cloning</h3>
+                <p>Copy any website completely with one click</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Generation</h3>
+                <p>Generate websites from text prompts</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✏️</div>
+                <h3>Editable CMS</h3>
+                <p>Convert to editable content blocks</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3>Full-Stack Export</h3>
+                <p>Export complete project with backend</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📁</div>
+                <h3>Individual Files</h3>
+                <p>Download specific files separately</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3>Render Ready</h3>
+                <p>Deploy directly to Render/Hostinger</p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h3>Clone or Generate</h3>
+                    <p>Enter a URL to clone, or describe what you want to build</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h3>AI Processing</h3>
+                    <p>Our AI clones or generates your complete website with all files</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h3>Download or Deploy</h3>
+                    <p>Download the full project as ZIP or deploy directly</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <p>AI Website Builder + Cloner v3.0 | <a href="/admin">Admin Panel</a> | <a href="/api/docs">API Docs</a></p>
+    </footer>
+    
+    <script>
+        let currentProjectId = null;
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'clone') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('clone-tab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('generate-tab').classList.add('active');
+            }
+        }
+        
+        async function startClone(e) {
+            e.preventDefault();
+            const url = document.getElementById('clone-url').value;
+            const maxPages = document.getElementById('clone-max-pages').value;
+            const name = document.getElementById('clone-name').value;
+            
+            startProcess({
+                url,
+                max_pages: parseInt(maxPages),
+                project_name: name || undefined
+            }, '/api/clone');
+        }
+        
+        async function startGenerate(e) {
+            e.preventDefault();
+            const prompt = document.getElementById('generate-prompt').value;
+            const template = document.getElementById('generate-template').value;
+            const name = document.getElementById('generate-name').value;
+            
+            startProcess({
+                prompt,
+                template: template || undefined,
+                project_name: name || undefined
+            }, '/api/generate');
+        }
+        
+        async function startProcess(data, endpoint) {
+            const btn = event.target.querySelector('.btn');
+            const progress = document.getElementById('progress');
+            const result = document.getElementById('result');
+            
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            progress.classList.add('active');
+            result.classList.remove('active');
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const resData = await response.json();
+                
+                if (resData.success) {
+                    currentProjectId = resData.project_id;
+                    pollStatus(resData.project_id);
+                } else {
+                    throw new Error('Failed to start');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = endpoint === '/api/clone' ? 'Clone Website' : 'Generate Website';
+                progress.classList.remove('active');
+            }
+        }
+        
+        async function pollStatus(projectId) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/projects/${projectId}/status`);
+                    const status = await response.json();
+                    
+                    document.getElementById('progress-fill').style.width = status.progress + '%';
+                    document.getElementById('progress-fill').textContent = status.progress + '%';
+                    
+                    const messages = {
+                        'pending': 'Waiting...',
+                        'initializing': 'Initializing...',
+                        'crawling': 'Crawling website...',
+                        'generating': 'Generating code...',
+                        'generating_frontend': 'Building frontend...',
+                        'generating_backend': 'Building backend...',
+                        'generating_admin': 'Creating admin panel...',
+                        'processing': 'Processing...',
+                        'creating_assets': 'Creating assets...',
+                        'completed': 'Complete!',
+                        'failed': 'Failed'
+                    };
+                    
+                    document.getElementById('progress-text').textContent = messages[status.status] || status.status;
+                    
+                    if (status.status === 'completed') {
+                        clearInterval(interval);
+                        showResult(projectId);
+                    } else if (status.status === 'failed') {
+                        clearInterval(interval);
+                        showError(status.error_message);
+                    }
+                } catch (e) {
+                    console.error('Poll error:', e);
+                }
+            }, 2000);
+        }
+        
+        function showResult(projectId) {
+            document.getElementById('progress').classList.remove('active');
+            document.getElementById('result').classList.add('active');
+            
+            const btn = document.querySelector('.btn');
+            btn.disabled = false;
+            btn.textContent = 'Clone Website';
+            
+            document.getElementById('result-download').href = `/api/projects/${projectId}/download`;
+            document.getElementById('result-download').download = 'project.zip';
+        }
+        
+        function showError(message) {
+            document.getElementById('progress').classList.remove('active');
+            const btn = document.querySelector('.btn');
+            btn.disabled = false;
+            btn.textContent = document.querySelector('.tab-btn.active').textContent;
+            alert('Error: ' + (message || 'Unknown error'));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+/* CMS Editable Styles - Static Version */
+
+:root {
+    --cms-primary: #3b82f6;
+    --cms-secondary: #10b981;
+    --cms-danger: #ef4444;
+    --cms-bg: rgba(59, 130, 246, 0.05);
+    --cms-border: #3b82f6;
+}
+
+body.cms-editable [data-cms-editable] {
+    outline: 2px dashed transparent;
+    outline-offset: 4px;
+    transition: all 0.2s;
+    cursor: text;
+    position: relative;
+}
+
+body.cms-editable [data-cms-editable]:hover {
+    outline-color: var(--cms-primary);
+    background-color: var(--cms-bg);
+}
+
+body.cms-editable.cms-edit-mode [data-cms-editable] {
+    outline-color: var(--cms-primary);
+    background-color: var(--cms-bg);
+    cursor: text;
+}
+
+body.cms-editable [data-cms-editable="image"] {
+    cursor: pointer;
+}
+
+body.cms-editable [data-cms-editable="image"]:hover {
+    outline-color: var(--cms-secondary);
+}
+
+.cms-toolbar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 9999;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.cms-btn {
+    background: var(--cms-primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.cms-btn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+.cms-icon {
+    font-size: 16px;
+}
+
+.cms-status {
+    background: var(--cms-bg);
+    color: var(--cms-primary);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.cms-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.cms-modal.active {
+    display: flex;
+}
+
+.cms-modal-content {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.cms-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.cms-textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: monospace;
+    margin-bottom: 12px;
+}
+
+.cms-edit-btn {
+    background: var(--cms-secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cms-cancel-btn {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 10px;
+}
