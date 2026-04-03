@@ -54,11 +54,9 @@ TRUSTED_DOMAINS = {
     "medicalnewstoday.com": {"name": "Medical News Today", "tier": "health", "trust": 4},
     # Fitness Specific
     "examine.com": {"name": "Examine.com", "tier": "fitness", "trust": 5},
-    " bodybuilding.com": {"name": "Bodybuilding.com", "tier": "fitness", "trust": 3},
+    "bodybuilding.com": {"name": "Bodybuilding.com", "tier": "fitness", "trust": 3},
     "muscleandstrength.com": {"name": "Muscle & Strength", "tier": "fitness", "trust": 3},
     "t-nation.com": {"name": "T Nation", "tier": "fitness", "trust": 3},
-    "jeffnippard.com": {"name": "Jeff Nippard", "tier": "fitness", "trust": 4},
-    "renaissannepolymath": {"name": "Renaissance Periodization", "tier": "fitness", "trust": 4},
     # Journals
     "nature.com": {"name": "Nature", "tier": "journal", "trust": 5},
     "sciencedirect.com": {"name": "ScienceDirect", "tier": "journal", "trust": 5},
@@ -66,10 +64,7 @@ TRUSTED_DOMAINS = {
     "wiley.com": {"name": "Wiley", "tier": "journal", "trust": 5},
     "plos.org": {"name": "PLOS", "tier": "journal", "trust": 5},
     "jissn.com": {"name": "JISSN", "tier": "journal", "trust": 5},
-    # Supplements
-    "noopsec": {"name": "Nootropics", "tier": "supplements", "trust": 3},
-    "examine.com": {"name": "Examine", "tier": "supplements", "trust": 5},
-    # General Health
+    # Academic
     "health.harvard.edu": {"name": "Harvard Health", "tier": "academic", "trust": 5},
     "clevelandclinic.org": {"name": "Cleveland Clinic", "tier": "medical", "trust": 5},
     "uclahealth.org": {"name": "UCLA Health", "tier": "academic", "trust": 5},
@@ -97,9 +92,9 @@ INTENT_PATTERNS = {
     },
     "compound": {
         "keywords": ["anavar", "testosterone", "nandrolone", "trenbolone", "winstrol",
-                     "oxandrolone", "dianabol", "anadrol", " deca", "eq", "mk-677",
+                     "oxandrolone", "dianabol", "anadrol", "deca", "eq", "mk-677",
                      "rad-140", "lgd-4033", "yk-11", "s4", "ostarine", "cardarine",
-                     "stacking", "cycle", " pct", "post cycle", "injection"],
+                     "stacking", "cycle", "pct", "post cycle", "injection"],
         "weight": 3
     },
     "medical": {
@@ -109,8 +104,7 @@ INTENT_PATTERNS = {
         "weight": 2
     },
     "comparison": {
-        "keywords": ["vs", "versus", "compare", "difference between", "which is better",
-                     "anavar vs", "creatine vs", "sarm vs", "better than"],
+        "keywords": ["vs", "versus", "compare", "difference between", "which is better"],
         "weight": 2
     },
     "dosage": {
@@ -120,29 +114,9 @@ INTENT_PATTERNS = {
     },
     "explanation": {
         "keywords": ["what is", "what are", "how does", "explain", "define",
-                     "mechanism", "how it works", "science behind", "原理", "kya hai"],
+                     "mechanism", "how it works", "science behind"],
         "weight": 1
     }
-}
-
-# Domain aliases
-DOMAIN_ALIASES = {
-    "examine.com": "examine.com",
-    "pubmed.ncbi.nlm.nih.gov": "pubmed",
-    "pubmed.gov": "pubmed",
-    "ncbi.nlm.nih.gov": "ncbi",
-    "nih.gov": "nih",
-    "who.int": "who",
-    "cdc.gov": "cdc",
-    "healthline.com": "healthline",
-    "medicalnewstoday.com": "mnt",
-    "webmd.com": "webmd",
-    "mayoclinic.org": "mayo",
-    "nature.com": "nature",
-    "sciencedirect.com": "sciencedirect",
-    "springer.com": "springer",
-    "wiley.com": "wiley",
-    "plos.org": "plos",
 }
 
 
@@ -176,22 +150,8 @@ def init_db():
         created_at TEXT DEFAULT (datetime('now')),
         FOREIGN KEY(search_id) REFERENCES searches(id)
     );
-    CREATE TABLE IF NOT EXISTS deep_research (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        query TEXT NOT NULL,
-        query_hash TEXT NOT NULL,
-        summary TEXT,
-        key_findings TEXT,
-        verified_sources TEXT,
-        benefits TEXT,
-        risks TEXT,
-        dosage_info TEXT,
-        references_links TEXT,
-        created_at TEXT DEFAULT (datetime('now'))
-    );
     CREATE INDEX IF NOT EXISTS idx_search_hash ON searches(query_hash);
     CREATE INDEX IF NOT EXISTS idx_results_search ON web_results(search_id);
-    CREATE INDEX IF NOT EXISTS idx_research_hash ON deep_research(query_hash);
     """)
     conn.commit()
     conn.close()
@@ -273,7 +233,7 @@ def detect_intent(query: str) -> dict:
     
     # Determine primary intent
     if scores:
-        primary_intent = max(scores, key=scores.get)
+        primary_intent = max(scores.keys(), key=lambda k: scores[k])
         confidence = min(scores[primary_intent] / 10, 1.0)
     else:
         primary_intent = "general"
@@ -446,7 +406,6 @@ def deep_research(query: str) -> dict:
         "usage_recommendations": [],
         "references": [],
         "videos": [],
-        "books": [],
         "articles": [],
         "source_stats": {
             "verified": 0,
