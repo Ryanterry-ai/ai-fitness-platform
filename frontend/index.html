@@ -3,846 +3,1160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FitSearch AI — World-Class Fitness Intelligence Engine</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
+<title>FitSearch AI — Research Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #030712;
-  --bg2: #0f172a;
-  --bg3: #1e293b;
-  --panel: #1e293b;
-  --border: rgba(255,255,255,.08);
-  --border2: rgba(255,255,255,.15);
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #111118;
+  --bg-tertiary: #1a1a24;
+  --bg-card: #16161d;
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
   --accent: #6366f1;
-  --accent2: #8b5cf6;
-  --accent3: #06b6d4;
-  --green: #10b981;
-  --amber: #f59e0b;
-  --red: #ef4444;
-  --text: #f1f5f9;
-  --text2: #94a3b8;
-  --text3: #64748b;
-  --sidebar: 260px;
+  --accent-light: #818cf8;
+  --accent-glow: rgba(99,102,241,0.3);
+  --verified: #10b981;
+  --verified-bg: rgba(16,185,129,0.1);
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --trust-5: #10b981;
+  --trust-4: #06b6d4;
+  --trust-3: #f59e0b;
+  --trust-2: #f97316;
+  --trust-1: #94a3b8;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{
-  font-family:'Space Grotesk',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
 }
-.sidebar{
-  position:fixed;left:0;top:0;bottom:0;
-  width:var(--sidebar);
-  background:var(--bg2);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  z-index:100;
-  overflow-y:auto;
+
+/* Header */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10,10,15,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 0 24px;
 }
-.sidebar-logo{
-  padding:24px 20px 20px;
-  border-bottom:1px solid var(--border);
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
 }
-.logo-mark{
-  display:flex;align-items:center;gap:12px;
-  font-family:'Syne',sans-serif;
-  font-size:18px;font-weight:800;
-  color:#fff;text-decoration:none;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.logo-icon{
-  width:36px;height:36px;border-radius:10px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;flex-shrink:0;
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }
-.logo-sub{font-size:10px;font-weight:500;color:var(--text3);margin-top:2px;letter-spacing:.04em;}
-.sidebar-section{padding:20px 12px 8px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
-.nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;margin:2px 8px;
-  border-radius:10px;cursor:pointer;
-  font-size:13px;font-weight:500;color:var(--text2);
-  border:none;background:none;width:calc(100% - 16px);text-align:left;
-  transition:all .15s;text-decoration:none;
+.logo-text {
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
 }
-.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
-.nav-item.active{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.2);}
-.nav-icon{width:18px;font-size:15px;text-align:center;flex-shrink:0;}
-.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border);}
-.user-pill{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border-radius:10px;
-  cursor:pointer;
-  background:rgba(255,255,255,.03);
-  border:1px solid var(--border);
+.logo-sub {
+  font-size: 11px;
+  color: var(--text-muted);
 }
-.user-avatar{
-  width:32px;height:32px;border-radius:8px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
+.header-badge {
+  font-size: 10px;
+  padding: 4px 10px;
+  background: var(--verified-bg);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 99px;
+  color: var(--verified);
+  font-weight: 600;
 }
-.user-name{font-size:13px;font-weight:600;color:var(--text);}
-.user-plan{font-size:10px;color:var(--text3);}
-.main{
-  margin-left:var(--sidebar);
-  min-height:100vh;
-  display:flex;flex-direction:column;
+
+/* Main Container */
+.main-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 96px 24px 120px;
 }
-.chat-container{
-  flex:1;
-  overflow-y:auto;
-  padding:20px;
-  max-width:900px;
-  margin:0 auto;
-  width:100%;
-  padding-bottom:120px;
+
+/* Search Box */
+.search-container {
+  margin-bottom: 32px;
 }
-.chat-message{
-  display:flex;gap:16px;margin-bottom:24px;
-  animation:fadeIn 0.3s ease;
+.search-box {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 6px;
+  transition: all 0.2s;
 }
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.user-avatar-chat{
-  width:36px;height:36px;border-radius:10px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-glow);
 }
-.ai-avatar-chat{
-  width:36px;height:36px;border-radius:10px;
-  background:linear-gradient(135deg,#10b981,#06b6d4);
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 14px 18px;
+  font-size: 16px;
+  color: var(--text-primary);
+  font-family: inherit;
 }
-.chat-content{flex:1;min-width:0}
-.user-query{
-  background:rgba(99,102,241,.15);
-  border:1px solid rgba(99,102,241,.25);
-  border-radius:16px 16px 4px 16px;
-  padding:14px 18px;
-  font-size:15px;font-weight:500;color:var(--text);
-  display:inline-block;
-  max-width:85%;
+.search-input::placeholder {
+  color: var(--text-muted);
 }
-.ai-response{
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:4px 16px 16px 16px;
-  padding:20px 24px;
+.search-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
 }
-.ai-header{
-  display:flex;align-items:center;gap:12px;
-  margin-bottom:16px;
-  padding-bottom:12px;
-  border-bottom:1px solid var(--border);
+.search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px var(--accent-glow);
 }
-.ai-title{
-  font-size:16px;font-weight:700;color:#fff;
-  font-family:'Syne',sans-serif;
+.search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
-.ai-badge{
-  font-size:10px;padding:3px 8px;
-  background:rgba(16,185,129,.15);
-  color:#34d399;
-  border-radius:99px;
-  font-weight:600;
+
+/* Intent Badge */
+.intent-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
-.web-results-header{
-  display:flex;align-items:center;gap:8px;
-  margin-bottom:16px;
-  padding:12px 16px;
-  background:rgba(6,182,212,.1);
-  border:1px solid rgba(6,182,212,.2);
-  border-radius:12px;
+.intent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
-.web-results-title{
-  font-size:14px;font-weight:600;color:#06b6d4;
+.intent-badge.primary {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent-light);
 }
-.web-results-count{
-  font-size:11px;color:var(--text3);
-  margin-left:auto;
+.confidence-bar {
+  width: 60px;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
 }
-.web-result-item{
-  padding:14px 0;
-  border-bottom:1px solid var(--border);
+.confidence-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s;
 }
-.web-result-item:last-child{border-bottom:none}
-.web-result-source{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:11px;color:var(--text3);
-  margin-bottom:6px;
+
+/* Source Stats */
+.source-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
-.web-result-favicon{
-  width:14px;height:14px;
-  background:var(--bg3);
-  border-radius:3px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:8px;
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
-.web-result-title{
-  font-size:14px;font-weight:500;color:#60a5fa;
-  text-decoration:none;
-  display:block;
-  margin-bottom:4px;
-  line-height:1.4;
+.stat-icon {
+  font-size: 20px;
 }
-.web-result-title:hover{text-decoration:underline}
-.web-result-snippet{
-  font-size:13px;color:var(--text2);
-  line-height:1.5;
+.stat-info {}
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
 }
-.kb-section{
-  margin-top:20px;
-  padding-top:20px;
-  border-top:1px solid var(--border);
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
-.kb-header{
-  display:flex;align-items:center;gap:8px;
-  margin-bottom:16px;
+.stat-card.verified {
+  border-color: rgba(16,185,129,0.2);
+  background: rgba(16,185,129,0.05);
 }
-.kb-badge{
-  font-size:11px;padding:4px 10px;
-  background:rgba(139,92,246,.15);
-  color:#a78bfa;
-  border-radius:99px;
-  font-weight:600;
+.stat-card.verified .stat-value { color: var(--verified); }
+
+/* Section Cards */
+.section-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  overflow: hidden;
 }
-.kb-name{
-  font-size:18px;font-weight:700;color:#fff;
-  font-family:'Syne',sans-serif;
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
 }
-.kb-tagline{
-  font-size:13px;color:var(--text3);
-  margin-top:4px;
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
-.kb-overview{
-  font-size:14px;color:var(--text2);
-  line-height:1.6;
-  margin-bottom:16px;
-  padding:16px;
-  background:var(--bg3);
-  border-radius:12px;
-  border-left:3px solid var(--accent);
+.section-icon {
+  font-size: 18px;
 }
-.kb-meta{
-  display:flex;gap:8px;flex-wrap:wrap;
-  margin-bottom:20px;
+.section-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  background: var(--verified-bg);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 99px;
+  color: var(--verified);
 }
-.meta-badge{
-  font-size:11px;padding:4px 10px;
-  border-radius:99px;font-weight:500;
+.section-body {
+  padding: 20px;
 }
-.badge-green{background:rgba(16,185,129,.15);color:#34d399;}
-.badge-blue{background:rgba(59,130,246,.15);color:#60a5fa;}
-.badge-amber{background:rgba(245,158,11,.15);color:#fbbf24;}
-.badge-violet{background:rgba(139,92,246,.15);color:#a78bfa;}
-.badge-teal{background:rgba(20,184,166,.15);color:#2dd4bf;}
-.badge-red{background:rgba(239,68,68,.15);color:#f87171;}
-.kb-content-section{
-  margin-bottom:20px;
+
+/* Summary Box */
+.summary-box {
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 12px;
+  margin-bottom: 20px;
 }
-.section-title{
-  font-size:13px;font-weight:700;color:var(--text3);
-  text-transform:uppercase;letter-spacing:.05em;
-  margin-bottom:10px;
-  display:flex;align-items:center;gap:8px;
+.summary-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
 }
-.section-content{
-  font-size:14px;color:var(--text2);
-  line-height:1.6;
+.summary-text {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.7;
 }
-.benefits-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;
+
+/* Key Findings */
+.findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.benefit-item{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 12px;
-  background:var(--bg3);
-  border-radius:8px;
-  font-size:13px;color:var(--text2);
+.finding-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
 }
-.benefit-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:var(--green);flex-shrink:0;
+.finding-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
-.dosage-box{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:10px 16px;
-  background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.2));
-  border:1px solid rgba(99,102,241,.3);
-  border-radius:10px;
-  font-size:15px;font-weight:600;color:#fff;
+.finding-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
-.sources-section{
-  margin-top:20px;
-  padding-top:20px;
-  border-top:1px solid var(--border);
+
+/* Benefits & Risks Grid */
+.benefits-risks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
-.sources-title{
-  font-size:13px;font-weight:700;color:var(--text3);
-  margin-bottom:12px;
+@media (max-width: 600px) {
+  .benefits-risks {
+    grid-template-columns: 1fr;
+  }
 }
-.source-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;
-  background:var(--bg3);
-  border-radius:10px;
-  margin-bottom:8px;
+.br-section {}
+.br-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.source-icon{font-size:16px}
-.source-info{flex:1}
-.source-name{font-size:13px;font-weight:500;color:var(--text);}
-.source-meta{font-size:11px;color:var(--text3);}
-.source-link{
-  font-size:12px;color:#60a5fa;
-  text-decoration:none;
+.br-title.benefits { color: var(--verified); }
+.br-title.risks { color: var(--danger); }
+.br-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.source-link:hover{text-decoration:underline}
-.input-area{
-  position:fixed;bottom:0;left:var(--sidebar);right:0;
-  padding:16px 20px 20px;
-  background:linear-gradient(to top,var(--bg) 80%,transparent);
+.br-item {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  line-height: 1.5;
 }
-.input-container{
-  max-width:900px;margin:0 auto;
-  display:flex;gap:12px;
-  align-items:flex-end;
+
+/* Verified Sources */
+.verified-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.search-input{
-  flex:1;
-  padding:14px 18px;
-  background:var(--bg2);
-  border:1.5px solid var(--border2);
-  border-radius:14px;
-  font-size:15px;font-family:'Space Grotesk',sans-serif;
-  font-weight:500;color:var(--text);
-  outline:none;
-  transition:all .2s;
+.verified-source {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 12px;
+  transition: all 0.2s;
 }
-.search-input::placeholder{color:var(--text3);}
-.search-input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(99,102,241,.15);
+.verified-source:hover {
+  border-color: var(--verified);
+  transform: translateX(4px);
 }
-.send-btn{
-  padding:14px 20px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  border:none;border-radius:14px;cursor:pointer;
-  color:#fff;font-size:15px;font-weight:600;
-  display:flex;align-items:center;gap:8px;
-  transition:all .2s;
-  box-shadow:0 4px 15px rgba(99,102,241,.3);
+.verified-badge {
+  width: 36px;
+  height: 36px;
+  background: var(--verified-bg);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
 }
-.send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.4);}
-.send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.loading-dots{
-  display:flex;gap:4px;padding:20px 0;
+.verified-info {
+  flex: 1;
+  min-width: 0;
 }
-.loading-dots span{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--accent);
-  animation:bounce 1.4s infinite ease-in-out;
+.verified-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 2px;
 }
-.loading-dots span:nth-child(1){animation-delay:-.32s}
-.loading-dots span:nth-child(2){animation-delay:-.16s}
-@keyframes bounce{0%,80%,100%{transform:scale(0)}50%{transform:scale(1)}}
-.toast{
-  position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
-  padding:12px 24px;border-radius:10px;
-  font-size:14px;font-weight:500;
-  z-index:1000;display:none;
+.verified-meta {
+  font-size: 12px;
+  color: var(--text-muted);
 }
-.evidence-item{
-  padding:10px 14px;
-  background:var(--bg3);
-  border-radius:10px;
-  margin-bottom:8px;
+.trust-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
 }
-.ev-study{font-size:13px;font-weight:600;color:var(--text);}
-.ev-finding{font-size:12px;color:var(--text2);margin-top:4px;}
-.ev-source{font-size:11px;color:var(--accent3);margin-top:4px;}
-.stacking-pills{display:flex;gap:8px;flex-wrap:wrap;}
-.stack-pill{
-  padding:6px 12px;
-  background:rgba(99,102,241,.15);
-  border:1px solid rgba(99,102,241,.3);
-  border-radius:99px;
-  font-size:12px;color:#a5b4fc;
+.trust-5 { background: rgba(16,185,129,0.2); color: var(--trust-5); }
+.trust-4 { background: rgba(6,182,212,0.2); color: var(--trust-4); }
+.trust-3 { background: rgba(245,158,11,0.2); color: var(--trust-3); }
+.verified-link {
+  padding: 8px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-light);
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
-.no-results{
-  text-align:center;padding:60px 20px;
+.verified-link:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
-.no-results-icon{font-size:48px;margin-bottom:16px}
-.no-results-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px}
-.no-results-text{font-size:14px;color:var(--text3)}
+
+/* Web Results */
+.web-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.web-result {
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+.web-result:hover {
+  border-color: var(--border-hover);
+}
+.web-result-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.web-domain {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.verified-badge-small {
+  font-size: 10px;
+  padding: 3px 8px;
+  background: var(--verified-bg);
+  border-radius: 6px;
+  color: var(--verified);
+  flex-shrink: 0;
+}
+.web-result-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-light);
+  text-decoration: none;
+  line-height: 1.4;
+  flex: 1;
+}
+.web-result-title:hover {
+  text-decoration: underline;
+}
+.web-result-snippet {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.web-result-actions {
+  display: flex;
+  gap: 10px;
+}
+.action-btn {
+  padding: 8px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.action-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* References */
+.references-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.ref-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.ref-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.ref-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.ref-info {
+  flex: 1;
+  min-width: 0;
+}
+.ref-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ref-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Videos Section */
+.videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.video-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.video-card:hover {
+  border-color: #ef4444;
+}
+.video-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.video-info {}
+.video-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.video-channel {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  color: var(--text-muted);
+}
+.loading-dots {
+  display: flex;
+  gap: 4px;
+}
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: bounce 1.4s infinite ease-in-out;
+}
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  50% { transform: scale(1); }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.empty-text {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* Welcome Screen */
+.welcome {
+  text-align: center;
+  padding: 60px 20px;
+}
+.welcome-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+}
+.welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.welcome-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto 32px;
+}
+.welcome-features {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.feature-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.feature-pill.verified { border-color: rgba(16,185,129,0.3); color: var(--verified); }
+.feature-pill.scientific { border-color: rgba(6,182,212,0.3); color: var(--trust-4); }
+.feature-pill.fast { border-color: rgba(99,102,241,0.3); color: var(--accent-light); }
+
+/* Deep Research Toggle */
+.research-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.mode-toggle {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: var(--bg-tertiary);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mode-toggle.active {
+  background: var(--accent);
+}
+.mode-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.mode-toggle.active::after {
+  left: 25px;
+}
+.mode-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.mode-label strong {
+  color: var(--text-primary);
+}
 </style>
 </head>
 <body>
-<!-- Sidebar -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
       <div class="logo-icon">⚡</div>
       <div>
-        <div>FitSearch AI</div>
-        <div class="logo-sub">World-Class Fitness Intelligence</div>
+        <div class="logo-text">FitSearch AI</div>
+        <div class="logo-sub">Research Engine</div>
       </div>
     </div>
+    <div class="header-badge">🔍 Live Search + Deep Research</div>
   </div>
-  <div class="sidebar-section">Menu</div>
-  <a href="/" class="nav-item active"><span class="nav-icon">🔍</span> Search</a>
-  <a href="/history" class="nav-item" onclick="toggleHistoryPanel();return false"><span class="nav-icon">📜</span> History</a>
-  <a href="/diet.html" class="nav-item"><span class="nav-icon">🥗</span> Diet Planner</a>
-  <a href="/cycle.html" class="nav-item"><span class="nav-icon">🔄</span> Cycle Builder</a>
-  <a href="/bca.html" class="nav-item"><span class="nav-icon">📊</span> BCA Analyzer</a>
-  <div class="sidebar-footer">
-    <div class="user-pill" id="userPill" onclick="logout()">
-      <div class="user-avatar" id="userAvatar">?</div>
-      <div><div class="user-name" id="userName">Guest</div><div class="user-plan" id="userPlan">Click to logout</div></div>
-    </div>
-  </div>
-</aside>
+</header>
 
-<!-- Main -->
-<main class="main">
-  <div class="chat-container" id="chatContainer">
-    <!-- Welcome message -->
-    <div id="welcomeMessage">
-      <div style="text-align:center;padding:60px 20px">
-        <div style="font-size:64px;margin-bottom:20px">⚡</div>
-        <h1 style="font-size:28px;font-weight:700;color:#fff;font-family:'Syne',sans-serif;margin-bottom:12px">Welcome to FitSearch AI</h1>
-        <p style="font-size:16px;color:var(--text2);max-width:500px;margin:0 auto;line-height:1.6">
-          Your intelligent fitness research companion. Ask about supplements, steroids, SARMs, peptides, workouts, nutrition, and more.
-        </p>
-        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px">
-          <div class="meta-badge badge-blue">📚 Knowledge Base</div>
-          <div class="meta-badge badge-teal">🔍 Live Web Search</div>
-          <div class="meta-badge badge-green">🔬 PubMed Research</div>
-          <div class="meta-badge badge-violet">🤖 AI Enhanced</div>
-        </div>
+<!-- Main Container -->
+<main class="main-container">
+  <!-- Welcome Screen -->
+  <div id="welcomeScreen">
+    <div class="welcome">
+      <div class="welcome-icon">⚡</div>
+      <h1 class="welcome-title">FitSearch AI Research Engine</h1>
+      <p class="welcome-subtitle">Your intelligent fitness research companion. Get verified, science-backed answers with live web search and deep research capabilities.</p>
+      <div class="welcome-features">
+        <div class="feature-pill verified">✅ Verified Sources</div>
+        <div class="feature-pill scientific">🔬 Scientific Papers</div>
+        <div class="feature-pill fast">⚡ Live Search</div>
       </div>
     </div>
-    
-    <!-- Results will be inserted here -->
-    <div id="resultsContainer"></div>
   </div>
-  
-  <!-- Input Area -->
-  <div class="input-area">
-    <div class="input-container">
-      <input type="text" class="search-input" id="searchInput" placeholder="Ask about any supplement, workout, diet..." onkeypress="if(event.key==='Enter')doSearch()">
-      <button class="send-btn" id="sendBtn" onclick="doSearch()">
-        <span>Send</span>
+
+  <!-- Search Box -->
+  <div class="search-container" id="searchContainer" style="display:none">
+    <div class="research-mode">
+      <div class="mode-toggle" id="deepModeToggle" onclick="toggleDeepMode()"></div>
+      <div class="mode-label"><strong>Deep Research</strong> mode for comprehensive analysis</div>
+    </div>
+    <div class="search-box">
+      <input type="text" class="search-input" id="searchInput" placeholder="Ask about any supplement, workout, diet, compound..." onkeypress="if(event.key==='Enter')doSearch()">
+      <button class="search-btn" id="searchBtn" onclick="doSearch()">
+        <span>Search</span>
         <span>→</span>
       </button>
     </div>
   </div>
-  
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+
+  <!-- Intent Display -->
+  <div id="intentDisplay" style="display:none"></div>
+
+  <!-- Source Stats -->
+  <div id="sourceStats" style="display:none"></div>
+
+  <!-- Results Container -->
+  <div id="resultsContainer"></div>
 </main>
 
-<script>
-// ─── State ──────────────────────────────────────────────────────────────────
-let isSearching = false;
-let currentResults = null;
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-// ─── Init ───────────────────────────────────────────────────────────────────
+<script>
+// State
+let isDeepMode = false;
+let isSearching = false;
+
+// Init
 document.addEventListener('DOMContentLoaded', () => {
-  checkAuth();
+  document.getElementById('searchContainer').style.display = 'block';
   document.getElementById('searchInput').focus();
 });
 
-async function checkAuth() {
-  try {
-    const r = await fetch('/me', {credentials:'include'});
-    if (r.ok) {
-      const user = await r.json();
-      document.getElementById('userName').textContent = user.name || 'User';
-      document.getElementById('userAvatar').textContent = (user.name || 'U')[0].toUpperCase();
-      document.getElementById('userPlan').textContent = (user.tier || 'free').toUpperCase() + ' Tier';
-    }
-  } catch(e) {}
+// Toggle Deep Research Mode
+function toggleDeepMode() {
+  isDeepMode = !isDeepMode;
+  const toggle = document.getElementById('deepModeToggle');
+  toggle.classList.toggle('active', isDeepMode);
 }
 
-function logout() {
-  fetch('/logout',{method:'POST',credentials:'include'}).then(()=>location.href='/login.html');
-}
-
-// ─── Search ─────────────────────────────────────────────────────────────────
+// Search Function
 async function doSearch() {
   if (isSearching) return;
+  
   const query = document.getElementById('searchInput').value.trim();
   if (!query) return;
   
   isSearching = true;
-  const btn = document.getElementById('sendBtn');
+  const btn = document.getElementById('searchBtn');
   btn.disabled = true;
+  btn.innerHTML = '<span>Searching...</span>';
   
-  // Hide welcome, show loading
-  document.getElementById('welcomeMessage').style.display = 'none';
-  
-  // Add user message
-  appendUserMessage(query);
-  document.getElementById('searchInput').value = '';
+  // Hide welcome
+  document.getElementById('welcomeScreen').style.display = 'none';
   
   // Show loading
-  const loadingId = showLoading();
+  showLoading();
   
   try {
-    const r = await fetch('/search', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      credentials:'include',
-      body:JSON.stringify({query})
+    const endpoint = isDeepMode ? '/deep-research' : '/search';
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
     });
     
-    if (r.status === 401) {
-      showToast('Please login first','error');
-      location.href='/login.html';
-      return;
+    const data = await response.json();
+    
+    if (response.ok) {
+      renderResults(data, query);
+    } else {
+      showToast(data.error || 'Search failed');
     }
-    
-    const data = await r.json();
-    currentResults = data;
-    renderChatResponse(query, data);
-    
-  } catch(e) {
-    showToast('Search failed. Please try again.','error');
-    console.error(e);
+  } catch (error) {
+    console.error(error);
+    showToast('Connection error');
   } finally {
-    hideLoading(loadingId);
     isSearching = false;
     btn.disabled = false;
-    document.getElementById('searchInput').focus();
+    btn.innerHTML = '<span>Search</span><span>→</span>';
   }
 }
 
-function appendUserMessage(query) {
-  const container = document.getElementById('resultsContainer');
-  const div = document.createElement('div');
-  div.className = 'chat-message';
-  div.innerHTML = `
-    <div class="user-avatar-chat">👤</div>
-    <div class="chat-content">
-      <div class="user-query">${escHtml(query)}</div>
-    </div>
-  `;
-  container.appendChild(div);
-  scrollToBottom();
-}
-
+// Show Loading
 function showLoading() {
-  const id = 'loading-' + Date.now();
+  document.getElementById('resultsContainer').innerHTML = `
+    <div class="loading">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+      <div>${isDeepMode ? 'Deep researching...' : 'Searching...'}</div>
+    </div>
+  `;
+}
+
+// Render Results
+function renderResults(data, query) {
   const container = document.getElementById('resultsContainer');
-  const div = document.createElement('div');
-  div.id = id;
-  div.className = 'chat-message';
-  div.innerHTML = `
-    <div class="ai-avatar-chat">⚡</div>
-    <div class="chat-content">
-      <div class="ai-response">
-        <div class="loading-dots">
-          <span></span><span></span><span></span>
+  
+  // Render Intent
+  if (data.intent) {
+    renderIntent(data.intent);
+  }
+  
+  // Render Stats
+  if (data.source_stats) {
+    renderStats(data.source_stats);
+  } else if (data.stats) {
+    renderStats({
+      verified: data.stats.verified,
+      scientific: data.pubmed?.length || 0,
+      total: data.stats.total
+    });
+  }
+  
+  // Build HTML
+  let html = '';
+  
+  // Summary (from deep research)
+  if (data.summary) {
+    html += `
+      <div class="section-card">
+        <div class="section-body">
+          <div class="summary-box">
+            <div class="summary-label">📋 Research Summary</div>
+            <div class="summary-text">${escHtml(data.summary)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Key Findings
+  if (data.key_findings && data.key_findings.length > 0) {
+    html += `
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">🔬</span>
+            <span>Key Findings</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="findings-list">
+            ${data.key_findings.map(f => `
+              <div class="finding-item">
+                <span class="finding-icon">📌</span>
+                <span class="finding-text">${escHtml(f.title || f.study || f)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Benefits & Risks
+  if ((data.benefits && data.benefits.length > 0) || (data.risks && data.risks.length > 0)) {
+    html += `
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">📊</span>
+            <span>Benefits & Risks</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="benefits-risks">
+            <div class="br-section">
+              <div class="br-title benefits">✅ Benefits</div>
+              <div class="br-list">
+                ${(data.benefits || []).map(b => `<div class="br-item">${escHtml(b)}</div>`).join('')}
+              </div>
+            </div>
+            <div class="br-section">
+              <div class="br-title risks">⚠️ Risks & Considerations</div>
+              <div class="br-list">
+                ${(data.risks || []).map(r => `<div class="br-item">${escHtml(r)}</div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Verified Sources
+  const verifiedResults = data.verified_results || data.verified_sources || [];
+  if (verifiedResults.length > 0) {
+    html += `
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">✅</span>
+            <span>Verified Sources</span>
+          </div>
+          <span class="section-badge">${verifiedResults.length} Trusted</span>
+        </div>
+        <div class="section-body">
+          <div class="verified-sources">
+            ${verifiedResults.slice(0, 8).map(r => `
+              <div class="verified-source">
+                <div class="verified-badge">${getSourceIcon(r.source_type || r.domain)}</div>
+                <div class="verified-info">
+                  <div class="verified-name">${escHtml(r.verified_source || r.source || r.domain)}</div>
+                  <div class="verified-meta">${escHtml(r.domain || '')} • ${r.source_type || 'verified'}</div>
+                </div>
+                <span class="trust-badge trust-${r.trust_score || 5}">Trust ${r.trust_score || 5}/5</span>
+                <a href="${escAttr(r.url)}" target="_blank" class="verified-link">Read →</a>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Web Results
+  const webResults = data.results || [];
+  if (webResults.length > 0) {
+    html += `
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">🌐</span>
+            <span>Web Results</span>
+          </div>
+          <span style="font-size:12px;color:var(--text-muted)">${webResults.length} found</span>
+        </div>
+        <div class="section-body">
+          <div class="web-results">
+            ${webResults.map(r => `
+              <div class="web-result">
+                <div class="web-result-header">
+                  ${r.is_verified ? '<span class="verified-badge-small">✅ Verified</span>' : ''}
+                  <span class="web-domain">${escHtml(r.domain || '')}</span>
+                </div>
+                <a href="${escAttr(r.url)}" target="_blank" class="web-result-title">${escHtml(r.title || '')}</a>
+                ${r.snippet ? `<div class="web-result-snippet">${escHtml(r.snippet)}</div>` : ''}
+                <div class="web-result-actions">
+                  <a href="${escAttr(r.url)}" target="_blank" class="action-btn">🔗 Visit Website</a>
+                  <a href="${escAttr(r.url)}" target="_blank" class="action-btn">📄 Read Article</a>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // References (from deep research)
+  const refs = data.references || data.articles || [];
+  if (refs.length > 0) {
+    html += `
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">📚</span>
+            <span>References</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="references-grid">
+            ${refs.slice(0, 12).map(r => `
+              <a href="${escAttr(r.url)}" target="_blank" class="ref-card">
+                <span class="ref-icon">${r.pmid ? '🔬' : '📄'}</span>
+                <div class="ref-info">
+                  <div class="ref-title">${escHtml(r.title || '')}</div>
+                  <div class="ref-meta">${escHtml(r.journal || r.source || r.domain || '')}</div>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Videos
+  const videos = data.videos || [];
+  if (videos.length > 0) {
+    html += `
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon">🎥</span>
+            <span>Videos</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="videos-grid">
+            ${videos.slice(0, 6).map(v => `
+              <a href="${escAttr(v.url)}" target="_blank" class="video-card">
+                <span class="video-icon">▶️</span>
+                <div class="video-info">
+                  <div class="video-title">${escHtml(v.title || '')}</div>
+                  <div class="video-channel">${escHtml(v.channel || 'YouTube')}</div>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html || '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No results found</div><div class="empty-text">Try different keywords</div></div>';
+}
+
+// Render Intent
+function renderIntent(intent) {
+  const el = document.getElementById('intentDisplay');
+  const conf = Math.round((intent.confidence || 0.5) * 100);
+  el.innerHTML = `
+    <div class="intent-display">
+      <div class="intent-badge primary">
+        <span>🎯</span>
+        <span>${capitalize(intent.primary_intent || 'general')}</span>
+      </div>
+      ${Object.entries(intent.all_intents || {}).slice(0, 3).map(([k, v]) => `
+        <div class="intent-badge">
+          <span>${k}</span>
+        </div>
+      `).join('')}
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+        <span style="font-size:12px;color:var(--text-muted)">Confidence</span>
+        <div class="confidence-bar">
+          <div class="confidence-fill" style="width:${conf}%"></div>
+        </div>
+        <span style="font-size:12px;color:var(--text-secondary)">${conf}%</span>
+      </div>
+    </div>
+  `;
+  el.style.display = 'block';
+}
+
+// Render Stats
+function renderStats(stats) {
+  const el = document.getElementById('sourceStats');
+  el.innerHTML = `
+    <div class="source-stats">
+      <div class="stat-card">
+        <span class="stat-icon">🌐</span>
+        <div class="stat-info">
+          <div class="stat-value">${stats.total || 0}</div>
+          <div class="stat-label">Total Results</div>
+        </div>
+      </div>
+      <div class="stat-card verified">
+        <span class="stat-icon">✅</span>
+        <div class="stat-info">
+          <div class="stat-value">${stats.verified || 0}</div>
+          <div class="stat-label">Verified Sources</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🔬</span>
+        <div class="stat-info">
+          <div class="stat-value">${stats.scientific || 0}</div>
+          <div class="stat-label">Scientific Papers</div>
         </div>
       </div>
     </div>
   `;
-  container.appendChild(div);
-  scrollToBottom();
-  return id;
+  el.style.display = 'flex';
 }
 
-function hideLoading(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
-
-function scrollToBottom() {
-  const container = document.getElementById('chatContainer');
-  container.scrollTop = container.scrollHeight;
-}
-
-// ─── Render ChatGPT-style Response ─────────────────────────────────────────
-function renderChatResponse(query, data) {
-  const container = document.getElementById('resultsContainer');
-  const div = document.createElement('div');
-  div.className = 'chat-message';
-  
-  let html = `
-    <div class="ai-avatar-chat">⚡</div>
-    <div class="chat-content">
-      <div class="ai-response">
-        <div class="ai-header">
-          <span style="font-size:20px">⚡</span>
-          <span class="ai-title">FitSearch AI</span>
-          <span class="ai-badge">Live Search + Knowledge Base</span>
-        </div>
-  `;
-  
-  // Find web results and KB results
-  const webResults = data.results?.find(r => r._is_live_web);
-  const kbResults = data.results?.filter(r => !r._is_live_web) || [];
-  
-  // Render Web Search Results First (ChatGPT style)
-  if (webResults && webResults.web_results && webResults.web_results.length > 0) {
-    html += `
-      <div class="web-results-header">
-        <span>🔍</span>
-        <span class="web-results-title">Live Web Search Results</span>
-        <span class="web-results-count">${webResults.web_results.length} sources</span>
-      </div>
-      <div style="margin-bottom:24px">
-        <div style="font-size:13px;color:var(--text3);margin-bottom:16px;padding:12px 16px;background:var(--bg3);border-radius:10px">
-          Searching the web for: <strong style="color:var(--text)">"${escHtml(query)}"</strong>
-        </div>
-    `;
-    
-    webResults.web_results.forEach((result, i) => {
-      const favicon = getFavicon(result.source);
-      html += `
-        <div class="web-result-item">
-          <div class="web-result-source">
-            <span class="web-result-favicon">${favicon}</span>
-            <span>${escHtml(result.source || '')}</span>
-          </div>
-          <a href="${escAttr(result.link || '#')}" target="_blank" class="web-result-title">
-            ${escHtml(result.title || '')}
-          </a>
-          ${result.snippet ? `<div class="web-result-snippet">${escHtml(result.snippet)}</div>` : ''}
-        </div>
-      `;
-    });
-    
-    html += `</div>`;
-  }
-  
-  // Render Knowledge Base Results (ChatGPT style - structured response)
-  kbResults.forEach((kb, kbIdx) => {
-    html += `
-      <div class="kb-section" ${kbIdx > 0 ? 'style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)"' : ''}>
-        <div class="kb-header">
-          <span class="kb-badge">📚 Knowledge Base</span>
-          ${kb.google_active ? '<span class="kb-badge" style="background:rgba(6,182,212,.15);color:#06b6d4">🔍 Live Data</span>' : ''}
-        </div>
-        <div class="kb-name">${escHtml(kb.name || '')}</div>
-        ${kb.tagline ? `<div class="kb-tagline">${escHtml(kb.tagline)}</div>` : ''}
-        
-        <div class="kb-meta">
-          ${kb.evidence_tier ? `<span class="meta-badge badge-green">✅ ${formatEvidence(kb.evidence_tier)} Evidence</span>` : ''}
-          ${kb.category ? `<span class="meta-badge badge-blue">${getCategoryIcon(kb.category)} ${capitalize(kb.category)}</span>` : ''}
-          ${kb.safe_for_beginners ? '<span class="meta-badge badge-green">✅ Beginner Safe</span>' : '<span class="meta-badge badge-red">⚠️ Advanced Only</span>'}
-        </div>
-    `;
-    
-    // AI Summary if available
-    if (kb.ai_summary) {
-      html += `
-        <div class="kb-overview">
-          <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">🤖 AI Summary</div>
-          ${escHtml(kb.ai_summary)}
-        </div>
-      `;
-    }
-    
-    // Overview / What it is
-    if (kb.what_it_is || kb.overview) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">📖 What It Is</div>
-          <div class="section-content">${escHtml(kb.what_it_is || kb.overview || '')}</div>
-        </div>
-      `;
-    }
-    
-    // How it works
-    if (kb.how_it_works) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">⚙️ How It Works</div>
-          <div class="section-content">${escHtml(kb.how_it_works)}</div>
-        </div>
-      `;
-    }
-    
-    // Dosage
-    if (kb.dosage) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">💉 Dosage</div>
-          <div class="dosage-box">${escHtml(kb.dosage)}</div>
-          ${kb.timing ? `<div class="section-content" style="margin-top:10px">⏱️ ${escHtml(kb.timing)}</div>` : ''}
-        </div>
-      `;
-    }
-    
-    // Benefits
-    if (kb.benefits && kb.benefits.length > 0) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">📈 Key Benefits</div>
-          <div class="benefits-grid">
-            ${kb.benefits.map(b => `
-              <div class="benefit-item">
-                <div class="benefit-dot"></div>
-                <span>${escHtml(typeof b === 'string' ? b : b.benefit || b.name || '')}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-    
-    // Side Effects
-    if (kb.side_effects && kb.side_effects.length > 0) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">⚠️ Side Effects</div>
-          <div class="section-content">
-            ${kb.side_effects.map(s => `
-              <div class="evidence-item">
-                <div class="ev-finding">${escHtml(s.effect || String(s))}</div>
-                <div class="ev-source">Severity: ${capitalize(s.severity || 'low')}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-    
-    // Who Should Use
-    if ((kb.who_should_use && kb.who_should_use.length > 0) || (kb.who_should_avoid && kb.who_should_avoid.length > 0)) {
-      html += `<div class="kb-content-section"><div class="section-title">👤 Who Should Use</div><div>`;
-      if (kb.who_should_use && kb.who_should_use.length > 0) {
-        html += `<div style="margin-bottom:12px"><div style="font-size:12px;color:#34d399;margin-bottom:6px">✅ Suitable For</div><div class="benefits-grid">${kb.who_should_use.map(w => `<div class="benefit-item"><div class="benefit-dot" style="background:#34d399"></div><span>${escHtml(w)}</span></div>`).join('')}</div></div>`;
-      }
-      if (kb.who_should_avoid && kb.who_should_avoid.length > 0) {
-        html += `<div><div style="font-size:12px;color:#f87171;margin-bottom:6px">❌ Should Avoid</div><div class="benefits-grid">${kb.who_should_avoid.map(w => `<div class="benefit-item"><div class="benefit-dot" style="background:#f87171"></div><span>${escHtml(w)}</span></div>`).join('')}</div></div>`;
-      }
-      html += `</div></div>`;
-    }
-    
-    // Stacking
-    if (kb.stacking && kb.stacking.length > 0) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">⚗️ Stack Options</div>
-          <div class="stacking-pills">
-            ${kb.stacking.map(s => `<span class="stack-pill">+ ${escHtml(s)}</span>`).join('')}
-          </div>
-        </div>
-      `;
-    }
-    
-    // Research Evidence
-    if (kb.research_evidence && kb.research_evidence.length > 0) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">🔬 Research</div>
-          ${kb.research_evidence.slice(0,3).map(e => `
-            <div class="evidence-item">
-              <div class="ev-study">${escHtml(e.study || '')}</div>
-              <div class="ev-finding">${escHtml(e.finding || '')}</div>
-              ${e.source ? `<div class="ev-source">📰 ${escHtml(e.source)}</div>` : ''}
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-    
-    // Final Recommendation
-    if (kb.final_recommendation) {
-      html += `
-        <div class="kb-content-section">
-          <div class="section-title">🎯 Recommendation</div>
-          <div style="padding:14px 18px;background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(139,92,246,.15));border:1px solid rgba(99,102,241,.3);border-radius:12px;font-size:14px;color:var(--text);line-height:1.6">
-            ${escHtml(kb.final_recommendation)}
-          </div>
-        </div>
-      `;
-    }
-    
-    // Sources
-    const allSources = [];
-    if (kb.examine_url) allSources.push({icon:'🔬', name:'Examine.com', meta:'Evidence Database', url: kb.examine_url});
-    if (kb.articles) {
-      kb.articles.slice(0,3).forEach(a => {
-        allSources.push({icon:'📄', name:a.title || 'Article', meta:a.source || '', url:a.url || '#'});
-      });
-    }
-    
-    if (allSources.length > 0) {
-      html += `
-        <div class="sources-section">
-          <div class="sources-title">📚 Sources</div>
-          ${allSources.map(s => `
-            <div class="source-item">
-              <span class="source-icon">${s.icon}</span>
-              <div class="source-info">
-                <div class="source-name">${escHtml(s.name)}</div>
-                <div class="source-meta">${escHtml(s.meta)}</div>
-              </div>
-              <a href="${escAttr(s.url)}" target="_blank" class="source-link">Visit →</a>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-    
-    html += `</div>`; // Close kb-section
-  });
-  
-  html += `</div></div>`; // Close ai-response and chat-content
-  div.innerHTML = html;
-  container.appendChild(div);
-  scrollToBottom();
-}
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// Helper Functions
 function escHtml(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function escAttr(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  if (!s) return '#';
+  return String(s).replace(/"/g, '&quot;');
 }
 function capitalize(s) {
   if (!s) return '';
-  return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g,' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
-function formatEvidence(tier) {
-  const map = {very_high:'Very High',high:'High',moderate:'Moderate',low:'Low'};
-  return map[tier] || capitalize(tier);
+function getSourceIcon(type) {
+  const icons = {
+    scientific: '🔬',
+    medical: '🏥',
+    fitness: '💪',
+    health: '❤️',
+    journal: '📰',
+    supplements: '💊',
+    academic: '🎓'
+  };
+  return icons[type] || '🌐';
 }
-function getCategoryIcon(cat) {
-  const map = {supplement:'💊',sarm:'🔬',steroid:'⚗️',peptide:'🧬',exercise:'💪',nutrition:'🥗'};
-  return map[cat] || '📋';
-}
-function getFavicon(domain) {
-  if (!domain) return '🌐';
-  const first = domain.charAt(0).toUpperCase();
-  return first;
-}
-
-function showToast(msg, type='info') {
+function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.display = 'block';
-  t.style.background = type==='error' ? 'rgba(239,68,68,.95)' : 'rgba(16,185,129,.95)';
-  t.style.color = '#fff';
-  t.style.boxShadow = '0 4px 20px rgba(0,0,0,.4)';
-  setTimeout(() => t.style.display='none', 3000);
-}
-
-function toggleHistoryPanel() {
-  alert('History feature - coming soon!');
+  setTimeout(() => t.style.display = 'none', 3000);
 }
 </script>
 </body>
