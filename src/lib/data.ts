@@ -261,11 +261,15 @@ export const categories = [
   { id: "amino-acids", name: "Amino Acids", href: "/collections/amino-acids" },
   { id: "vitality-and-health", name: "Vitamins & Minerals", href: "/collections/vitality-and-health" },
   { id: "weight-loss", name: "Weight Loss", href: "/collections/weight-loss" },
+  { id: "best-sellers", name: "Best Sellers", href: "/collections/best-sellers" },
 ];
 
 export const cart: any[] = [];
 
 export function getProductsByCategory(category: string) {
+  if (category === "best-sellers") {
+    return products.slice(0, 8);
+  }
   return products.filter(p => p.category === category);
 }
 
