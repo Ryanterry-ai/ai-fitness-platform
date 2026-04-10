@@ -1,64 +1,268 @@
----
-name: clone-website
-description: Clone full websites including frontend, backend, database, admin panel, animations and APIs ready for deployment.
-argument-hint: "<url>"
-user-invocable: true
----
+# AI Creative Agent Skill
 
-# Ultimate Website Cloner V4
+## Overview
 
-You are:
+AI Creative Agent is a multi-tool AI system designed to generate:
 
-- Full Stack Developer
-- Backend Architect
-- UI Engineer
-- CMS Builder
-- Shopify Reverse Engineer
-- Animation Engineer
-- Deployment Architect
+* Product Ads
+* Product Photoshoots
+* Instagram Posts
+* Posters
+* Motion Ads
+* Product Mockups
 
----
+The agent supports:
 
-# Primary Goal
-
-Clone any modern website completely:
-
-- Frontend
-- Backend
-- APIs
-- Admin Panel
-- Animations
-- Responsive Layout
-- Assets
-- CMS logic
-
-Output must be **deployment ready**
+* Face swap
+* Background swap
+* Photorealistic generation
+* Editing
+* Enhancement
+* Motion & transitions
 
 ---
 
-# Platform Detection
+# Capabilities
 
-First detect:
+## Image Generation
 
-- Shopify
-- WooCommerce
-- Webflow
-- NextJS
-- React
-- Static HTML
+Generate:
 
-Extract:
+* Product photography
+* Lifestyle ads
+* Model photoshoots
 
-- Theme structure
-- Shopify sections
-- Apps
-- Scripts
-- CDN assets
+Models Supported:
+
+* SDXL
+* Flux
+* Stable Diffusion
+* Local models
 
 ---
 
-# Clone Scope
+# Face Swap
 
-## Frontend Pages
+Features:
 
-Clone all pages:
+* Upload reference face
+* Replace model face
+* Preserve lighting
+* Maintain expressions
+
+Supported Models:
+
+* InsightFace
+* FaceFusion
+
+---
+
+# Editing Engine
+
+Capabilities:
+
+* Background swap
+* Object replacement
+* Image expansion
+* Lighting adjustment
+
+---
+
+# Enhancement Engine
+
+Features:
+
+* Upscale images
+* Improve detail
+* Texture refinement
+
+Models:
+
+* RealESRGAN
+* Upscaler models
+
+---
+
+# Motion Engine
+
+Capabilities:
+
+* Animate product
+* Camera movement
+* Transitions
+
+Models:
+
+* AnimateDiff
+* Motion models
+
+---
+
+# Claude Skill Interface
+
+Example Prompt:
+
+Create product ad with female fitness model, swap face, create Instagram version
+
+Workflow:
+
+1. Generate product image
+2. Add model
+3. Swap face
+4. Replace background
+5. Enhance image
+6. Generate motion
+
+---
+
+# Input Parameters
+
+User Inputs:
+
+* productDescription
+* referenceImage
+* faceImage
+* style
+* platform
+
+Example:
+
+{
+product: "Protein Powder",
+style: "Fitness Instagram Ad",
+platform: "Instagram"
+}
+
+---
+
+# Output
+
+Returns:
+
+* Generated image
+* Enhanced image
+* Motion video
+
+Example:
+
+{
+image: "...",
+enhancedImage: "...",
+motionVideo: "..."
+}
+
+---
+
+# Automation
+
+Playwright automation:
+
+* Generate images
+* Upload references
+* Download outputs
+
+---
+
+# Batch Generation
+
+Generate multiple creatives:
+
+Input:
+
+* Multiple products
+* Multiple styles
+
+Output:
+
+* Batch creatives
+
+---
+
+# Multi-Model Switching
+
+Agent automatically selects:
+
+* Best image model
+* Best face swap model
+* Best motion model
+
+---
+
+# GPU Support
+
+Supports:
+
+* Local GPU
+* Cloud GPU
+* CPU fallback
+
+---
+
+# Agent Memory
+
+Stores:
+
+* Brand styles
+* User preferences
+* Previous generations
+
+---
+
+# API Endpoints
+
+POST /generate-ad
+
+Input:
+
+{
+product
+faceImage
+style
+}
+
+Output:
+
+{
+image
+enhancedImage
+motionVideo
+}
+
+---
+
+# Usage Examples
+
+Example 1
+
+Create protein supplement ad with fitness model
+
+Example 2
+
+Create skincare product poster
+
+Example 3
+
+Create Instagram motion ad
+
+---
+
+# Deployment
+
+Supports:
+
+* Local deployment
+* Cloud deployment
+* Hybrid deployment
+
+---
+
+# Requirements
+
+Node.js
+TypeScript
+Playwright
+GPU optional
+
+---
+
+# End of Skill
