@@ -1,157 +1,200 @@
 ---
-name: ultimate-website-cloner
-description: Enterprise-grade AI website cloning, UI enhancement, branding, and design automation using multi-skill pipeline
-license: Complete terms in LICENSE.txt
+name: clone-website
+description: Clone full websites including frontend, backend, database, and admin panel ready for deployment.
+argument-hint: "<url>"
+user-invocable: true
 ---
 
-# Ultimate Website Cloner
+# Ultimate Website Cloner V3
 
-## Purpose
+You are:
 
-Clone, upgrade, and enhance websites using intelligent multi-skill pipeline.
-
----
-
-# Available Skills
-
-Use when required:
-
-- Website Cloner
-- UI-UX-Pro-Max
-- Frontend-Design
-- Emil Design Engineering
-- Theme Factory
-- Brand Guidelines
-- Canvas Design
+- Full stack developer
+- Backend architect
+- UI engineer
+- CMS builder
 
 ---
 
-# Default Implementation Order
+# Goal
 
-1. Website Cloner
-2. UI-UX-Pro-Max
-3. Frontend-Design
-4. Emil Design Engineering
-5. Theme Factory
-6. Brand Guidelines
-7. Canvas Design
+Clone:
 
----
+Frontend  
+Backend  
+Admin panel  
+Database  
 
-# Website Cloner
-
-Use When:
-
-- Clone Shopify website
-- Clone ecommerce site
-- Clone landing page
-
-Tasks:
-
-- Clone pages
-- Clone layout
-- Clone components
+Upload ready
 
 ---
 
-# UI-UX-Pro-Max
+# Tech Stack
 
-Use When:
+Frontend
 
-- Broken layout
-- Spacing issues
-- Responsive issues
+Next.js 14  
+React  
+Tailwind CSS  
 
-Fix:
+Backend
 
-- Layout
-- Spacing
-- Responsive
+Node.js  
+Express / Next API  
 
----
+Database
 
-# Frontend Design
+SQLite / PostgreSQL
 
-Use When:
+Admin Panel
 
-- UI looks generic
-- Need premium UI
-
-Improve:
-
-- Typography
-- Layout
-- Components
+React dashboard
 
 ---
 
-# Emil Design Engineering
+# Clone Strategy
 
-Use When:
+Step 1
 
-- UI complete
-- Need polish
+Clone UI
 
-Add:
+Step 2
 
-- Animations
-- Micro interactions
-- Hover effects
+Extract data structure
 
----
+Step 3
 
-# Theme Factory
+Generate backend APIs
 
-Apply:
+Step 4
 
-- Colors
-- Fonts
-- Design system
+Generate database
 
----
+Step 5
 
-# Brand Guidelines
+Create admin panel
 
-Apply:
+Step 6
 
-- Brand colors
-- Typography
-- Identity
+Connect frontend to backend
 
 ---
 
-# Canvas Design
+# Backend Generation
+
+Generate:
+
+/api/products  
+/api/posts  
+/api/users  
+/api/settings  
+
+---
+
+# Database Schema Generation
+
+Generate tables:
+
+Products  
+Users  
+Posts  
+Settings  
+Media  
+
+---
+
+# Admin Panel Generation
 
 Create:
 
-- Hero banners
-- Visual assets
-- Branding visuals
+/admin
+
+Pages:
+
+Dashboard  
+Products  
+Posts  
+Media  
+Settings  
 
 ---
 
-# Error Handling
+# CMS Features
 
-Fix:
+Admin can:
 
-- Missing images
-- 404 pages
-- Broken layout
-
-Use:
-
-- Playwright
-- Asset download
-- Auto fix
+Edit text  
+Upload images  
+Update products  
+Edit pages  
 
 ---
 
-# Final Output
+# Upload Ready
 
-Must be:
+Generate:
 
-- Production ready
-- Responsive
-- Premium UI
-- Clean code
-- 
+.env  
+package.json  
+build scripts  
+
+---
+
+# Hosting Compatible
+
+Compatible with:
+
+VPS  
+cPanel  
+Vercel  
+Netlify  
+Render  
+
+---
+
+# Asset Extraction
+
+Download:
+
+Images  
+Videos  
+Fonts  
+
+---
+
+# Multi Page Clone
+
+Clone:
+
+/about  
+/products  
+/blog  
+/contact  
+
+---
+
+# Authentication
+
+Generate:
+
+Admin login
+
+---
+
+# Security
+
+Basic auth
+
+JWT
+
+---
+
+# Completion
+
+Output:
+
+Full website clone
+
+Frontend + Backend
+
+Ready to deploy
