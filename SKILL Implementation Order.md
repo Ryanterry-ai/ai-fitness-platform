@@ -1,115 +1,47 @@
-
 # SKILL Implementation Order
 
-# Phase 1
+## Full Website Clone Order
 
-Website Cloner
-
-Clone:
-
-- Pages
-- Layout
-- Components
-
----
-
-# Phase 2
-
-UI-UX-Pro-Max
-
-Fix:
-
-- Layout
-- Spacing
-- Responsive
+1. Clone Automation Script
+2. Playwright Crawl
+3. Lazy Load Extraction
+4. Asset Download
+5. Shopify Extraction
+6. Animation Detection
+7. Component Extraction
+8. Repo Generation
+9. 404 Fix
+10. Final Audit
 
 ---
 
-# Phase 3
+# UI Fix Order
 
-Frontend Design
-
-Improve:
-
-- Typography
-- Layout
-- UI
+1. UI-UX-Pro-Max
+2. Frontend Design
 
 ---
 
-# Phase 4
+# Design Only
 
-Emil Design Engineering
-
-Add:
-
-- Animations
-- Micro interactions
+1. Frontend Design
+2. Emil Design
 
 ---
 
-# Phase 5
+# Branding Only
 
-Theme Factory
-
-Apply:
-
-- Colors
-- Fonts
+1. Theme Factory
+2. Brand Guidelines
 
 ---
 
-# Phase 6
+# Banner Design
 
-Brand Guidelines
-
-Apply:
-
-- Brand identity
+1. Canvas Design
 
 ---
 
-# Phase 7
+# Default
 
-Canvas Design
-
-Create:
-
-- Hero visuals
-- Branding visuals
-
----
-
-# Execution Pipeline
-
-Website Cloner
-
-↓
-
-UI-UX-Pro-Max
-
-↓
-
-Frontend Design
-
-↓
-
-Emil Design
-
-↓
-
-Theme Factory
-
-↓
-
-Brand Guidelines
-
-↓
-
-Canvas Design
-
----
-
-# Result
-
-Premium production website
+Follow Full Clone Order
