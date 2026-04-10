@@ -1,200 +1,137 @@
----
-name: clone-website
-description: Clone full websites including frontend, backend, database, and admin panel ready for deployment.
-argument-hint: "<url>"
-user-invocable: true
----
+# Ultimate Website Clone Skill V3
 
-# Ultimate Website Cloner V3
+## Purpose
 
-You are:
+Clone any Shopify, Ecommerce, or Modern Website fully including:
 
-- Full stack developer
-- Backend architect
-- UI engineer
-- CMS builder
+- Pages
+- Content
+- Images
+- Videos
+- Animations
+- Fonts
+- Components
 
----
-
-# Goal
-
-Clone:
-
-Frontend  
-Backend  
-Admin panel  
-Database  
-
-Upload ready
+This skill performs **Pixel Perfect Clone**
 
 ---
 
-# Tech Stack
+# Clone Capabilities
 
-Frontend
+Full Website Crawl  
+Internal Link Navigation  
+Mega Menu Crawl  
+Lazy Load Extraction  
+Dynamic Page Extraction  
+Asset Download  
 
-Next.js 14  
+---
+
+# Supported Platforms
+
+Shopify  
+NextJS  
 React  
-Tailwind CSS  
-
-Backend
-
-Node.js  
-Express / Next API  
-
-Database
-
-SQLite / PostgreSQL
-
-Admin Panel
-
-React dashboard
+WordPress  
+Custom  
 
 ---
 
-# Clone Strategy
+# Clone Pipeline
 
-Step 1
+## Phase 1
 
-Clone UI
+Playwright Crawl
 
-Step 2
+## Phase 2
 
-Extract data structure
+Auto Scroll Lazy Load
 
-Step 3
+## Phase 3
 
-Generate backend APIs
+Asset Extraction
 
-Step 4
+## Phase 4
 
-Generate database
+Animation Detection
 
-Step 5
+## Phase 5
 
-Create admin panel
+Theme Extraction
 
-Step 6
+## Phase 6
 
-Connect frontend to backend
+Component Mapping
 
----
+## Phase 7
 
-# Backend Generation
-
-Generate:
-
-/api/products  
-/api/posts  
-/api/users  
-/api/settings  
+Repo Generation
 
 ---
 
-# Database Schema Generation
-
-Generate tables:
-
-Products  
-Users  
-Posts  
-Settings  
-Media  
-
----
-
-# Admin Panel Generation
-
-Create:
-
-/admin
-
-Pages:
-
-Dashboard  
-Products  
-Posts  
-Media  
-Settings  
-
----
-
-# CMS Features
-
-Admin can:
-
-Edit text  
-Upload images  
-Update products  
-Edit pages  
-
----
-
-# Upload Ready
-
-Generate:
-
-.env  
-package.json  
-build scripts  
-
----
-
-# Hosting Compatible
-
-Compatible with:
-
-VPS  
-cPanel  
-Vercel  
-Netlify  
-Render  
-
----
-
-# Asset Extraction
-
-Download:
+# Assets Extracted
 
 Images  
-Videos  
 Fonts  
+Videos  
+CSS  
+JS  
+SVG Icons  
 
 ---
 
-# Multi Page Clone
+# Shopify Support
 
 Clone:
 
-/about  
-/products  
-/blog  
-/contact  
+Products  
+Collections  
+Cart  
+Search  
+Policies  
 
 ---
 
-# Authentication
+# Dynamic Routes
 
-Generate:
-
-Admin login
-
----
-
-# Security
-
-Basic auth
-
-JWT
+/products/[slug]  
+/collections/[slug]  
 
 ---
 
-# Completion
+# Animation Detection
 
-Output:
+Framer Motion  
+GSAP  
+Swiper  
+Slick  
 
-Full website clone
+---
 
-Frontend + Backend
+# Error Handling
 
-Ready to deploy
+Fix:
+
+404 errors  
+Broken images  
+Missing CSS  
+
+---
+
+# Output
+
+Production Ready Clone
+
+---
+
+# Clone Mode
+
+Exact Copy Only
+
+No redesign
+
+---
+
+# Result
+
+Pixel Perfect Clone
