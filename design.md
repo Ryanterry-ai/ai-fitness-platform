@@ -1,106 +1,173 @@
-# Design System V2
+---
+name: ultimate-website-clone
+description: Clone any Shopify, Ecommerce, or modern website pixel-perfect including content, assets, animations, and layout
+version: 4.0
+---
 
-## Layout
+# Ultimate Website Clone Skill V4
 
-Container
+## Objective
 
-max-w-7xl  
-mx-auto  
-px-6  
+Clone any website completely including:
 
-Section spacing
+- Pages
+- Layout
+- UI
+- Images
+- Videos
+- Fonts
+- Animations
+- Content
+- Components
 
-py-24  
+This is **Exact Clone Mode**
+
+No redesign  
+No interpretation  
+No conversion  
 
 ---
 
-# Typography
+# Supported Platforms
 
-Hero
-
-text-5xl md:text-7xl  
-font-bold  
-
-Section Title
-
-text-3xl md:text-5xl  
+Shopify  
+NextJS  
+React  
+WordPress  
+Custom HTML  
 
 ---
 
-# Buttons
+# Clone Capabilities
 
-Primary
-
-Rounded-xl  
-Hover animation  
-
-Secondary
-
-Outline  
-
----
-
-# Cards
-
-Rounded-2xl  
-Shadow  
-Hover scale  
+Full Website Crawl  
+Internal Link Discovery  
+Mega Menu Crawl  
+Dynamic Page Crawl  
+Lazy Load Extraction  
+Asset Download  
+Animation Detection  
+Component Extraction  
 
 ---
 
-# Grid
+# Clone Pipeline
 
-Mobile
+## Phase 1 — Website Crawl
 
-1 column
+Use Playwright
 
-Tablet
-
-2 column
-
-Desktop
-
-4 column
+- Crawl homepage
+- Crawl navigation
+- Crawl footer links
+- Crawl dropdown menu
 
 ---
 
-# Animations
+## Phase 2 — Lazy Load Extraction
 
-Hover
+Auto scroll entire page
 
-scale  
-shadow  
+Load:
 
-Scroll
-
-fade  
-slide  
-
----
-
-# Colors
-
-Primary
-
-#111111
-
-Accent
-
-#FF6B00
-
-Background
-
-#F9FAFB
+Images  
+Videos  
+Products  
+Reviews  
 
 ---
 
-# Shadows
+## Phase 3 — Asset Extraction
 
-Soft shadows
+Download:
+
+Images  
+Fonts  
+Videos  
+CSS  
+JS  
+SVG  
 
 ---
 
-# Radius
+## Phase 4 — Shopify Extraction
 
-Rounded-xl  
-Rounded-2xl  
+Extract:
+
+Products  
+Collections  
+Cart  
+Search  
+Policies  
+
+---
+
+## Phase 5 — Animation Detection
+
+Detect:
+
+Framer Motion  
+GSAP  
+Swiper  
+Slick  
+
+---
+
+## Phase 6 — Component Extraction
+
+Header  
+Footer  
+Hero  
+Product Card  
+Cart Drawer  
+Mega Menu  
+
+---
+
+## Phase 7 — Dynamic Routes
+
+/products/[slug]
+
+/collections/[slug]
+
+---
+
+## Phase 8 — Error Fix
+
+Fix:
+
+404 pages  
+Broken images  
+Missing CSS  
+Missing content  
+
+---
+
+## Phase 9 — Repo Generation
+
+Generate:
+
+pages  
+components  
+assets  
+
+---
+
+# Animation Support
+
+Framer Motion  
+GSAP  
+Swiper  
+Remotion  
+
+---
+
+# Output
+
+Pixel Perfect Clone
+
+---
+
+# Clone Mode
+
+Exact Copy Only
