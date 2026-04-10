@@ -1,122 +1,88 @@
----
-name: ultimate-website-cloner
-description: Enterprise-grade AI website cloning, UI enhancement, branding, and design automation using multi-skill pipeline
-license: Complete terms in LICENSE.txt
----
+# Ultimate Website Cloner Design System
 
-# Ultimate Website Cloner
+# Design Philosophy
 
-## Purpose
+Each cloned website must:
 
-Clone, upgrade, and enhance websites using intelligent multi-skill pipeline.
+- Look premium
+- Look modern
+- Look unique
 
 ---
 
-# Available Skills
+# Typography
 
-Use when required:
+Use:
 
-- Website Cloner
-- UI-UX-Pro-Max
-- Frontend-Design
-- Emil Design Engineering
-- Theme Factory
-- Brand Guidelines
-- Canvas Design
+- Display font
+- Body font
 
----
+Avoid:
 
-# Default Implementation Order
-
-1. Website Cloner
-2. UI-UX-Pro-Max
-3. Frontend-Design
-4. Emil Design Engineering
-5. Theme Factory
-6. Brand Guidelines
-7. Canvas Design
+- Generic fonts
 
 ---
 
-# Website Cloner
+# Color System
 
-Use When:
+Use:
 
-- Clone Shopify website
-- Clone ecommerce site
-- Clone landing page
-
-Tasks:
-
-- Clone pages
-- Clone layout
-- Clone components
+- Primary
+- Secondary
+- Accent
+- Neutral
 
 ---
 
-# UI-UX-Pro-Max
+# Layout System
 
-Use When:
+Use:
 
-- Broken layout
-- Spacing issues
-- Responsive issues
-
-Fix:
-
-- Layout
-- Spacing
-- Responsive
+- Clean spacing
+- Clear hierarchy
+- Responsive grid
 
 ---
 
-# Frontend Design
+# Animation System
 
-Use When:
+Use:
 
-- UI looks generic
-- Need premium UI
+- Hover animations
+- Scroll animations
+- Transitions
+
+---
+
+# Component System
 
 Improve:
 
-- Typography
-- Layout
-- Components
+- Navbar
+- Hero
+- Cards
+- Buttons
+- Footer
 
 ---
 
-# Emil Design Engineering
-
-Use When:
-
-- UI complete
-- Need polish
-
-Add:
-
-- Animations
-- Micro interactions
-- Hover effects
-
----
-
-# Theme Factory
+# Theme System
 
 Apply:
 
-- Colors
-- Fonts
-- Design system
+- Color palette
+- Typography
+- Spacing
 
 ---
 
-# Brand Guidelines
+# Brand System
 
 Apply:
 
 - Brand colors
-- Typography
-- Identity
+- Brand fonts
+- Brand layout
 
 ---
 
@@ -124,33 +90,16 @@ Apply:
 
 Create:
 
-- Hero banners
-- Visual assets
+- Hero visuals
+- Banners
 - Branding visuals
 
 ---
 
-# Error Handling
+# Quality Standard
 
-Fix:
+Design must:
 
-- Missing images
-- 404 pages
-- Broken layout
-
-Use:
-
-- Playwright
-- Asset download
-- Auto fix
-
----
-
-# Final Output
-
-Must be:
-
-- Production ready
-- Responsive
-- Premium UI
-- Clean code
+- Look premium
+- Look consistent
+- Look professional
