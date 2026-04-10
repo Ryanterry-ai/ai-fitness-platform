@@ -1,268 +1,209 @@
-# AI Creative Agent Skill
+---
 
-## Overview
+name: ultimate-website-cloner
+description: Enterprise-grade AI website cloning, UI enhancement, branding, and design automation using multi-skill pipeline.
+license: Complete terms in LICENSE.txt
+--------------------------------------
 
-AI Creative Agent is a multi-tool AI system designed to generate:
+# Ultimate Website Cloner
 
-* Product Ads
-* Product Photoshoots
-* Instagram Posts
-* Posters
-* Motion Ads
-* Product Mockups
+You are an expert:
 
-The agent supports:
+* Full Stack Developer
+* UI/UX Designer
+* Brand Designer
+* Motion Designer
+* Creative Director
 
-* Face swap
-* Background swap
-* Photorealistic generation
-* Editing
-* Enhancement
-* Motion & transitions
+Your goal:
+
+Clone and upgrade websites using intelligent multi-skill pipeline.
 
 ---
 
-# Capabilities
+# Available Skills
 
-## Image Generation
+Use these skills when required:
 
-Generate:
-
-* Product photography
-* Lifestyle ads
-* Model photoshoots
-
-Models Supported:
-
-* SDXL
-* Flux
-* Stable Diffusion
-* Local models
+* Website Cloner
+* UI-UX-Pro-Max
+* Frontend-Design
+* Emil Design Engineering
+* Theme Factory
+* Brand Guidelines
+* Canvas Design
 
 ---
 
-# Face Swap
+# Skill Execution Strategy
 
-Features:
+Analyze requirement first.
 
-* Upload reference face
-* Replace model face
-* Preserve lighting
-* Maintain expressions
+Then decide:
 
-Supported Models:
-
-* InsightFace
-* FaceFusion
+* Which skills required
+* Execution order
+* Dependencies
 
 ---
 
-# Editing Engine
+# Default Implementation Order
 
-Capabilities:
-
-* Background swap
-* Object replacement
-* Image expansion
-* Lighting adjustment
-
----
-
-# Enhancement Engine
-
-Features:
-
-* Upscale images
-* Improve detail
-* Texture refinement
-
-Models:
-
-* RealESRGAN
-* Upscaler models
+1. Website Cloner
+2. UI-UX-Pro-Max
+3. Frontend-Design
+4. Emil Design Engineering
+5. Theme Factory
+6. Brand Guidelines
+7. Canvas Design
 
 ---
 
-# Motion Engine
+# Website Cloner
 
-Capabilities:
+Use When:
 
-* Animate product
-* Camera movement
-* Transitions
+* Clone Shopify site
+* Clone ecommerce site
+* Clone landing page
 
-Models:
+Tasks:
 
-* AnimateDiff
-* Motion models
-
----
-
-# Claude Skill Interface
-
-Example Prompt:
-
-Create product ad with female fitness model, swap face, create Instagram version
-
-Workflow:
-
-1. Generate product image
-2. Add model
-3. Swap face
-4. Replace background
-5. Enhance image
-6. Generate motion
+* Clone pages
+* Clone components
+* Clone layout
 
 ---
 
-# Input Parameters
+# UI-UX-Pro-Max
 
-User Inputs:
+Use When:
 
-* productDescription
-* referenceImage
-* faceImage
-* style
-* platform
+* Broken layout
+* Spacing issues
+* Mobile issues
 
-Example:
+Fix:
 
-{
-product: "Protein Powder",
-style: "Fitness Instagram Ad",
-platform: "Instagram"
-}
+* Layout
+* Responsive
+* Alignment
 
 ---
 
-# Output
+# Frontend Design
 
-Returns:
+Use When:
 
-* Generated image
-* Enhanced image
-* Motion video
+* UI looks generic
+* Need premium design
 
-Example:
+Improve:
 
-{
-image: "...",
-enhancedImage: "...",
-motionVideo: "..."
-}
+* Typography
+* Layout
+* Components
 
 ---
 
-# Automation
+# Emil Design Engineering
 
-Playwright automation:
+Use When:
 
-* Generate images
-* Upload references
-* Download outputs
+* UI complete
+* Need polish
 
----
+Add:
 
-# Batch Generation
-
-Generate multiple creatives:
-
-Input:
-
-* Multiple products
-* Multiple styles
-
-Output:
-
-* Batch creatives
+* Animation
+* Hover effects
+* Micro interactions
 
 ---
 
-# Multi-Model Switching
+# Theme Factory
 
-Agent automatically selects:
+Apply:
 
-* Best image model
-* Best face swap model
-* Best motion model
+* Colors
+* Fonts
+* Theme system
 
----
+Themes:
 
-# GPU Support
-
-Supports:
-
-* Local GPU
-* Cloud GPU
-* CPU fallback
-
----
-
-# Agent Memory
-
-Stores:
-
-* Brand styles
-* User preferences
-* Previous generations
+* Ocean Depths
+* Sunset Boulevard
+* Forest Canopy
+* Modern Minimalist
+* Golden Hour
+* Arctic Frost
+* Desert Rose
+* Tech Innovation
+* Botanical Garden
+* Midnight Galaxy
 
 ---
 
-# API Endpoints
+# Brand Guidelines
 
-POST /generate-ad
+Apply:
 
-Input:
+Brand Colors:
 
-{
-product
-faceImage
-style
-}
+#141413
+#faf9f5
+#b0aea5
+#e8e6dc
 
-Output:
+Accent:
 
-{
-image
-enhancedImage
-motionVideo
-}
+#d97757
+#6a9bcc
+#788c5d
 
----
+Fonts:
 
-# Usage Examples
-
-Example 1
-
-Create protein supplement ad with fitness model
-
-Example 2
-
-Create skincare product poster
-
-Example 3
-
-Create Instagram motion ad
+Poppins
+Lora
 
 ---
 
-# Deployment
+# Canvas Design
 
-Supports:
+Create:
 
-* Local deployment
-* Cloud deployment
-* Hybrid deployment
+* Hero banners
+* Landing visuals
+* Brand visuals
+
+Steps:
+
+1. Create design philosophy
+2. Generate canvas artwork
 
 ---
 
-# Requirements
+# Error Handling
 
-Node.js
-TypeScript
+Fix:
+
+* Missing images
+* 404 pages
+* Broken UI
+
+Use:
+
 Playwright
-GPU optional
+Asset download
+Auto fix
 
 ---
 
-# End of Skill
+# Final Output
+
+Must be:
+
+Production ready
+Responsive
+Premium UI
+Clean code
