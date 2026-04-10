@@ -1,49 +1,28 @@
 ---
-
 name: ultimate-website-cloner
-description: Enterprise-grade AI website cloning, UI enhancement, branding, and design automation using multi-skill pipeline.
+description: Enterprise-grade AI website cloning, UI enhancement, branding, and design automation using multi-skill pipeline
 license: Complete terms in LICENSE.txt
---------------------------------------
+---
 
 # Ultimate Website Cloner
 
-You are an expert:
+## Purpose
 
-* Full Stack Developer
-* UI/UX Designer
-* Brand Designer
-* Motion Designer
-* Creative Director
-
-Your goal:
-
-Clone and upgrade websites using intelligent multi-skill pipeline.
+Clone, upgrade, and enhance websites using intelligent multi-skill pipeline.
 
 ---
 
 # Available Skills
 
-Use these skills when required:
+Use when required:
 
-* Website Cloner
-* UI-UX-Pro-Max
-* Frontend-Design
-* Emil Design Engineering
-* Theme Factory
-* Brand Guidelines
-* Canvas Design
-
----
-
-# Skill Execution Strategy
-
-Analyze requirement first.
-
-Then decide:
-
-* Which skills required
-* Execution order
-* Dependencies
+- Website Cloner
+- UI-UX-Pro-Max
+- Frontend-Design
+- Emil Design Engineering
+- Theme Factory
+- Brand Guidelines
+- Canvas Design
 
 ---
 
@@ -63,15 +42,15 @@ Then decide:
 
 Use When:
 
-* Clone Shopify site
-* Clone ecommerce site
-* Clone landing page
+- Clone Shopify website
+- Clone ecommerce site
+- Clone landing page
 
 Tasks:
 
-* Clone pages
-* Clone components
-* Clone layout
+- Clone pages
+- Clone layout
+- Clone components
 
 ---
 
@@ -79,15 +58,15 @@ Tasks:
 
 Use When:
 
-* Broken layout
-* Spacing issues
-* Mobile issues
+- Broken layout
+- Spacing issues
+- Responsive issues
 
 Fix:
 
-* Layout
-* Responsive
-* Alignment
+- Layout
+- Spacing
+- Responsive
 
 ---
 
@@ -95,14 +74,14 @@ Fix:
 
 Use When:
 
-* UI looks generic
-* Need premium design
+- UI looks generic
+- Need premium UI
 
 Improve:
 
-* Typography
-* Layout
-* Components
+- Typography
+- Layout
+- Components
 
 ---
 
@@ -110,14 +89,14 @@ Improve:
 
 Use When:
 
-* UI complete
-* Need polish
+- UI complete
+- Need polish
 
 Add:
 
-* Animation
-* Hover effects
-* Micro interactions
+- Animations
+- Micro interactions
+- Hover effects
 
 ---
 
@@ -125,22 +104,9 @@ Add:
 
 Apply:
 
-* Colors
-* Fonts
-* Theme system
-
-Themes:
-
-* Ocean Depths
-* Sunset Boulevard
-* Forest Canopy
-* Modern Minimalist
-* Golden Hour
-* Arctic Frost
-* Desert Rose
-* Tech Innovation
-* Botanical Garden
-* Midnight Galaxy
+- Colors
+- Fonts
+- Design system
 
 ---
 
@@ -148,23 +114,9 @@ Themes:
 
 Apply:
 
-Brand Colors:
-
-#141413
-#faf9f5
-#b0aea5
-#e8e6dc
-
-Accent:
-
-#d97757
-#6a9bcc
-#788c5d
-
-Fonts:
-
-Poppins
-Lora
+- Brand colors
+- Typography
+- Identity
 
 ---
 
@@ -172,14 +124,9 @@ Lora
 
 Create:
 
-* Hero banners
-* Landing visuals
-* Brand visuals
-
-Steps:
-
-1. Create design philosophy
-2. Generate canvas artwork
+- Hero banners
+- Visual assets
+- Branding visuals
 
 ---
 
@@ -187,15 +134,15 @@ Steps:
 
 Fix:
 
-* Missing images
-* 404 pages
-* Broken UI
+- Missing images
+- 404 pages
+- Broken layout
 
 Use:
 
-Playwright
-Asset download
-Auto fix
+- Playwright
+- Asset download
+- Auto fix
 
 ---
 
@@ -203,7 +150,8 @@ Auto fix
 
 Must be:
 
-Production ready
-Responsive
-Premium UI
-Clean code
+- Production ready
+- Responsive
+- Premium UI
+- Clean code
+- 
