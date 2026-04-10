@@ -1,259 +1,343 @@
-# Design System V4
+# AI Creative Agent — System Design
 
-# Layout System
+## Overview
 
-Container
+AI Creative Agent is a multi-model AI pipeline designed for:
 
-max-w-7xl  
-mx-auto  
-px-6  
+* Product Ads
+* Product Photoshoots
+* Instagram Posts
+* Motion Ads
+* Posters
+* Product Mockups
 
-Section spacing
-
-py-24  
-
----
-
-# Typography
-
-Hero
-
-text-5xl md:text-7xl  
-font-bold  
-
-Section Title
-
-text-3xl md:text-5xl  
-
-Card Title
-
-text-lg font-semibold
-
-Body
-
-text-base
+The system integrates multiple AI models and automation tools.
 
 ---
 
-# Buttons
+# System Architecture
 
-Primary
-
-rounded-xl  
-hover scale  
-transition  
-
-Secondary
-
-outline  
-rounded-xl  
-
----
-
-# Cards
-
-rounded-2xl  
-shadow  
-hover scale  
-transition  
+User Input
+↓
+Claude Skill Agent
+↓
+Model Selector
+↓
+Workflow Engine
+↓
+Execution Engines
+↓
+Output
 
 ---
 
-# Grid System
+# Core Components
 
-Mobile
+## 1. Claude Skill Agent
 
-grid-cols-1
+Responsible for:
 
-Tablet
+* Parsing user prompt
+* Understanding intent
+* Routing to workflow
 
-grid-cols-2
+Files:
 
-Desktop
-
-grid-cols-4
-
-Large
-
-grid-cols-5
+agents/
+claudeAgent.ts
+promptParser.ts
 
 ---
 
-# Product Card
+# 2. Model Selector
 
-Include:
+Selects best model for:
 
-- Image
-- Title
-- Price
-- Sale badge
-- Hover animation
+* Image generation
+* Face swap
+* Enhancement
+* Motion
 
----
+Files:
 
-# Carousel System
-
-Product carousel
-
-Horizontal scroll
-
-Arrows
-
-Mobile swipe
+models/
+modelSelector.ts
+modelRegistry.ts
 
 ---
 
-# Header
+# 3. Workflow Engine
 
-Sticky header
+Controls:
 
-Mega menu
+* Multi-step generation
+* Automation flow
 
-Mobile menu
+Files:
 
----
-
-# Hero Section
-
-Variants
-
-- Image hero
-- Video hero
-- Slider hero
+workflow/
+workflow.ts
+pipeline.ts
 
 ---
 
-# Footer
+# 4. Image Generation Engine
 
-Sections
+Responsible for:
 
-- Links
-- Newsletter
-- Social
+* Product images
+* Model photoshoots
 
----
+Models:
 
-# Animation System
+* SDXL
+* Flux
+* Stable Diffusion
 
-Hover
+Files:
 
-scale  
-shadow  
-
-Scroll
-
-fade  
-slide  
-
-Modal
-
-scale  
-fade  
+models/
+imageGenerator.ts
 
 ---
 
-# Responsive Breakpoints
+# 5. Face Swap Engine
 
-Mobile
+Features:
 
-< 640px
+* Replace face
+* Match lighting
 
-Tablet
+Models:
 
-640px
+* InsightFace
+* FaceFusion
 
-Desktop
+Files:
 
-1024px
-
-Large
-
-1280px
-
----
-
-# Color System
-
-Primary
-
-#111111
-
-Accent
-
-#FF6B00
-
-Background
-
-#F9FAFB
-
-Text
-
-#1D1D1D
-
-Muted
-
-#737373
+models/
+faceSwap.ts
 
 ---
 
-# Shadow System
+# 6. Editing Engine
 
-Soft shadow
+Features:
 
-shadow-md
+* Background swap
+* Object replacement
 
-Card shadow
+Files:
 
-shadow-lg
-
----
-
-# Radius System
-
-rounded-lg
-
-rounded-xl
-
-rounded-2xl
+models/
+editingEngine.ts
 
 ---
 
-# Admin Dashboard Layout
+# 7. Enhancement Engine
 
-Sidebar
+Features:
 
-Topbar
+* Upscale
+* Improve detail
 
-Content
+Models:
 
----
+* RealESRGAN
 
-# Modal System
+Files:
 
-Product modal
-
-Cart modal
-
-Login modal
+models/
+enhancement.ts
 
 ---
 
-# Performance Design
+# 8. Motion Engine
 
-Lazy load
+Features:
 
-Image optimization
+* Animate images
+* Camera motion
 
-Code splitting
+Files:
+
+models/
+motionEngine.ts
 
 ---
 
-# Final Goal
+# 9. Playwright Automation
 
-Reusable system for:
+Automates:
 
-Ecommerce  
-Landing pages  
-SaaS  
-Blog  
-Shopify clone
+* External AI tools
+* Uploads
+* Downloads
+
+Files:
+
+automation/
+playwrightRunner.ts
+
+---
+
+# 10. Agent Memory
+
+Stores:
+
+* User preferences
+* Brand style
+* Previous generations
+
+Files:
+
+memory/
+memoryStore.ts
+
+---
+
+# 11. GPU Manager
+
+Handles:
+
+* Local GPU
+* CPU fallback
+
+Files:
+
+gpu/
+gpuManager.ts
+
+---
+
+# 12. Batch Generation
+
+Generates:
+
+* Multiple creatives
+
+Files:
+
+batch/
+batchGenerator.ts
+
+---
+
+# 13. API Layer
+
+Endpoints:
+
+POST /generate-ad
+
+Files:
+
+api/
+routes.ts
+controller.ts
+
+---
+
+# 14. UI Dashboard
+
+Frontend:
+
+* Upload images
+* Generate creatives
+
+Tech:
+
+* Next.js
+* Tailwind
+
+Files:
+
+frontend/
+dashboard/
+
+---
+
+# Data Flow
+
+User Input
+↓
+Prompt Parser
+↓
+Model Selector
+↓
+Workflow Engine
+↓
+Execution Engines
+↓
+Output
+
+---
+
+# Multi-Model Switching
+
+Agent selects:
+
+* Best image model
+* Best face swap model
+* Best motion model
+
+---
+
+# GPU Support
+
+Supports:
+
+* Local GPU
+* Cloud GPU
+* CPU fallback
+
+---
+
+# Error Handling
+
+Fallback logic:
+
+Model failure
+↓
+Switch model
+↓
+Retry generation
+
+---
+
+# Scalability
+
+Supports:
+
+* Multi-user
+* Batch generation
+* Cloud deployment
+
+---
+
+# Deployment
+
+Supports:
+
+* Local
+* Cloud
+* Hybrid
+
+---
+
+# Performance Optimization
+
+* Async pipeline
+* Parallel execution
+* Model caching
+
+---
+
+# Security
+
+* API keys stored in env
+* Secure uploads
+
+---
+
+# End of Design
+
