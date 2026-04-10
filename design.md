@@ -1,343 +1,156 @@
-# AI Creative Agent — System Design
+---
+name: ultimate-website-cloner
+description: Enterprise-grade AI website cloning, UI enhancement, branding, and design automation using multi-skill pipeline
+license: Complete terms in LICENSE.txt
+---
 
-## Overview
+# Ultimate Website Cloner
 
-AI Creative Agent is a multi-model AI pipeline designed for:
+## Purpose
 
-* Product Ads
-* Product Photoshoots
-* Instagram Posts
-* Motion Ads
-* Posters
-* Product Mockups
-
-The system integrates multiple AI models and automation tools.
+Clone, upgrade, and enhance websites using intelligent multi-skill pipeline.
 
 ---
 
-# System Architecture
+# Available Skills
 
-User Input
-↓
-Claude Skill Agent
-↓
-Model Selector
-↓
-Workflow Engine
-↓
-Execution Engines
-↓
-Output
+Use when required:
+
+- Website Cloner
+- UI-UX-Pro-Max
+- Frontend-Design
+- Emil Design Engineering
+- Theme Factory
+- Brand Guidelines
+- Canvas Design
 
 ---
 
-# Core Components
+# Default Implementation Order
 
-## 1. Claude Skill Agent
-
-Responsible for:
-
-* Parsing user prompt
-* Understanding intent
-* Routing to workflow
-
-Files:
-
-agents/
-claudeAgent.ts
-promptParser.ts
+1. Website Cloner
+2. UI-UX-Pro-Max
+3. Frontend-Design
+4. Emil Design Engineering
+5. Theme Factory
+6. Brand Guidelines
+7. Canvas Design
 
 ---
 
-# 2. Model Selector
+# Website Cloner
 
-Selects best model for:
+Use When:
 
-* Image generation
-* Face swap
-* Enhancement
-* Motion
+- Clone Shopify website
+- Clone ecommerce site
+- Clone landing page
 
-Files:
+Tasks:
 
-models/
-modelSelector.ts
-modelRegistry.ts
-
----
-
-# 3. Workflow Engine
-
-Controls:
-
-* Multi-step generation
-* Automation flow
-
-Files:
-
-workflow/
-workflow.ts
-pipeline.ts
+- Clone pages
+- Clone layout
+- Clone components
 
 ---
 
-# 4. Image Generation Engine
+# UI-UX-Pro-Max
 
-Responsible for:
+Use When:
 
-* Product images
-* Model photoshoots
+- Broken layout
+- Spacing issues
+- Responsive issues
 
-Models:
+Fix:
 
-* SDXL
-* Flux
-* Stable Diffusion
-
-Files:
-
-models/
-imageGenerator.ts
+- Layout
+- Spacing
+- Responsive
 
 ---
 
-# 5. Face Swap Engine
+# Frontend Design
 
-Features:
+Use When:
 
-* Replace face
-* Match lighting
+- UI looks generic
+- Need premium UI
 
-Models:
+Improve:
 
-* InsightFace
-* FaceFusion
-
-Files:
-
-models/
-faceSwap.ts
+- Typography
+- Layout
+- Components
 
 ---
 
-# 6. Editing Engine
+# Emil Design Engineering
 
-Features:
+Use When:
 
-* Background swap
-* Object replacement
+- UI complete
+- Need polish
 
-Files:
+Add:
 
-models/
-editingEngine.ts
-
----
-
-# 7. Enhancement Engine
-
-Features:
-
-* Upscale
-* Improve detail
-
-Models:
-
-* RealESRGAN
-
-Files:
-
-models/
-enhancement.ts
+- Animations
+- Micro interactions
+- Hover effects
 
 ---
 
-# 8. Motion Engine
+# Theme Factory
 
-Features:
+Apply:
 
-* Animate images
-* Camera motion
-
-Files:
-
-models/
-motionEngine.ts
+- Colors
+- Fonts
+- Design system
 
 ---
 
-# 9. Playwright Automation
+# Brand Guidelines
 
-Automates:
+Apply:
 
-* External AI tools
-* Uploads
-* Downloads
-
-Files:
-
-automation/
-playwrightRunner.ts
+- Brand colors
+- Typography
+- Identity
 
 ---
 
-# 10. Agent Memory
+# Canvas Design
 
-Stores:
+Create:
 
-* User preferences
-* Brand style
-* Previous generations
-
-Files:
-
-memory/
-memoryStore.ts
-
----
-
-# 11. GPU Manager
-
-Handles:
-
-* Local GPU
-* CPU fallback
-
-Files:
-
-gpu/
-gpuManager.ts
-
----
-
-# 12. Batch Generation
-
-Generates:
-
-* Multiple creatives
-
-Files:
-
-batch/
-batchGenerator.ts
-
----
-
-# 13. API Layer
-
-Endpoints:
-
-POST /generate-ad
-
-Files:
-
-api/
-routes.ts
-controller.ts
-
----
-
-# 14. UI Dashboard
-
-Frontend:
-
-* Upload images
-* Generate creatives
-
-Tech:
-
-* Next.js
-* Tailwind
-
-Files:
-
-frontend/
-dashboard/
-
----
-
-# Data Flow
-
-User Input
-↓
-Prompt Parser
-↓
-Model Selector
-↓
-Workflow Engine
-↓
-Execution Engines
-↓
-Output
-
----
-
-# Multi-Model Switching
-
-Agent selects:
-
-* Best image model
-* Best face swap model
-* Best motion model
-
----
-
-# GPU Support
-
-Supports:
-
-* Local GPU
-* Cloud GPU
-* CPU fallback
+- Hero banners
+- Visual assets
+- Branding visuals
 
 ---
 
 # Error Handling
 
-Fallback logic:
+Fix:
 
-Model failure
-↓
-Switch model
-↓
-Retry generation
+- Missing images
+- 404 pages
+- Broken layout
 
----
+Use:
 
-# Scalability
-
-Supports:
-
-* Multi-user
-* Batch generation
-* Cloud deployment
+- Playwright
+- Asset download
+- Auto fix
 
 ---
 
-# Deployment
+# Final Output
 
-Supports:
+Must be:
 
-* Local
-* Cloud
-* Hybrid
-
----
-
-# Performance Optimization
-
-* Async pipeline
-* Parallel execution
-* Model caching
-
----
-
-# Security
-
-* API keys stored in env
-* Secure uploads
-
----
-
-# End of Design
-
+- Production ready
+- Responsive
+- Premium UI
+- Clean code
