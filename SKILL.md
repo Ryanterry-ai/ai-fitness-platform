@@ -1,29 +1,30 @@
-# Ultimate Website Clone Skill V3
-
-## Purpose
-
-Clone any Shopify, Ecommerce, or Modern Website fully including:
-
-- Pages
-- Content
-- Images
-- Videos
-- Animations
-- Fonts
-- Components
-
-This skill performs **Pixel Perfect Clone**
-
+---
+name: ultimate-website-clone
+description: Clone any Shopify, Ecommerce, or modern website pixel-perfect including content, assets, animations, and layout
+version: 4.0
 ---
 
-# Clone Capabilities
+# Ultimate Website Clone Skill V4
 
-Full Website Crawl  
-Internal Link Navigation  
-Mega Menu Crawl  
-Lazy Load Extraction  
-Dynamic Page Extraction  
-Asset Download  
+## Objective
+
+Clone any website completely including:
+
+- Pages
+- Layout
+- UI
+- Images
+- Videos
+- Fonts
+- Animations
+- Content
+- Components
+
+This is **Exact Clone Mode**
+
+No redesign  
+No interpretation  
+No conversion  
 
 ---
 
@@ -33,56 +34,65 @@ Shopify
 NextJS  
 React  
 WordPress  
-Custom  
+Custom HTML  
+
+---
+
+# Clone Capabilities
+
+Full Website Crawl  
+Internal Link Discovery  
+Mega Menu Crawl  
+Dynamic Page Crawl  
+Lazy Load Extraction  
+Asset Download  
+Animation Detection  
+Component Extraction  
 
 ---
 
 # Clone Pipeline
 
-## Phase 1
+## Phase 1 — Website Crawl
 
-Playwright Crawl
+Use Playwright
 
-## Phase 2
-
-Auto Scroll Lazy Load
-
-## Phase 3
-
-Asset Extraction
-
-## Phase 4
-
-Animation Detection
-
-## Phase 5
-
-Theme Extraction
-
-## Phase 6
-
-Component Mapping
-
-## Phase 7
-
-Repo Generation
+- Crawl homepage
+- Crawl navigation
+- Crawl footer links
+- Crawl dropdown menu
 
 ---
 
-# Assets Extracted
+## Phase 2 — Lazy Load Extraction
+
+Auto scroll entire page
+
+Load:
+
+Images  
+Videos  
+Products  
+Reviews  
+
+---
+
+## Phase 3 — Asset Extraction
+
+Download:
 
 Images  
 Fonts  
 Videos  
 CSS  
 JS  
-SVG Icons  
+SVG  
 
 ---
 
-# Shopify Support
+## Phase 4 — Shopify Extraction
 
-Clone:
+Extract:
 
 Products  
 Collections  
@@ -92,14 +102,9 @@ Policies
 
 ---
 
-# Dynamic Routes
+## Phase 5 — Animation Detection
 
-/products/[slug]  
-/collections/[slug]  
-
----
-
-# Animation Detection
+Detect:
 
 Framer Motion  
 GSAP  
@@ -108,30 +113,61 @@ Slick
 
 ---
 
-# Error Handling
+## Phase 6 — Component Extraction
+
+Header  
+Footer  
+Hero  
+Product Card  
+Cart Drawer  
+Mega Menu  
+
+---
+
+## Phase 7 — Dynamic Routes
+
+/products/[slug]
+
+/collections/[slug]
+
+---
+
+## Phase 8 — Error Fix
 
 Fix:
 
-404 errors  
+404 pages  
 Broken images  
 Missing CSS  
+Missing content  
+
+---
+
+## Phase 9 — Repo Generation
+
+Generate:
+
+pages  
+components  
+assets  
+
+---
+
+# Animation Support
+
+Framer Motion  
+GSAP  
+Swiper  
+Remotion  
 
 ---
 
 # Output
 
-Production Ready Clone
+Pixel Perfect Clone
 
 ---
 
 # Clone Mode
 
 Exact Copy Only
-
-No redesign
-
----
-
-# Result
-
-Pixel Perfect Clone
