@@ -1,105 +1,106 @@
-# Ultimate Website Cloner Design System
+# Design System V2
 
-# Design Philosophy
+## Layout
 
-Each cloned website must:
+Container
 
-- Look premium
-- Look modern
-- Look unique
+max-w-7xl  
+mx-auto  
+px-6  
+
+Section spacing
+
+py-24  
 
 ---
 
 # Typography
 
-Use:
+Hero
 
-- Display font
-- Body font
+text-5xl md:text-7xl  
+font-bold  
 
-Avoid:
+Section Title
 
-- Generic fonts
-
----
-
-# Color System
-
-Use:
-
-- Primary
-- Secondary
-- Accent
-- Neutral
+text-3xl md:text-5xl  
 
 ---
 
-# Layout System
+# Buttons
 
-Use:
+Primary
 
-- Clean spacing
-- Clear hierarchy
-- Responsive grid
+Rounded-xl  
+Hover animation  
 
----
+Secondary
 
-# Animation System
-
-Use:
-
-- Hover animations
-- Scroll animations
-- Transitions
+Outline  
 
 ---
 
-# Component System
+# Cards
 
-Improve:
-
-- Navbar
-- Hero
-- Cards
-- Buttons
-- Footer
+Rounded-2xl  
+Shadow  
+Hover scale  
 
 ---
 
-# Theme System
+# Grid
 
-Apply:
+Mobile
 
-- Color palette
-- Typography
-- Spacing
+1 column
 
----
+Tablet
 
-# Brand System
+2 column
 
-Apply:
+Desktop
 
-- Brand colors
-- Brand fonts
-- Brand layout
+4 column
 
 ---
 
-# Canvas Design
+# Animations
 
-Create:
+Hover
 
-- Hero visuals
-- Banners
-- Branding visuals
+scale  
+shadow  
+
+Scroll
+
+fade  
+slide  
 
 ---
 
-# Quality Standard
+# Colors
 
-Design must:
+Primary
 
-- Look premium
-- Look consistent
-- Look professional
+#111111
+
+Accent
+
+#FF6B00
+
+Background
+
+#F9FAFB
+
+---
+
+# Shadows
+
+Soft shadows
+
+---
+
+# Radius
+
+Rounded-xl  
+Rounded-2xl  
