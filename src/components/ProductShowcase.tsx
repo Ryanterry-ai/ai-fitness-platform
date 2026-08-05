@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Star } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 
 const PRODUCTS = [
   { slug: 'primex-preworkout-orange', name: 'PRIME X Pre-Workout', flavour: 'Orange', price: 1299, originalPrice: 1599, image: '/products/prime-x-orange.png', badge: '25% off', rating: 4.8, reviews: 34 },

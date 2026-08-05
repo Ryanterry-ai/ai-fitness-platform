@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import Image from '@/components/Image';
+
+// Static export (Hostinger) has no Node server, so the old /api/send-discount
+// route can't run. Get a free access key at https://web3forms.com (no backend
+// needed) and paste it below to have leads emailed to you. Leave the
+// placeholder in place and the popup still works fine — it just skips the
+// lead notification and shows the code on-screen either way.
+const WEB3FORMS_ACCESS_KEY = 'YOUR_WEB3FORMS_ACCESS_KEY';
+const DISCOUNT_CODE = 'PRIME-X';
 
 export default function WelcomePopup() {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,27 +72,30 @@ export default function WelcomePopup() {
 
     setIsSubmitting(true);
 
-    try {
-      const res = await fetch('/api/send-discount', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), mobile: mobile.trim(), email: email.trim() }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Something went wrong. Please try again.');
-        setIsSubmitting(false);
-        return;
+    // Best-effort lead notification via Web3Forms (pure client-side, works on
+    // static hosting). If no key is configured yet, this silently no-ops —
+    // it never blocks the customer from getting their code.
+    if (WEB3FORMS_ACCESS_KEY && WEB3FORMS_ACCESS_KEY !== 'YOUR_WEB3FORMS_ACCESS_KEY') {
+      try {
+        await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            subject: 'PURE — New PRIME X discount lead',
+            name: name.trim(),
+            email: email.trim(),
+            mobile: mobile.trim(),
+          }),
+        });
+      } catch {
+        // Non-fatal — the customer still gets their code below.
       }
-
-      setStep('success');
-      localStorage.setItem('pure_popup_dismissed', 'true');
-    } catch {
-      setError('Network error. Please try again.');
-      setIsSubmitting(false);
     }
+
+    setStep('success');
+    localStorage.setItem('pure_popup_dismissed', 'true');
+    setIsSubmitting(false);
   };
 
   if (!isOpen) return null;
@@ -161,10 +172,11 @@ export default function WelcomePopup() {
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
               </div>
-              <h2 className="popup-title" style={{ fontSize: 'clamp(22px, 3vw, 30px)' }}>CODE SENT!</h2>
+              <h2 className="popup-title" style={{ fontSize: 'clamp(22px, 3vw, 30px)' }}>YOU'RE IN!</h2>
               <p className="popup-subtitle">
-                Your exclusive 20% discount code has been sent to your email and WhatsApp. Check your inbox!
+                Use this code at checkout for 20% off the Trainer&apos;s Tray Bundle:
               </p>
+              <div className="popup-coupon">{DISCOUNT_CODE}</div>
               <button className="popup-btn" onClick={() => setIsOpen(false)} style={{ marginTop: 20 }}>
                 START SHOPPING
               </button>

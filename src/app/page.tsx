@@ -1,10 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import dynamic from 'next/dynamic';
-
-const WelcomePopup = dynamic(() => import('../components/WelcomePopup'), { ssr: false });
+import Image from '@/components/Image';
+const WelcomePopup = React.lazy(() => import('../components/WelcomePopup'));
 
 const INGREDIENTS = [
   { value: '1.5', unit: 'g', name: 'Beta-Alanine', desc: 'Buffers lactic acid buildup in muscles, delaying fatigue so you can push harder for longer. One of the most clinically studied performance ingredients.' },

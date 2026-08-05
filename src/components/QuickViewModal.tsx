@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { X, Star, Check, Minus, Plus, ShieldCheck, Truck, ExternalLink, Zap } from 'lucide-react';
 import { useShop, ProductVariant } from '@/lib/store';
 import { PARTNER_URL } from './AnnouncementBar';
 
 export default function QuickViewModal() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { quickViewProduct, setQuickViewProduct, addToCart } = useShop();
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -25,7 +25,7 @@ export default function QuickViewModal() {
     setTimeout(() => {
       setAdded(false);
       setQuickViewProduct(null);
-      router.push('/cart');
+      navigate('/cart');
     }, 400);
   };
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Menu, X, ShoppingBag, Search, ChevronDown, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 import { useShop } from '@/lib/store';
 
 const categoryLinks = [

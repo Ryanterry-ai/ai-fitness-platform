@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, SlidersHorizontal, X, Star, ShoppingBag, Eye, Heart, ChevronDown, Package, Zap, ExternalLink } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 import { useShop, Product } from '@/lib/store';
 import ScrollReveal from '@/components/ScrollReveal';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
@@ -170,7 +170,7 @@ export default function ShopPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((product, index) => (
-              <ScrollReveal key={product.id} delay={index * 50}>
+              <ScrollReveal key={product.id} delay={Math.min(index * 0.06, 0.4)}>
                 <motion.div
                   className="group glass rounded-3xl overflow-hidden border border-white/5 hover:border-pure-yellow/30 transition-all duration-500"
                   whileHover={{ y: -4 }}

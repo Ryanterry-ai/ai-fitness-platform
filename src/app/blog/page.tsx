@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, ArrowRight, Tag } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 

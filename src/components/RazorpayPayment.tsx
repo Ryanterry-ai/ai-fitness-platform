@@ -53,7 +53,7 @@ export async function handleRazorpayPayment({
   const orderId = `order_${Date.now()}`;
 
   const options = {
-    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_demo',
+    key: (window as any).PureSuppsWPConfig?.razorpayKeyId || import.meta.env?.VITE_RAZORPAY_KEY_ID || 'rzp_test_demo',
     amount: amount * 100, // Razorpay expects paise
     currency: 'INR',
     name: 'PURE HEALTH SUPPS',

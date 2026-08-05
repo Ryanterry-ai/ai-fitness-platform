@@ -3,11 +3,10 @@
 import React, { useRef, useState, useEffect, Suspense } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { Zap, ArrowRight, ChevronDown, ExternalLink } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { HeroComposer, ProductOnBackground } from './MockupGenerator';
 import { PARTNER_URL } from './AnnouncementBar';
 
-const ParticleHero = dynamic(() => import('./ParticleHero'), { ssr: false });
+const ParticleHero = React.lazy(() => import('./ParticleHero'));
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 

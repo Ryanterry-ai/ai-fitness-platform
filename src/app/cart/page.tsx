@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Minus, Plus, Tag, ShoppingBag, ArrowLeft, ShieldCheck, Truck, X, Check, ArrowRight, ExternalLink } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 import { useShop, CartItem } from '@/lib/store';
 import ScrollReveal from '@/components/ScrollReveal';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
@@ -60,7 +60,7 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             <AnimatePresence>
               {cart.map((item, index) => (
-                <ScrollReveal key={`${item.product.id}-${item.variant.id}`} delay={index * 50}>
+                <ScrollReveal key={`${item.product.id}-${item.variant.id}`} delay={Math.min(index * 0.06, 0.4)}>
                   <motion.div
                     className="glass rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 border border-white/5 hover:border-white/10 transition-colors"
                     layout

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 import { PARTNER_URL } from './AnnouncementBar';
 
 interface Slide {

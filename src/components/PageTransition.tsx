@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { useLocation } from 'react-router-dom';
 
 const pageVariants = {
   initial: {
@@ -42,12 +42,12 @@ const childVariants = {
 };
 
 export default function PageTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const location = useLocation();
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={pathname}
+        key={location.pathname}
         variants={pageVariants}
         initial="initial"
         animate="enter"

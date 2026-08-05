@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Star, ExternalLink } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 import { PARTNER_URL } from './AnnouncementBar';
 
 interface ProductCard3DProps {
