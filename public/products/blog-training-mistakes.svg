@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="none">
+  <rect width="800" height="450" fill="#0a0a0a"/>
+  <rect x="40" y="40" width="320" height="370" rx="16" fill="#141414" stroke="#FFD100" stroke-width="1.5"/>
+  <text x="200" y="110" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="20" fill="#FFD100">COMMON</text>
+  <text x="200" y="140" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="20" fill="#FFD100">TRAINING</text>
+  <text x="200" y="175" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="20" fill="#FFD100">MISTAKES</text>
+  <line x1="140" y1="195" x2="260" y2="195" stroke="#FFD100" stroke-width="2"/>
+  <text x="200" y="230" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#666">Avoid these pitfalls</text>
+  <rect x="120" y="260" width="160" height="10" rx="5" fill="#FFD100" opacity="0.2"/>
+  <rect x="120" y="285" width="120" height="10" rx="5" fill="#FFD100" opacity="0.15"/>
+  <rect x="120" y="310" width="140" height="10" rx="5" fill="#FFD100" opacity="0.1"/>
+  <circle cx="600" cy="225" r="100" fill="none" stroke="#FFD100" stroke-width="2" opacity="0.3"/>
+  <line x1="560" y1="225" x2="640" y2="225" stroke="#FFD100" stroke-width="3" opacity="0.5"/>
+  <line x1="600" y1="185" x2="600" y2="265" stroke="#FFD100" stroke-width="3" opacity="0.5"/>
+</svg>

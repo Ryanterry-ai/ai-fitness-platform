@@ -1,40 +1,20 @@
-import type { Metadata } from "next";
-import { Roboto, Oswald } from "next/font/google";
-import "./globals.css";
-import { CartProvider } from "@/lib/cart-context";
-
-const roboto = Roboto({
-  variable: "--font-roboto",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-});
-
-const oswald = Oswald({
-  variable: "--font-oswald",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "NEED® Supplements",
-  description: "Premium sports supplements - Proteins, Pre-training, Amino Acids, Vitamins & Minerals",
+  title: 'PURE HEALTH SUPPS® — PRIME X Pre-Workout | India\'s Highest-Intensity Fuel',
+  description: 'PRIME X Pre-Workout by PURE HEALTH SUPPS. FSSAI licensed. Banned substance free. Focus. Pump. Energy.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${roboto.variable} ${oswald.variable} h-full antialiased`}
-    >
-      <body className={`${roboto.variable} ${oswald.variable} min-h-full flex flex-col font-roboto`}>
-        <CartProvider>
-          {children}
-        </CartProvider>
-      </body>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

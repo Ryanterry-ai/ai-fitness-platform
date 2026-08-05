@@ -1,205 +1,241 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { products, Product } from "@/lib/data";
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Package, ShoppingBag, Users, BarChart3, Settings, Plus, Edit3, Trash2, Eye, Search, ChevronDown, Check, X, Truck, Clock, CheckCircle, XCircle, Tag, ArrowLeft } from 'lucide-react';
+import { useShop, Product, Order, Coupon } from '@/lib/store';
+import ScrollReveal from '@/components/ScrollReveal';
+
+const EASE = [0.23, 1, 0.32, 1] as const;
+
+type Tab = 'dashboard' | 'products' | 'orders' | 'coupons' | 'customers';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState("products");
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const { products, orders, coupons, updateOrderStatus } = useShop();
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const stats = {
-    totalProducts: products.length,
-    totalSales: "€12,450",
-    orders: 156,
-    customers: 89,
-  };
+  const totalRevenue = orders.reduce((sum: number, o: Order) => sum + o.total, 0);
+  const paidOrders = orders.filter((o: Order) => o.paymentStatus === 'PAID').length;
+  const pendingOrders = orders.filter((o: Order) => o.orderStatus === 'Processing').length;
+
+  const tabs: { id: Tab; label: string; icon: any; count?: number }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'products', label: 'Products', icon: Package, count: products.length },
+    { id: 'orders', label: 'Orders', icon: ShoppingBag, count: orders.length },
+    { id: 'coupons', label: 'Coupons', icon: Tag, count: coupons.length },
+    { id: 'customers', label: 'Customers', icon: Users },
+  ];
 
   return (
-    <div className="min-h-screen font-roboto bg-gray-50">
-      {/* Admin Header */}
-      <header className="bg-[#1d1d1d] text-white py-4">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image src="/images/logo.png" alt="NEED® Admin" width={150} height={50} className="h-auto" />
-            <span className="font-oswald text-xl">ADMIN PANEL</span>
-          </div>
-          <Link href="/" className="text-sm hover:text-[#ffcc00]">
-            View Store →
-          </Link>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <p className="text-[#737373] text-sm">Total Products</p>
-            <p className="text-3xl font-bold">{stats.totalProducts}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <p className="text-[#737373] text-sm">Total Sales</p>
-            <p className="text-3xl font-bold">{stats.totalSales}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <p className="text-[#737373] text-sm">Orders</p>
-            <p className="text-3xl font-bold">{stats.orders}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <p className="text-[#737373] text-sm">Customers</p>
-            <p className="text-3xl font-bold">{stats.customers}</p>
+    <div className="bg-pure-black min-h-screen pt-24 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <a href="/" className="text-xs text-gray-500 hover:text-pure-yellow transition-colors flex items-center gap-1 mb-2">
+              <ArrowLeft className="w-3 h-3" /> Back to Store
+            </a>
+            <h1 className="text-3xl font-black text-white uppercase tracking-tight">Admin Panel</h1>
+            <p className="text-sm text-gray-500 mt-1">Manage your store</p>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="flex border-b">
-            {["products", "orders", "customers", "settings"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-4 font-oswald text-sm ${
-                  activeTab === tab
-                    ? "border-b-2 border-[#ffcc00] text-[#1d1d1d]"
-                    : "text-[#737373] hover:text-[#1d1d1d]"
-                }`}
-              >
-                {tab.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          {/* Products Tab */}
-          {activeTab === "products" && (
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="font-oswald text-xl">Manage Products</h2>
-                <button className="bg-[#ffcc00] text-black px-4 py-2 font-bold text-sm hover:bg-yellow-400">
-                  + Add Product
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar */}
+          <div className="lg:w-56 shrink-0">
+            <div className="glass rounded-2xl p-3 border border-white/5 space-y-1">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-pure-yellow text-pure-black'
+                      : 'text-gray-500 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span className="flex-1 text-left">{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-pure-black/20' : 'bg-white/10'}`}>
+                      {tab.count}
+                    </span>
+                  )}
                 </button>
-              </div>
+              ))}
+            </div>
+          </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b text-left">
-                      <th className="pb-3 text-sm font-oswald">IMAGE</th>
-                      <th className="pb-3 text-sm font-oswald">NAME</th>
-                      <th className="pb-3 text-sm font-oswald">PRICE</th>
-                      <th className="pb-3 text-sm font-oswald">CATEGORY</th>
-                      <th className="pb-3 text-sm font-oswald">STATUS</th>
-                      <th className="pb-3 text-sm font-oswald">ACTIONS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map((product) => (
-                      <tr key={product.id} className="border-b">
-                        <td className="py-4">
-                          <div className="w-16 h-16 relative bg-gray-100 rounded">
-                            <Image src={product.image} alt={product.name} fill className="object-contain p-2" />
-                          </div>
-                        </td>
-                        <td className="py-4 font-medium">{product.name}</td>
-                        <td className="py-4">€{product.price.toFixed(2)}</td>
-                        <td className="py-4 capitalize">{product.category}</td>
-                        <td className="py-4">
-                          <span className={`px-2 py-1 text-xs rounded ${
-                            product.status === "sale" ? "bg-green-100 text-green-800" :
-                            product.status === "sold-out" ? "bg-red-100 text-red-800" :
-                            "bg-gray-100 text-gray-800"
-                          }`}>
-                            {product.status || "active"}
-                          </span>
-                        </td>
-                        <td className="py-4">
-                          <button className="text-blue-600 hover:text-blue-800 text-sm mr-3">Edit</button>
-                          <button className="text-red-600 hover:text-red-800 text-sm">Delete</button>
-                        </td>
-                      </tr>
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <AnimatePresence mode="wait">
+              {activeTab === 'dashboard' && (
+                <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: BarChart3, color: 'text-pure-yellow' },
+                      { label: 'Total Orders', value: orders.length, icon: ShoppingBag, color: 'text-blue-400' },
+                      { label: 'Paid Orders', value: paidOrders, icon: CheckCircle, color: 'text-green-400' },
+                      { label: 'Pending', value: pendingOrders, icon: Clock, color: 'text-orange-400' },
+                    ].map((stat, i) => (
+                      <div key={i} className="glass rounded-2xl p-5 border border-white/5">
+                        <stat.icon className={`w-5 h-5 ${stat.color} mb-3`} />
+                        <p className="text-2xl font-black text-white">{stat.value}</p>
+                        <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                  </div>
 
-          {/* Orders Tab */}
-          {activeTab === "orders" && (
-            <div className="p-6">
-              <h2 className="font-oswald text-xl mb-6">Recent Orders</h2>
-              <div className="space-y-4">
-                {[
-                  { id: "#ORD-001", customer: "John Doe", total: "€89.90", status: "Completed" },
-                  { id: "#ORD-002", customer: "Jane Smith", total: "€124.50", status: "Processing" },
-                  { id: "#ORD-003", customer: "Mike Johnson", total: "€45.00", status: "Pending" },
-                ].map((order) => (
-                  <div key={order.id} className="flex justify-between items-center p-4 bg-gray-50 rounded">
-                    <div>
-                      <p className="font-bold">{order.id}</p>
-                      <p className="text-sm text-[#737373]">{order.customer}</p>
+                  {/* Recent Orders */}
+                  <div className="glass rounded-2xl border border-white/5 overflow-hidden">
+                    <div className="p-5 border-b border-white/5">
+                      <h3 className="text-sm font-bold text-white">Recent Orders</h3>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold">{order.total}</p>
-                      <p className="text-sm">{order.status}</p>
+                    <div className="divide-y divide-white/5">
+                      {orders.slice(0, 5).map((order: Order) => (
+                        <div key={order.id} className="px-5 py-3 flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-bold text-white">{order.orderNumber}</p>
+                            <p className="text-xs text-gray-500">{order.shippingAddress.name} • {new Date(order.date).toLocaleDateString()}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+                              order.orderStatus === 'Delivered' ? 'bg-green-500/20 text-green-400' :
+                              order.orderStatus === 'Dispatched' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-orange-500/20 text-orange-400'
+                            }`}>
+                              {order.orderStatus}
+                            </span>
+                            <span className="text-sm font-bold text-pure-yellow">₹{order.total.toLocaleString('en-IN')}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </motion.div>
+              )}
 
-          {/* Customers Tab */}
-          {activeTab === "customers" && (
-            <div className="p-6">
-              <h2 className="font-oswald text-xl mb-6">Customers</h2>
-              <div className="space-y-4">
-                {[
-                  { name: "John Doe", email: "john@example.com", orders: 5 },
-                  { name: "Jane Smith", email: "jane@example.com", orders: 3 },
-                  { name: "Mike Johnson", email: "mike@example.com", orders: 8 },
-                ].map((customer) => (
-                  <div key={customer.email} className="flex justify-between items-center p-4 bg-gray-50 rounded">
-                    <div>
-                      <p className="font-bold">{customer.name}</p>
-                      <p className="text-sm text-[#737373]">{customer.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">{customer.orders} orders</p>
-                    </div>
+              {activeTab === 'products' && (
+                <motion.div key="products" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-white">Products ({products.length})</h2>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div className="space-y-3">
+                    {products.map((product: Product) => (
+                      <div key={product.id} className="glass rounded-2xl p-4 border border-white/5 flex items-center gap-4">
+                        <img src={product.image} alt="" className="w-16 h-16 rounded-xl object-cover bg-pure-dark" />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-bold text-white truncate">{product.name}</h3>
+                          <p className="text-xs text-gray-500">{product.category} • {product.flavour || 'N/A'} • {product.variants.length} variants</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-bold text-pure-yellow">₹{product.price.toLocaleString('en-IN')}</p>
+                          <p className="text-xs text-gray-500">{product.rating}★ • {product.reviewCount} reviews</p>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <button className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"><Eye className="w-4 h-4" /></button>
+                          <button className="p-2 text-gray-500 hover:text-pure-yellow hover:bg-pure-yellow/10 rounded-lg transition-colors"><Edit3 className="w-4 h-4" /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
 
-          {/* Settings Tab */}
-          {activeTab === "settings" && (
-            <div className="p-6">
-              <h2 className="font-oswald text-xl mb-6">Store Settings</h2>
-              <div className="space-y-6 max-w-md">
-                <div>
-                  <label className="block font-bold text-sm mb-2">Store Name</label>
-                  <input type="text" defaultValue="NEED® Supplements" className="w-full border px-4 py-2 rounded" />
-                </div>
-                <div>
-                  <label className="block font-bold text-sm mb-2">Currency</label>
-                  <select className="w-full border px-4 py-2 rounded">
-                    <option>EUR (€)</option>
-                    <option>USD ($)</option>
-                    <option>GBP (£)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-sm mb-2">Shipping Cost</label>
-                  <input type="text" defaultValue="€5.99" className="w-full border px-4 py-2 rounded" />
-                </div>
-                <button className="bg-[#1d1d1d] text-white px-6 py-2 font-bold hover:bg-gray-800">
-                  Save Settings
-                </button>
-              </div>
-            </div>
-          )}
+              {activeTab === 'orders' && (
+                <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                  <h2 className="text-lg font-bold text-white">Orders ({orders.length})</h2>
+                  <div className="space-y-3">
+                    {orders.map((order: Order) => (
+                      <div key={order.id} className="glass rounded-2xl p-5 border border-white/5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <p className="text-sm font-bold text-white">{order.orderNumber}</p>
+                            <p className="text-xs text-gray-500">{new Date(order.date).toLocaleString()}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+                              order.paymentStatus === 'PAID' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'
+                            }`}>
+                              {order.paymentStatus}
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+                              order.orderStatus === 'Delivered' ? 'bg-green-500/20 text-green-400' :
+                              order.orderStatus === 'Dispatched' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-orange-500/20 text-orange-400'
+                            }`}>
+                              {order.orderStatus}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-gray-500">
+                            <p>{order.shippingAddress.name} • {order.shippingAddress.city}, {order.shippingAddress.state}</p>
+                            <p>{order.paymentMethod.toUpperCase()} • ₹{order.total.toLocaleString('en-IN')}</p>
+                          </div>
+                          <div className="flex gap-1">
+                            {(['Processing', 'Dispatched', 'Delivered'] as const).map((status) => (
+                              <button
+                                key={status}
+                                onClick={() => updateOrderStatus(order.id, status)}
+                                className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-all ${
+                                  order.orderStatus === status
+                                    ? 'bg-pure-yellow text-pure-black'
+                                    : 'bg-white/5 text-gray-500 hover:bg-white/10'
+                                }`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'coupons' && (
+                <motion.div key="coupons" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                  <h2 className="text-lg font-bold text-white">Coupons ({coupons.length})</h2>
+                  <div className="space-y-3">
+                    {coupons.map((coupon: Coupon) => (
+                      <div key={coupon.code} className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-pure-yellow/10 rounded-xl flex items-center justify-center">
+                            <Tag className="w-5 h-5 text-pure-yellow" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-pure-yellow">{coupon.code}</p>
+                            <p className="text-xs text-gray-500">{coupon.description}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-black text-white">
+                            {coupon.discountType === 'percentage' ? `${coupon.value}%` : `₹${coupon.value}`}
+                          </p>
+                          <p className="text-[10px] text-gray-500">Min order ₹{coupon.minOrder}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'customers' && (
+                <motion.div key="customers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                  <h2 className="text-lg font-bold text-white">Customers</h2>
+                  <div className="glass rounded-2xl p-8 border border-white/5 text-center">
+                    <Users className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500">Customer management coming soon.</p>
+                    <p className="text-xs text-gray-600 mt-1">Integrate with your CRM or database for full customer profiles.</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>

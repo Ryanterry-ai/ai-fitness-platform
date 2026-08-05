@@ -1,272 +1,304 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState } from "react";
-import BestSellers from "@/components/BestSellers";
-import ProductCarousel from "@/components/ProductCarousel";
+import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
 
-const topBarLinks = [
-  { href: "https://www.facebook.com/needsupplements/", label: "Facebook" },
-  { href: "https://www.youtube.com/channel/UCn5elEu8ZPYqfE388aZp_Og", label: "YouTube" },
-  { href: "https://www.instagram.com/need_supps/", label: "Instagram" },
+const WelcomePopup = dynamic(() => import('../components/WelcomePopup'), { ssr: false });
+
+const INGREDIENTS = [
+  { value: '1.5', unit: 'g', name: 'Beta-Alanine', desc: 'Buffers lactic acid buildup in muscles, delaying fatigue so you can push harder for longer. One of the most clinically studied performance ingredients.' },
+  { value: '750', unit: 'mg', name: 'Arginine HCl', desc: 'Boosts nitric oxide production for enhanced blood flow, delivering more oxygen and nutrients to working muscles during intense training.' },
+  { value: '500', unit: 'mg', name: 'L-Citrulline', desc: 'Converts to L-Arginine in the kidneys, providing sustained nitric oxide support. Reduces muscle soreness and improves endurance across sessions.' },
+  { value: '250', unit: 'mg', name: 'L-Carnitine', desc: 'Transports fatty acids into mitochondria for energy production. Supports endurance,加速 recovery, and helps maintain lean muscle during cutting phases.' },
+  { value: '125', unit: 'mg', name: 'L-Tyrosine', desc: 'Precursor to dopamine and norepinephrine. Sharpens focus, mental clarity, and reaction time — especially under the stress of heavy training.' },
+  { value: '50', unit: 'mg', name: 'Encapsulated Caffeine', desc: 'Sustained-release caffeine technology delivers clean, jitter-free energy that lasts through your entire session without the dreaded crash.' },
+  { value: '45', unit: 'mg', name: 'Coffee Bean Extract', desc: 'Natural source of caffeine packed with chlorogenic antioxidants. Works synergistically with encapsulated caffeine for smooth, extended energy.' },
+  { value: '37.5', unit: 'mg', name: 'Garcinia Cambogia', desc: 'Contains HCA which supports fat metabolism and may help manage appetite. Complements the energy blend for a leaner, more focused training experience.' },
 ];
 
-const navLinks = [
-  { href: "/collections/proteins", label: "PROTEINS" },
-  { href: "/collections/pre-training", label: "PRE-TRAINING" },
-  { href: "/collections/muscle-builder", label: "BUILD MUSCLE" },
-  { href: "/collections/amino-acids", label: "AMINO ACIDS" },
-  { href: "/collections/vitality-and-health", label: "VITAMINS & MINERALS" },
-  { href: "/collections/weight-loss", label: "WEIGHT LOSS" },
+const TESTIMONIALS = [
+  { stars: '★★★★★', text: '"Half a scoop and I feel it inside fifteen minutes. No crash by the time I\'m back at my desk."', name: 'Rohit A.', role: 'Working Professional', avatar: 'R' },
+  { stars: '★★★★★', text: '"Rocket Lollipop tastes exactly like it should, no chalky aftertaste. Pump lasted the whole session."', name: 'Simran K.', role: 'Strength Training', avatar: 'S' },
+  { stars: '★★★★★', text: '"Finally a pre-workout that lists actual dosages instead of a \'proprietary blend.\' That\'s what sold me."', name: 'Arjun M.', role: 'Powerlifter', avatar: 'A' },
 ];
 
-const bestSellers = [
-  {
-    id: 1,
-    name: "NEED PURE WHEY",
-    price: "From €1,95",
-    image: "/images/products/pure-whey.png",
-    status: "sold-out",
-    reviews: 34,
-  },
-  {
-    id: 2,
-    name: "NEED DIURE·6",
-    price: "€19,50",
-    originalPrice: "€25,90",
-    image: "/images/products/diure6.png",
-    discount: "25% off",
-    status: "sold-out",
-    reviews: 5,
-  },
-  {
-    id: 3,
-    name: "NEED PURE ISO",
-    price: "€69,90",
-    originalPrice: "€104,90",
-    image: "/images/products/pure-iso.png",
-    discount: "33% off",
-    status: "sale",
-    reviews: 4,
-  },
-  {
-    id: 4,
-    name: "NEED 0·CARBS",
-    price: "€24,90",
-    originalPrice: "€29,90",
-    image: "/images/products/0carbs.png",
-    discount: "17% off",
-    status: "sale",
-    reviews: 4,
-  },
+const PRODUCTS = [
+  { flavor: 'orange', label: 'Flavour 01 — Orange', name: 'Orange', img: '/products/Orange.png', tubImg: '/products/tub-orange.png', desc: 'Bright, citrus-forward pre-workout built for the early sessions — sharp focus from the first sip.', delay: '1' },
+  { flavor: 'rocket', label: 'Flavour 02 — Rocket Lollipop', name: 'Rocket Lollipop', img: '/products/Rocket Lolli pop.png', tubImg: '/products/tub-rocket.png', desc: 'Nostalgic, electric, and unapologetically fun — our most requested flavour for a reason.', delay: '2' },
+  { flavor: 'fruit', label: 'Flavour 03 — Fruit Punch', name: 'Fruit Punch', img: '/products/Fruit Punch.png', tubImg: '/products/tub-fruit-punch.png', desc: 'A full mixed-fruit hit — the flagship flavour, built for max-intensity training days.', delay: '3' },
 ];
 
-const categories = [
-  { name: "Proteins", image: "/images/category-proteins.jpg", href: "/collections/proteins" },
-  { name: "Pre-training", image: "/images/category-pretraining.jpg", href: "/collections/pre-training" },
-  { name: "Amino acids", image: "/images/category-aminoacids.jpg", href: "/collections/amino-acids" },
-  { name: "Vitamins & Minerals", image: "/images/category-vitamins.jpg", href: "/collections/vitality-and-health" },
-  { name: "Weight loss", image: "/images/category-weightloss.jpg", href: "/collections/weight-loss" },
-  { name: "Build Muscle", image: "/images/category-buildmuscle.jpg", href: "/collections/muscle-builder" },
-];
+export default function HomePage() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const heroRevealRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [heroProduct, setHeroProduct] = useState(0);
 
-const muscleProducts = [
-  { name: "NEED PURE WHEY", price: "From €1,95", image: "/images/products/pure-whey.png", status: "sold-out", reviews: 34 },
-  { name: "NEED POWER CREATINE", price: "From €1,95", image: "/images/products/power-creatine.png", status: "", reviews: 10 },
-  { name: "NEED BCAAS & GLUTAMINE", price: "From €1,95", image: "/images/products/bcaas-glutamine.png", status: "sold-out", reviews: 14 },
-  { name: "NEED PURE MASS GAINER", price: "€39,90", originalPrice: "€76,90", image: "/images/products/mass-gainer.png", discount: "48% off", status: "sale", reviews: 10 },
-  { name: "NEED PURE ISO", price: "€69,90", originalPrice: "€104,90", image: "/images/products/pure-iso.png", discount: "33% off", status: "sale", reviews: 4 },
-  { name: "NEED TE5TO S7", price: "€24,90", originalPrice: "€42,90", image: "/images/products/testo-s7.png", discount: "42% off", status: "sale", reviews: 1 },
-  { name: "NEED PROTEIN MAX", price: "€57,65", image: "/images/products/protein-max.png", status: "sold-out", reviews: 0 },
-];
+  // Auto-rotate hero product
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroProduct(p => (p + 1) % 3);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, []);
 
-const footerLinks = {
-  shop: [
-    { href: "/collections/proteins", label: "PROTEINS" },
-    { href: "/collections/pre-training", label: "PRE-TRAINING" },
-    { href: "/collections/muscle-builder", label: "BUILD MUSCLE" },
-    { href: "/collections/amino-acids", label: "AMINO ACIDS" },
-    { href: "/collections/vitality-and-health", label: "VITAMINS & MINERALS" },
-    { href: "/collections/weight-loss", label: "WEIGHT LOSS" },
-  ],
-  company: [
-    { href: "/blogs/the-health-project", label: "The Health Project" },
-    { href: "/pages/about-us", label: "About us" },
-    { href: "/pages/contact-us", label: "Contact us" },
-  ],
-  legal: [
-    { href: "/policies/privacy-policy", label: "Privacy Policy" },
-    { href: "/policies/legal-notice", label: "Legal Notice" },
-    { href: "/policies/shipping-policy", label: "Shipping Policy" },
-    { href: "/policies/refund-policy", label: "Refund Policy" },
-    { href: "/policies/terms-of-service", label: "Terms of Service" },
-    { href: "/pages/cookie-policy-page", label: "Cookies" },
-  ],
-};
+  useEffect(() => {
+    let heroRevealed = false;
 
-export default function Home() {
-  const [carouselIndex, setCarouselIndex] = useState(0);
-  const productsPerView = 4;
-  const maxIndex = Math.max(0, muscleProducts.length - productsPerView);
+    // Nav scroll effect
+    const nav = document.getElementById('siteNav');
+    const handleNavScroll = () => {
+      nav?.classList.toggle('scrolled', window.scrollY > 40);
+    };
+    window.addEventListener('scroll', handleNavScroll, { passive: true });
 
-  const scrollCarousel = (direction: 'left' | 'right') => {
-    setCarouselIndex(prev => {
-      if (direction === 'left') return Math.max(0, prev - 1);
-      return Math.min(maxIndex, prev + 1);
-    });
-  };
+    // Hero parallax grid
+    const handleScroll = () => {
+      const grid = document.querySelector('.hero-grid') as HTMLElement | null;
+      if (grid) grid.style.transform = `translateY(${window.scrollY * 0.15}px)`;
+
+      // Hero reveal — overlay fades from 1 to 0, stays revealed once done
+      const revealOverlay = heroRevealRef.current;
+      if (revealOverlay && !heroRevealed) {
+        const scrollY = window.scrollY;
+        const heroH = window.innerHeight * 0.65;
+        const opacity = Math.max(0, 1 - scrollY / heroH);
+        revealOverlay.style.opacity = String(opacity);
+        if (opacity <= 0) heroRevealed = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Hero mouse tracking for radial gradient
+    const hero = heroRef.current;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!hero) return;
+      const r = hero.getBoundingClientRect();
+      hero.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 100) + '%');
+      hero.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 100) + '%');
+    };
+    hero?.addEventListener('mousemove', handleMouseMove);
+
+    // Canvas particles
+    const canvas = canvasRef.current;
+    const heroEl = heroRef.current;
+    let animId: number;
+    let resizeFn: (() => void) | null = null;
+    if (canvas && heroEl) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const setSize = () => {
+          canvas.width = heroEl.clientWidth;
+          canvas.height = heroEl.clientHeight;
+        };
+        setSize();
+        const count = Math.round((canvas.width * canvas.height) / 24000);
+        const particles = Array.from({ length: Math.max(count, 20) }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.8 + 0.5,
+          vy: -(Math.random() * 0.4 + 0.1),
+          vx: (Math.random() - 0.5) * 0.15,
+          a: Math.random() * 0.45 + 0.12,
+        }));
+        const tick = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          particles.forEach(p => {
+            p.y += p.vy;
+            p.x += p.vx;
+            if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+            ctx.globalAlpha = p.a;
+            ctx.fillStyle = '#FFD100';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+          animId = requestAnimationFrame(tick);
+        };
+        tick();
+        resizeFn = () => setSize();
+        window.addEventListener('resize', resizeFn);
+      }
+    }
+
+    // Scroll reveal system
+    const revealEls = document.querySelectorAll('[reveal-on-scroll]');
+    const ro = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-revealed');
+          ro.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    revealEls.forEach(el => ro.observe(el));
+
+    const revealItems = document.querySelectorAll('[data-reveal-items]');
+    const ri = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-revealed');
+          ri.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.05, rootMargin: '0px 0px -60px 0px' });
+    revealItems.forEach(el => ri.observe(el));
+
+    // Parallax for break sections on scroll
+    const parallaxBgs = document.querySelectorAll<HTMLElement>('.parallax-bg-js');
+    const handleParallaxScroll = () => {
+      parallaxBgs.forEach(bg => {
+        const rect = bg.closest('.parallax-break')?.getBoundingClientRect();
+        if (!rect) return;
+        const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+        const offset = (progress - 0.5) * 80;
+        bg.style.transform = `translateY(${offset}px) scale(1.15)`;
+      });
+    };
+    window.addEventListener('scroll', handleParallaxScroll, { passive: true });
+
+    // Tilt effect
+    const tiltEls = document.querySelectorAll<HTMLElement>('.tilt');
+    const handleTilt = (el: HTMLElement) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        const dx = (e.clientX - cx) / (r.width / 2);
+        const dy = (e.clientY - cy) / (r.height / 2);
+        el.style.transform = `perspective(900px) rotateY(${dx * 8}deg) rotateX(${-dy * 8}deg) translateZ(6px)`;
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = '';
+      });
+    };
+    tiltEls.forEach(handleTilt);
+
+    // Custom cursor
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let cursorCleanup: (() => void) | null = null;
+    if (dot && ring && !matchMedia('(hover:none)').matches) {
+      let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+      const moveCursor = (e: MouseEvent) => {
+        mx = e.clientX; my = e.clientY;
+        dot.style.left = mx + 'px';
+        dot.style.top = my + 'px';
+      };
+      window.addEventListener('mousemove', moveCursor);
+      let loopId: number;
+      const loop = () => {
+        rx += (mx - rx) * 0.16;
+        ry += (my - ry) * 0.16;
+        ring.style.left = rx + 'px';
+        ring.style.top = ry + 'px';
+        loopId = requestAnimationFrame(loop);
+      };
+      loop();
+      cursorCleanup = () => {
+        window.removeEventListener('mousemove', moveCursor);
+        cancelAnimationFrame(loopId);
+      };
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleNavScroll);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleParallaxScroll);
+      hero?.removeEventListener('mousemove', handleMouseMove);
+      if (resizeFn) window.removeEventListener('resize', resizeFn);
+      cancelAnimationFrame(animId);
+      if (cursorCleanup) cursorCleanup();
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen font-roboto">
-      {/* Yellow Announcement Bar */}
-      <div className="bg-[#ffcc00] text-black text-xs py-2 px-4">
-        <div className="max-w-[1100px] mx-auto flex items-center justify-between">
-          {/* Social Icons */}
-          <div className="flex items-center gap-3">
-            <a href="https://www.facebook.com/needsupplements/" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-              <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.77,7.46H14.5v-1.9c0-.9.6-1.1,1-1.1h3V.5h-4.33C10.24.5,9.5,3.44,9.5,5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4Z"/>
-              </svg>
-            </a>
-            <a href="https://www.youtube.com/channel/UCn5elEu8ZPYqfE388aZp_Og" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-              <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.5,6.19a3.02,3.02,0,0,0-2.12-2.14C19.54,3.5,12,3.5,12,3.5s-7.54,0-9.38.55A3.02,3.02,0,0,0,.5,6.19,30.56,30.56,0,0,0,0,12a30.56,30.56,0,0,0,.5,5.81,3.02,3.02,0,0,0,2.12,2.14c1.84.55,9.38.55,9.38.55s7.54,0,9.38-.55a3.02,3.02,0,0,0,2.12-2.14A30.56,30.56,0,0,0,24,12,30.56,30.56,0,0,0,23.5,6.19ZM9.55,15.57V8.43L15.82,12Z"/>
-              </svg>
-            </a>
-            <a href="https://www.instagram.com/need_supps/" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
-              <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12,2.16c3.2,0,3.58,0,4.85.07,1.17.07,2,.26,2.71.55s1.56.89,2.23,1.55,1.22,1.38,1.55,2.23.48,1.54.55,2.71c.06,1.27.07,1.65.07,4.85s0,3.58-.07,4.85c-.07,1.17-.26,2-.55,2.71s-.89,1.56-1.55,2.23-1.38,1.22-2.23,1.55-1.54.48-2.71.55c-1.27.06-1.65.07-4.85.07s-3.58,0-4.85-.07c-1.17-.07-2-.26-2.71-.55s-1.56-.89-2.23-1.55-1.22-1.38-1.55-2.23-.48-1.54-.55-2.71C2.16,15.58,2.16,12,2.16,12s0-3.58.07-4.85c.07-1.17.26-2,.55-2.71s.89-1.56,1.55-2.23,1.38-1.22,2.23-1.55,1.54-.48,2.71-.55C8.42,2.16,11.8,2.16,12,2.16ZM12,0C8.74,0,8.33,0,7.05.07c-1.27.06-2.14.26-2.87.56S2.69,1.77,2,2.49,1.22,3.63.91,4.88.12,6.79.06,8.05,0,8.33,0,12s0,3.58.06,4.85c.06,1.27.26,2.14.56,2.87s.73,1.69,1.46,2.44.93.93,1.44,1.38,1.32.71,2.11.9c.79.19,1.61.35,2.87.42,1.27.06,1.65.07,4.85.07s3.58,0,4.85-.07c1.27-.06,2.14-.26,2.87-.56s1.69-.73,2.44-1.46.93-.93,1.38-1.44.71-1.32.9-2.11c.19-.79.35-1.61.42-2.87.06-1.27.07-1.65.07-4.85s0-3.58-.07-4.85c-.06-1.27-.26-2.14-.56-2.87s-.73-1.69-1.46-2.44-.93-.93-1.44-1.38-1.32-.71-2.11-.9c-.79-.19-1.61-.35-2.87-.42C15.58,0,12,0,12,0Zm0,5.84A6.16,6.16,0,1,0,18.16,12,6.16,6.16,0,0,0,12,5.84ZM12,16a4,4,0,1,1,4-4A4,4,0,0,1,12,16ZM18.41,4.15a1.44,1.44,0,1,0,1.44,1.44A1.44,1.44,0,0,0,18.41,4.15Z"/>
-              </svg>
-            </a>
-          </div>
-          
-          {/* Scrolling Announcement */}
-          <div className="flex-1 mx-4 overflow-hidden whitespace-nowrap">
-            <div className="animate-marquee font-medium text-[13px]">
-              PURE WHEY. Simply PROTEIN of the best quality &nbsp;&nbsp;|&nbsp;&nbsp; STRENGTHEN YOUR DEFENSES WITH IMMUNE COMPLEX
-            </div>
-          </div>
-          
-          {/* Country & Language */}
-          <div className="flex items-center gap-2 text-[13px] font-medium">
-            <button className="hover:opacity-70">Spain (EUR €)</button>
-            <span className="text-gray-600">|</span>
-            <button className="hover:opacity-70">English</button>
-          </div>
-        </div>
-      </div>
+    <>
+      <div className="cursor-dot" id="cursorDot" />
+      <div className="cursor-ring" id="cursorRing" />
+      <WelcomePopup />
 
-      {/* Main Header */}
-      <header className="bg-[#1d1d1d] py-3 md:py-4">
-        <div className="max-w-[1100px] mx-auto px-4 flex items-center justify-between">
-          {/* Mobile Menu Button */}
-          <button className="md:hidden text-white hover:text-[#ffd100] p-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <line x1={3} y1={6} x2={21} y2={6} />
-              <line x1={3} y1={12} x2={21} y2={12} />
-              <line x1={3} y1={18} x2={21} y2={18} />
-            </svg>
-          </button>
-          
-          <a href="/" className="flex items-center transition-opacity hover:opacity-80">
-            <Image
-              src="/images/logo.png"
-              alt="NEED® Supplements"
-              width={180}
-              height={72}
-              className="h-auto w-[140px] md:w-[180px]"
-              priority
-            />
-          </a>
-          
-          <nav className="hidden md:flex items-center gap-5 lg:gap-6">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-[#fafafa] font-oswald text-[13px] tracking-[0.5px] hover:text-[#ffd100] transition-colors duration-300"
-              >
-                {link.label}
-              </a>
-            ))}
+      {/* ═══ NAV ═══ */}
+      <header className="nav" id="siteNav">
+        <div className="wrap nav-inner">
+          <nav className="nav-links nav-left">
+            <a href="/shop">Products</a>
+            <a href="#bundle">Stack &amp; Save</a>
+            <a href="#science">Formula</a>
+            <a href="#why">Why PURE</a>
+            <a href="#journal">Journal</a>
           </nav>
-
-          <div className="flex items-center gap-4 md:gap-5">
-            <a href="/search" className="text-white hover:text-[#ffd100] transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <circle cx={11} cy={11} r={8} />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-            </a>
-            <a href="/account/login" className="text-white hover:text-[#ffd100] transition-colors duration-300 hidden sm:block">
-              <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx={12} cy={7} r={4} />
-              </svg>
-            </a>
-            <a href="/cart" className="text-white hover:text-[#ffd100] relative transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <circle cx={8} cy={21} r={1} />
-                <circle cx={19} cy={21} r={1} />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-            </a>
+          <a href="#top" className="brand nav-center">
+            <span className="brand-text">PURE</span>
+          </a>
+          <div className="nav-right">
+            <a href="#contact" className="hide-mobile">Contact</a>
+            <a href="/shop" className="btn btn-yellow nav-cta">Shop PRIME X</a>
           </div>
         </div>
       </header>
 
-      {/* Mobile Nav - Horizontal scroll */}
-      <div className="md:hidden bg-[#1d1d1d] py-2 px-4 overflow-x-auto">
-        <div className="flex gap-4 min-w-max">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-white text-[11px] font-oswald whitespace-nowrap hover:text-[#ffd100] transition-colors"
-            >
-              {link.label}
-            </a>
+      {/* ═══ HERO ═══ */}
+      <section className="hero" id="top" ref={heroRef} style={{ backgroundImage: 'url(/products/hero-slide.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="hero-reveal-overlay" ref={heroRevealRef} />
+      </section>
+
+      {/* ═══ MARQUEE ═══ */}
+      <div className="marquee">
+        <div className="marquee-track">
+          {['FOCUS','PUMP','ENERGY','FOCUS','PUMP','ENERGY','FOCUS','PUMP','ENERGY','FOCUS','PUMP','ENERGY'].map((w, i) => (
+            <span key={i}>{w}</span>
           ))}
         </div>
       </div>
 
-      {/* Hero Slider - Full Width */}
-      <section className="relative bg-[#1d1d1d] w-full">
-        <div className="w-full">
-          <Image
-            src="/images/hero-slider.jpg"
-            alt="PURE WHEY - Simply PROTEIN"
-            width={1920}
-            height={550}
-            className="w-full h-auto max-h-[550px] object-cover"
-            priority
-          />
+      {/* ═══ PARALLAX BREAK 1 — EXPLOSIVE ENERGY ═══ */}
+      <div className="parallax-break full-bleed" reveal-on-scroll="fade">
+        <div
+          className="parallax-bg-js"
+          style={{ backgroundImage: 'url(/products/hero-slide.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+        />
+        <div className="parallax-overlay" />
+        <div className="parallax-content">
+          <h2>Explosive <span className="accent">Energy</span></h2>
+          <p>Greater concentration. Muscle strength. Focus that locks in from the first sip to the last rep.</p>
         </div>
-      </section>
+      </div>
 
-      {/* Best Sellers Carousel */}
-      <BestSellers />
+      {/* ═══ PRODUCTS ═══ */}
+      <section className="products" id="products">
+        <div className="wrap">
+          <div className="section-head">
+            <div className="eyebrow" reveal-on-scroll="fade">The Range</div>
+            <h2 reveal-on-scroll="up">Only three flavours.<br />Zero filler formulas.</h2>
+            <p reveal-on-scroll="up" data-delay="1">
+              We didn&apos;t launch with twenty half-finished SKUs. We launched with three we&apos;d stand behind completely — each carrying the same Power Performance Nutrients Blend.
+            </p>
+          </div>
 
-      {/* Categories - 6 columns on desktop */}
-      <section className="py-10 md:py-12 bg-[#fafafa]">
-        <div className="max-w-[1100px] mx-auto px-4">
-          <h2 className="font-oswald text-[22px] md:text-[26px] font-bold text-[#1d1d1d] mb-6 md:mb-8 text-center uppercase tracking-[1px]">SPORT SUPPLEMENTATION</h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-            {categories.map((cat) => (
-              <a
-                key={cat.name}
-                href={cat.href}
-                className="group block relative overflow-hidden rounded-md aspect-square"
-              >
-                <Image
-                  src={cat.image}
-                  alt={cat.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center transition-all duration-300 group-hover:bg-black/50">
-                  <span className="text-white font-oswald text-xs md:text-sm text-center uppercase tracking-[0.5px]">{cat.name}</span>
+          <div className="product-grid">
+            {PRODUCTS.map((p, i) => (
+              <a href={`/product/primex-preworkout-${p.flavor === 'fruit' ? 'fruit-punch' : p.flavor === 'rocket' ? 'rocket-lollipop' : 'orange'}`} key={p.flavor} className={`p-card tilt tub-3d-card`} data-flavor={p.flavor} reveal-on-scroll="up" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="p-flavor-tag">{p.label}</div>
+                <div className="p-canvas-wrap">
+                  <Image
+                    src={p.tubImg}
+                    alt={`Prime X - ${p.name}`}
+                    width={280}
+                    height={300}
+                    className="tub-3d-card-img"
+                    style={{ objectFit: 'contain', maxHeight: '280px', width: 'auto' }}
+                  />
+                </div>
+                <h3>Prime X - {p.name}</h3>
+                <p className="p-desc">{p.desc}</p>
+                <div className="p-meta">
+                  <span className="servings">80 SERVINGS · 280G</span>
+                  <span className="btn btn-ghost" style={{ padding: '9px 18px', fontSize: '11px', cursor: 'pointer' }}>
+                    View Details
+                  </span>
                 </div>
               </a>
             ))}
@@ -274,266 +306,392 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Muscle Builder Products */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="font-oswald text-3xl font-bold text-[#1d1d1d]">NEED® BUILD MUSCLE</h2>
-            <a href="/collections/muscle-builder" className="text-[#737373] hover:text-[#1d1d1d] text-sm">
-              View all →
-            </a>
-          </div>
-          
-          <div className="relative">
-            <button 
-              onClick={() => scrollCarousel('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white shadow-lg rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-              disabled={carouselIndex === 0}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path d="m15 18-6-6 6-6"/>
-              </svg>
-            </button>
-            
-            <div className="overflow-hidden mx-8">
-              <div 
-                className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-7 gap-4 transition-transform duration-300 ease-in-out"
-                style={{ transform: `translateX(-${carouselIndex * (100 / 4)}%)` }}
-              >
-                {muscleProducts.map((product, i) => (
-                  <a key={i} href={`/products/${i + 1}`} className="group block">
-                    <div className="relative bg-[#fafafa] rounded-lg overflow-hidden mb-3">
-                      <div className="aspect-[3/4] relative">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain p-2"
-                        />
-                      </div>
-                      {product.discount && (
-                        <span className="absolute top-2 left-2 bg-[#ffcc00] text-black text-xs font-bold px-2 py-1">
-                          {product.discount}
-                        </span>
-                      )}
-                      {product.status === "sold-out" && (
-                        <span className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="bg-white text-black text-xs font-bold px-3 py-1">Sold out</span>
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-oswald text-xs font-medium text-[#1d1d1d]">{product.name}</h3>
-                    <div className="flex items-center gap-1 mt-1">
-                      {[1,2,3,4,5].map((star) => (
-                        <svg key={star} xmlns="http://www.w3.org/2000/svg" width={10} height={10} viewBox="0 0 24 24" fill={star <= Math.round(product.reviews/7) ? "#f6a529" : "#d1d5db"} stroke={star <= Math.round(product.reviews/7) ? "#f6a529" : "#d1d5db"} strokeWidth={2}>
-                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                        </svg>
-                      ))}
-                      <span className="text-[10px] text-[#737373]">({product.reviews})</span>
-                    </div>
-                    <div className="mt-1">
-                      {product.originalPrice ? (
-                        <div className="flex items-center gap-1">
-                          <span className="text-[#1d1d1d] text-sm font-bold">{product.price}</span>
-                          <span className="text-[#737373] line-through text-xs">{product.originalPrice}</span>
-                        </div>
-                      ) : (
-                        <span className="text-[#1d1d1d] text-sm">{product.price}</span>
-                      )}
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <button 
-              onClick={() => scrollCarousel('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white shadow-lg rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-              disabled={carouselIndex >= maxIndex}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path d="m9 18 6-6-6-6"/>
-              </svg>
-            </button>
+      {/* ═══ BESTSELLER STRIP ═══ */}
+      <div className="strip">
+        <div className="wrap strip-inner">
+          <span className="strip-label">Best Sellers</span>
+          <div className="strip-scroll">
+            <div className="strip-chip"><b>01</b> PRIME X Fruit Punch — Flagship</div>
+            <div className="strip-chip"><b>02</b> PRIME X Rocket Lollipop — Most Requested</div>
+            <div className="strip-chip"><b>03</b> PRIME X Orange — Early Session Pick</div>
+            <div className="strip-chip"><b>★</b> 80 Servings Per Tub, Every Flavour</div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Packs Banner */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <a href="/collections/need%C2%AE-packs" className="block">
-            <Image
-              src="/images/packs-banner.jpg"
-              alt="NEED® PACKS"
-              width={1920}
-              height={400}
-              className="w-full h-auto rounded-lg"
-            />
+      {/* ═══ CATEGORY CARDS ═══ */}
+      <section className="wrap" style={{ paddingTop: 0, paddingBottom: 80 }}>
+        <div className="category-cards" data-reveal-items>
+          <a href="/product/primex-preworkout-fruit-punch" className="category-card" data-delay="1">
+            <div className="category-card-img-wrap">
+              <Image src="/products/Fruit Punch.png" alt="PRIME X Fruit Punch" fill style={{ objectFit: 'cover' }} sizes="33vw" />
+            </div>
+            <div className="card-overlay" />
+            <div className="card-content">
+              <div className="card-eyebrow">Flagship</div>
+              <div className="card-title">Fruit<br />Punch</div>
+              <div className="card-desc">A full mixed-fruit hit for max-intensity training days.</div>
+            </div>
+            <div className="card-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+            </div>
+          </a>
+          <a href="/product/primex-preworkout-rocket-lollipop" className="category-card" data-delay="2">
+            <div className="category-card-img-wrap">
+              <Image src="/products/Rocket Lolli pop.png" alt="PRIME X Rocket Lollipop" fill style={{ objectFit: 'cover' }} sizes="33vw" />
+            </div>
+            <div className="card-overlay" />
+            <div className="card-content">
+              <div className="card-eyebrow">Most Requested</div>
+              <div className="card-title">Rocket<br />Lollipop</div>
+              <div className="card-desc">Nostalgic, electric, and unapologetically fun.</div>
+            </div>
+            <div className="card-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+            </div>
+          </a>
+          <a href="/product/primex-preworkout-orange" className="category-card" data-delay="3">
+            <div className="category-card-img-wrap">
+              <Image src="/products/Orange.png" alt="PRIME X Orange" fill style={{ objectFit: 'cover' }} sizes="33vw" />
+            </div>
+            <div className="card-overlay" />
+            <div className="card-content">
+              <div className="card-eyebrow">Early Session</div>
+              <div className="card-title">Orange</div>
+              <div className="card-desc">Bright, citrus-forward built for sharp focus.</div>
+            </div>
+            <div className="card-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+            </div>
           </a>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#1d1d1d] text-white py-10 md:py-14">
-        <div className="max-w-[1100px] mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {/* Shop */}
-            <div>
-              <h3 className="font-oswald text-[15px] mb-4 tracking-[0.5px]">SHOP</h3>
-              <ul className="space-y-2">
-                {footerLinks.shop.map((link) => (
-                  <li key={link.label}>
-                    <a href={link.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors">
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+      {/* ═══ IMAGE + TEXT SPLIT — FORMULA ═══ */}
+      <section className="img-text-split" reveal-on-scroll="fade">
+        <div className="split-image split-image-product">
+          <Image src="/products/tub-orange.png" alt="PRIME X Formula — Orange" fill style={{ objectFit: 'contain', padding: '40px' }} sizes="50vw" />
+        </div>
+        <div className="split-content">
+          <div className="eyebrow">The Formula</div>
+          <h2>Every milligram,<br />on the <span className="accent">label</span>.</h2>
+          <p>No proprietary blends hiding the dose. What&apos;s on the tub is what&apos;s in the scoop — third-party tested, FSSAI compliant, banned-substance free.</p>
+          <a href="#science" className="btn btn-yellow">See the Science</a>
+        </div>
+      </section>
+
+      {/* ═══ SCIENCE ═══ */}
+      <section className="science" id="science">
+        <div className="wrap">
+          <div className="section-head">
+            <div className="eyebrow" style={{ color: 'var(--yellow)' }} reveal-on-scroll="fade">Power Performance Nutrients Blend</div>
+            <h2 reveal-on-scroll="up">Every milligram,<br />on the label.</h2>
+            <p reveal-on-scroll="up" data-delay="1" style={{ color: 'rgba(255,255,255,.65)' }}>
+              No proprietary blends hiding the dose. What&apos;s on the tub is what&apos;s in the scoop — third-party tested, FSSAI compliant, banned-substance free.
+            </p>
+          </div>
+          <div className="sci-grid" data-reveal-items>
+            {INGREDIENTS.map((ing, i) => (
+              <div key={ing.name} className="sci-cell" data-delay={String(i + 1)}>
+                <div className="sci-cell-front">
+                  <b>{ing.value}<span className="unit">{ing.unit}</span></b>
+                  <span>{ing.name}</span>
+                </div>
+                <div className="sci-cell-hover">
+                  <div className="sci-hover-name">{ing.name}</div>
+                  <div className="sci-hover-dose">{ing.value}{ing.unit}</div>
+                  <p>{ing.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ PARALLAX BREAK 2 — BUILT DIFFERENT ═══ */}
+      <div className="parallax-break full-bleed" reveal-on-scroll="fade">
+        <div
+          className="parallax-bg-js"
+          style={{ backgroundImage: 'url(/products/hero-slide.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+        />
+        <div className="parallax-overlay" style={{ background: 'rgba(0,0,0,0.75)' }} />
+        <div className="parallax-content">
+          <div className="parallax-product-float">
+            <Image src="/products/Fruit Punch.png" alt="PRIME X Fruit Punch" width={200} height={220} style={{ objectFit: 'contain', filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.7))' }} />
+          </div>
+          <h2>Built <span className="accent">Different</span></h2>
+          <p>FSSAI licensed. Banned-substance free. Zero compromise. What&apos;s on the label is what&apos;s in the scoop.</p>
+        </div>
+      </div>
+
+      {/* ═══ WHY PURE ═══ */}
+      <section className="why" id="why">
+        <div className="wrap">
+          <div className="why-header" reveal-on-scroll="up">
+            <div className="eyebrow" reveal-on-scroll="fade">Why PURE</div>
+            <h2>Built different,<br />by design.</h2>
+          </div>
+
+          <div className="why-row" reveal-on-scroll="left">
+            <div className="why-content">
+              <div className="why-num">01</div>
+              <h3>Full Transparency</h3>
+              <p>Every ingredient, every dose, printed on the tub. No proprietary blends hiding under-dosed formulas. You know exactly what you&apos;re putting in your body — because you deserve to.</p>
             </div>
-            
-            {/* Company */}
-            <div>
-              <h3 className="font-oswald text-[15px] mb-4 tracking-[0.5px]">COMPANY</h3>
-              <ul className="space-y-2">
-                {footerLinks.company.map((link) => (
-                  <li key={link.label}>
-                    <a href={link.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors">
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Legal */}
-            <div>
-              <h3 className="font-oswald text-[15px] mb-4 tracking-[0.5px]">LEGAL</h3>
-              <ul className="space-y-2">
-                {footerLinks.legal.map((link) => (
-                  <li key={link.label}>
-                    <a href={link.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors">
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Newsletter */}
-            <div>
-              <h3 className="font-oswald text-[15px] mb-4 tracking-[0.5px]">NEWSLETTER</h3>
-              <p className="text-[#a0a0a0] text-[13px] mb-3">Signup for our newsletter:</p>
-              <form className="flex">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 bg-white text-black px-3 py-2 text-[13px] rounded-l outline-none"
-                />
-                <button type="submit" className="bg-[#ffcc00] text-black px-4 py-2 text-[13px] font-bold rounded-r hover:bg-[#ffd100] transition-colors">
-                  Subscribe
-                </button>
-              </form>
+            <div className="why-image">
+              <Image src="/products/tub-orange.png" alt="Full Transparency Label" width={400} height={400} style={{ objectFit: 'contain' }} />
             </div>
           </div>
-          
-          {/* Bottom Footer */}
-          <div className="mt-10 pt-8 border-t border-[#333]">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-              {/* Social Icons */}
-              <div className="flex gap-4 order-2 md:order-1">
-                <a href="https://www.facebook.com/needsupplements/" className="text-[#a0a0a0] hover:text-white transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.77,7.46H14.5v-1.9c0-.9.6-1.1,1-1.1h3V.5h-4.33C10.24.5,9.5,3.44,9.5,5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4Z"/>
-                  </svg>
-                </a>
-                <a href="https://www.youtube.com/channel/UCn5elEu8ZPYqfE388aZp_Og" className="text-[#a0a0a0] hover:text-white transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M23.5,6.19a3.02,3.02,0,0,0-2.12-2.14C19.54,3.5,12,3.5,12,3.5s-7.54,0-9.38.55A3.02,3.02,0,0,0,.5,6.19,30.56,30.56,0,0,0,0,12a30.56,30.56,0,0,0,.5,5.81,3.02,3.02,0,0,0,2.12,2.14c1.84.55,9.38.55,9.38.55s7.54,0,9.38-.55a3.02,3.02,0,0,0,2.12-2.14A30.56,30.56,0,0,0,24,12,30.56,30.56,0,0,0,23.5,6.19ZM9.55,15.57V8.43L15.82,12Z"/>
-                  </svg>
-                </a>
-                <a href="https://www.instagram.com/need_supps/" className="text-[#a0a0a0] hover:text-white transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12,2.16c3.2,0,3.58,0,4.85.07,1.17.07,2,.26,2.71.55s1.56.89,2.23,1.55,1.22,1.38,1.55,2.23.48,1.54.55,2.71c.06,1.27.07,1.65.07,4.85s0,3.58-.07,4.85c-.07,1.17-.26,2-.55,2.71s-.89,1.56-1.55,2.23-1.38,1.22-2.23,1.55-1.54.48-2.71.55c-1.27.06-1.65.07-4.85.07s-3.58,0-4.85-.07c-1.17-.07-2-.26-2.71-.55s-1.56-.89-2.23-1.55-1.22-1.38-1.55-2.23-.48-1.54-.55-2.71C2.16,15.58,2.16,12,2.16,12s0-3.58.07-4.85c.07-1.17.26-2,.55-2.71s.89-1.56,1.55-2.23,1.38-1.22,2.23-1.55,1.54-.48,2.71-.55C8.42,2.16,11.8,2.16,12,2.16ZM12,0C8.74,0,8.33,0,7.05.07c-1.27.06-2.14.26-2.87.56S2.69,1.77,2,2.49,1.22,3.63.91,4.88.12,6.79.06,8.05,0,8.33,0,12s0,3.58.06,4.85c.06,1.27.26,2.14.56,2.87s.73,1.69,1.46,2.44.93.93,1.44,1.38,1.32.71,2.11.9c.79.19,1.61.35,2.87.42,1.27.06,1.65.07,4.85.07s3.58,0,4.85-.07c1.27-.06,2.14-.26,2.87-.56s1.69-.73,2.44-1.46.93-.93,1.38-1.44.71-1.32.9-2.11c.19-.79.35-1.61.42-2.87.06-1.27.07-1.65.07-4.85s0-3.58-.07-4.85c-.06-1.27-.26-2.14-.56-2.87s-.73-1.69-1.46-2.44-.93-.93-1.44-1.38-1.32-.71-2.11-.9c-.79-.19-1.61-.35-2.87-.42C15.58,0,12,0,12,0Zm0,5.84A6.16,6.16,0,1,0,18.16,12,6.16,6.16,0,0,0,12,5.84ZM12,16a4,4,0,1,1,4-4A4,4,0,0,1,12,16ZM18.41,4.15a1.44,1.44,0,1,0,1.44,1.44A1.44,1.44,0,0,0,18.41,4.15Z"/>
-                  </svg>
-                </a>
+
+          <div className="why-row why-row-reverse" reveal-on-scroll="right">
+            <div className="why-content">
+              <div className="why-num">02</div>
+              <h3>Science-Backed Dosing</h3>
+              <p>1.5g Beta-Alanine, 750mg Arginine HCl, 500mg L-Citrulline — clinical doses that actually work. We don&apos;t cut corners on the ingredients that matter.</p>
+            </div>
+            <div className="why-image">
+              <Image src="/products/tub-fruit-punch.png" alt="Science-Backed Formula" width={400} height={400} style={{ objectFit: 'contain' }} />
+            </div>
+          </div>
+
+          <div className="why-row" reveal-on-scroll="left">
+            <div className="why-content">
+              <div className="why-num">03</div>
+              <h3>Clean Formula</h3>
+              <p>Banned-substance free. FSSAI licensed and third-party tested. What&apos;s on the label is what&apos;s in the scoop — nothing more, nothing less.</p>
+            </div>
+            <div className="why-image">
+              <Image src="/products/tub-rocket.png" alt="Clean Formula" width={400} height={400} style={{ objectFit: 'contain' }} />
+            </div>
+          </div>
+
+          <div className="trust-panel tilt" reveal-on-scroll="scale">
+            <h3>Trust, Verified.</h3>
+            <div className="trust-row"><span>FSSAI Licence</span><span>10824999000028</span></div>
+            <div className="trust-row"><span>Banned Substance</span><span>Free (TGRCO)</span></div>
+            <div className="trust-row"><span>Contains Sucralose</span><span>Non-Caloric</span></div>
+            <div className="trust-row"><span>Shelf Life</span><span>18 Months</span></div>
+            <div className="trust-row"><span>Serving Size</span><span>3.5g / Half Scoop</span></div>
+            <div className="trust-row"><span>Manufactured</span><span>Made in India 🇮🇳</span></div>
+            <div className="trust-row"><span>Allergen Facility</span><span>Milk · Soy · Nuts · Barley</span></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ IMAGE + TEXT SPLIT — TRUST ═══ */}
+      <section className="img-text-split reverse" reveal-on-scroll="fade">
+        <div className="split-image split-image-product">
+          <Image src="/products/tub-rocket.png" alt="PRIME X Rocket Lollipop" fill style={{ objectFit: 'contain', padding: '40px' }} sizes="50vw" />
+        </div>
+        <div className="split-content">
+          <div className="eyebrow">Trust, Verified</div>
+          <h2>FSSAI Licensed.<br />Banned Substance <span className="accent">Free</span>.</h2>
+          <p>Manufactured under Licence No. 10824999000028. Every batch screened. What you take before training is exactly what&apos;s on the tub.</p>
+          <a href="#why" className="btn btn-yellow">Why PURE</a>
+        </div>
+      </section>
+
+      {/* ═══ BUNDLE ═══ */}
+      <section className="bundle" id="bundle">
+        <div className="wrap">
+          <div className="bundle-grid">
+            <div className="bundle-visual" reveal-on-scroll="left">
+              <Image src="/products/Orange.png" alt="PRIME X Orange" width={220} height={240} style={{ objectFit: 'contain', height: 'auto' }} />
+              <Image src="/products/Fruit Punch.png" alt="PRIME X Fruit Punch" width={240} height={260} style={{ objectFit: 'contain', height: 'auto' }} />
+              <Image src="/products/Rocket Lolli pop.png" alt="PRIME X Rocket Lollipop" width={220} height={240} style={{ objectFit: 'contain', height: 'auto' }} />
+            </div>
+            <div className="bundle-copy" reveal-on-scroll="right">
+              <div className="eyebrow">Stack &amp; Save</div>
+              <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(30px,4vw,44px)', textTransform: 'uppercase', marginTop: 16 }}>
+                All three flavours.<br />One tray.
+              </h2>
+              <p style={{ marginTop: 16, color: 'rgba(255,255,255,.62)', maxWidth: 420, lineHeight: 1.6 }}>
+                Never run out mid-cycle. The Trainer&apos;s Tray bundles Orange, Rocket Lollipop and Fruit Punch — 240 servings, one order.
+              </p>
+              <div className="price-row">
+                <span className="now">₹3,299</span>
+                <span className="was">₹3,897</span>
               </div>
-              
-              {/* Payment Icons */}
-              <div className="flex flex-wrap justify-center gap-2 order-1 md:order-2">
-                {/* American Express */}
-                <svg width={32} height={20} viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="32" height="20" rx="2" fill="#016FD0"/>
-                  <path d="M6 14.5L8 6.5H10L8 14.5H6ZM12.5 14.5L10.5 6.5H13L15 14.5H12.5ZM18 14.5L16 6.5H18.5L21.5 14.5H18ZM23 14.5L21 6.5H26L24 14.5H23Z" fill="white"/>
-                </svg>
-                {/* Apple Pay */}
-                <svg width={32} height={20} viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="32" height="20" rx="2" fill="black"/>
-                  <path d="M13.8 6.4C13.4 5.9 12.6 5.7 12 5.7C10.6 5.7 9.6 6.7 9.6 8.2C9.6 9.5 10.2 10.5 11.2 10.5C11.6 10.5 12 10.4 12.3 10.2L12.5 10L12.8 11.2C12.5 11.5 12 11.8 11.4 11.8C10.2 11.8 9.2 10.9 9.2 8.8C9.2 6.8 10.1 5.5 11.4 5.5C12.2 5.5 12.8 5.9 13.2 6.4L13.8 6.4ZM20.2 5.5C20.6 5.5 21.1 5.6 21.5 5.8L21.3 6.4C21 6.3 20.5 6.2 20 6.2C18.9 6.2 18.2 7 18.2 8.1C18.2 9.1 18.8 9.8 19.8 9.8C20.4 9.8 20.9 9.6 21.2 9.3L21.4 9.8C20.9 10.2 20.3 10.5 19.7 10.5C18.4 10.5 17.5 9.5 17.5 8C17.5 6.5 18.5 5.5 20.2 5.5ZM23.2 8C23.2 7.7 23.2 7.3 23 7L22.2 7C22.3 7.5 22.5 8 22.8 8.3L23.2 8ZM17.2 8.3L17.6 8C17.9 7.6 18.1 7.1 18.2 6.6L18.9 6.7C18.7 7.2 18.4 7.7 18 8L17.2 8.3Z" fill="white"/>
-                </svg>
-                {/* Google Pay */}
-                <svg width={32} height={20} viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="32" height="20" rx="2" fill="#4285F4"/>
-                  <path d="M9.6 10.6L11.6 8.1L12.5 10.6H9.6ZM16.2 8.6C15.8 8.1 15.1 7.9 14.5 7.9C13.1 7.9 12.1 8.9 12.1 10.4C12.1 11.7 12.7 12.7 13.7 12.7C14.1 12.7 14.5 12.6 14.8 12.4L15 12.2L15.3 13.4C15 13.7 14.5 14 13.9 14C12.7 14 11.7 13.1 11.7 11C11.7 9 12.6 7.7 13.9 7.7C14.7 7.7 15.3 8.1 15.7 8.6L16.2 8.6Z" fill="white"/>
-                </svg>
-                {/* Maestro */}
-                <svg width={32} height={20} viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="32" height="20" rx="2" fill="#1A1F71"/>
-                  <path fillRule="evenodd" clipRule="evenodd" d="M12.5 5H19.5V15H12.5V5ZM14 7V8H17V7H14ZM14 9V10H17V9H14ZM14 11V12H17V11H14Z" fill="#EB001B"/>
-                  <circle cx="10" cy="10" r="4" fill="#F79E1B"/>
-                </svg>
-                {/* Mastercard */}
-                <svg width={32} height={20} viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="32" height="20" rx="2" fill="#000"/>
-                  <circle cx="11" cy="10" r="5" fill="#EB001B"/>
-                  <circle cx="21" cy="10" r="5" fill="#F79E1B"/>
-                </svg>
-                {/* PayPal */}
-                <svg width={32} height={20} viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="32" height="20" rx="2" fill="#003087"/>
-                  <path d="M10.5 8.5L11 8C11.5 7.5 12 7 12.5 7H15C15.5 7 16 7.2 16.2 7.5L17 9L16.5 9.5C16 9 15.5 8.8 15 8.8H13L12.5 9L11.5 8H10.5ZM14.5 13L15 12.5C15.5 12 16 11.8 16.5 11.8H19C20 11.8 21 12.5 21.2 13.5L20.5 14C20.2 13.8 19.8 13.5 19.2 13.5H18L17.2 14.5L16.5 14C16 13.5 15.5 13.2 15 13.2H14.2L13.8 13.8L14.5 13ZM19.5 8L20 7.5C20.5 7 21.2 6.8 22 6.8L21.5 8.2C21 8 20.5 8 20 8H19.5Z" fill="white"/>
-                </svg>
-                {/* Visa */}
-                <svg width={32} height={20} viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="32" height="20" rx="2" fill="#1A1F71"/>
-                  <path d="M13 14L11 6H9L7 14H9L9.5 12H12.5L13 14ZM22 14V6H20.5L18.5 12H18L16.5 6H15L17 14H18L18.2 11.5H18.3L19.8 14H20.5L22 14ZM25 14L23.5 11L23 12L22.2 14H25Z" fill="white"/>
-                </svg>
+              <a href="https://www.puresupps.site" target="_blank" rel="noopener noreferrer" className="btn btn-yellow" style={{ marginTop: 24, display: 'inline-block' }}>
+                Order Bundle
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ PARALLAX BREAK 3 — NEVER FINISHED ═══ */}
+      <div className="parallax-break full-bleed" reveal-on-scroll="fade">
+        <div
+          className="parallax-bg-js"
+          style={{ backgroundImage: 'url(/products/hero-slide.png)', backgroundSize: 'cover', backgroundPosition: 'center top' }}
+        />
+        <div className="parallax-overlay" style={{ background: 'rgba(0,0,0,0.75)' }} />
+        <div className="parallax-content">
+          <div className="parallax-product-float">
+            <Image src="/products/Rocket Lolli pop.png" alt="PRIME X Rocket Lollipop" width={180} height={200} style={{ objectFit: 'contain', filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.8))' }} />
+          </div>
+          <h2>Never <span className="accent">Finished</span></h2>
+          <p>One half-scoop. Full focus. Zero crash. Show up and do the work.</p>
+        </div>
+      </div>
+
+      {/* ═══ ATHLETE BANNER ═══ */}
+      <section className="banner" id="athlete">
+        <div className="wrap banner-inner">
+          <div className="eyebrow" reveal-on-scroll="fade">For the working athlete</div>
+          <h2 reveal-on-scroll="up">
+            You clock in at the office.<br />You <span>clock in</span> at the gym too.
+          </h2>
+          <p reveal-on-scroll="up" data-delay="1">
+            PRIME X was built for people stacking a full workday against a real training schedule — not full-time athletes with unlimited recovery time. One half-scoop, and you show up.
+          </p>
+          <div className="hero-cta" reveal-on-scroll="up" data-delay="2">
+            <a href="#products" className="btn btn-yellow">Get PRIME X</a>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ JOURNAL ═══ */}
+      <section className="journal" id="journal">
+        <div className="wrap">
+          <div className="journal-grid">
+            <div className="journal-copy" reveal-on-scroll="left">
+              <div className="eyebrow on-light">The PURE Performance Journal</div>
+              <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(30px,4vw,44px)', textTransform: 'uppercase', margin: '16px 0 24px' }}>
+                Why we only<br />ship three SKUs.
+              </h2>
+              <p>PURE HEALTH SUPPS was built on one rule: every formula ships with its full dosage on the label, nothing hidden behind a &quot;proprietary blend.&quot;</p>
+              <p>Every batch is manufactured in an FSSAI-licensed facility in India and screened against the banned substance list — what you take before training is exactly what&apos;s on the tub.</p>
+              <a href="/blog" className="btn btn-ghost dark" style={{ marginTop: 10 }}>Read the Full Story</a>
+            </div>
+            <div className="journal-cards" reveal-on-scroll="right">
+              <div className="j-card tilt">
+                <b>Transparent Dosing</b>
+                <span>No proprietary blends — every gram and milligram is disclosed on every tub.</span>
               </div>
-              
-              {/* Country & Language */}
-              <div className="flex items-center justify-center gap-4 text-[12px] order-3">
-                <div className="flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <circle cx={12} cy={12} r={10}/>
-                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>
-                  <select className="bg-transparent text-[#a0a0a0] hover:text-white cursor-pointer border-none outline-none">
-                    <option value="es">Spain (EUR €)</option>
-                    <option value="en">United Kingdom (GBP £)</option>
-                    <option value="de">Germany (EUR €)</option>
-                    <option value="fr">France (EUR €)</option>
-                  </select>
-                </div>
-                <span className="text-[#444]">|</span>
-                <div className="flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.94 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
-                  </svg>
-                  <select className="bg-transparent text-[#a0a0a0] hover:text-white cursor-pointer border-none outline-none">
-                    <option value="en">English</option>
-                    <option value="es">Español</option>
-                  </select>
-                </div>
+              <div className="j-card tilt">
+                <b>FSSAI Licensed</b>
+                <span>Manufactured under Licence No. 10824999000028, made in India.</span>
+              </div>
+              <div className="j-card tilt">
+                <b>Banned Substance Free</b>
+                <span>Screened and certified so you can train and compete with confidence.</span>
               </div>
             </div>
-            
-            {/* Copyright */}
-            <div className="text-center text-[#a0a0a0] text-[13px] mt-6">
-              © 2026 <a href="/" className="hover:text-white transition-colors">NEED® Supplements</a>.
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ TESTIMONIALS ═══ */}
+      <section className="testi" id="reviews">
+        <div className="wrap">
+          <div className="section-head">
+            <div className="eyebrow" style={{ color: 'var(--yellow)' }} reveal-on-scroll="fade">Real Training, Real Feedback</div>
+            <h2 reveal-on-scroll="up">What the floor<br />is saying.</h2>
+            <p style={{ color: 'rgba(255,255,255,.6)' }} reveal-on-scroll="up" data-delay="1">Early feedback from our first PRIME X training cycles.</p>
+          </div>
+          <div className="testi-grid" data-reveal-items>
+            {TESTIMONIALS.map((t, i) => (
+              <div key={t.name} className="t-card" data-delay={String(i + 1)}>
+                <div className="stars">{t.stars}</div>
+                <p>{t.text}</p>
+                <div className="t-who">
+                  <div className="t-avatar">{t.avatar}</div>
+                  <div><b>{t.name}</b><span>{t.role}</span></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ INSTAGRAM ═══ */}
+      <section className="insta">
+        <div className="wrap">
+          <div className="insta-head">
+            <div>
+              <div className="eyebrow" reveal-on-scroll="fade">@puresupps.site</div>
+              <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(30px,4vw,44px)', textTransform: 'uppercase', marginTop: 14 }} reveal-on-scroll="up">
+                Follow the training.
+              </h2>
+            </div>
+            <a href="https://instagram.com/puresupps.site" target="_blank" rel="noopener noreferrer" className="btn btn-ghost">Follow on Instagram</a>
+          </div>
+          <div className="insta-grid" data-reveal-items>
+            {[
+              { src: '/products/tub-orange.png', alt: 'PRIME X Orange', bg: '#1a0f00' },
+              { src: '/products/tub-fruit-punch.png', alt: 'PRIME X Fruit Punch', bg: '#1a0010' },
+              { src: '/products/tub-rocket.png', alt: 'PRIME X Rocket Lollipop', bg: '#001a18' },
+              { src: '/products/Orange.png', alt: 'PRIME X Orange Product', bg: '#0f0a00' },
+              { src: '/products/Fruit Punch.png', alt: 'PRIME X Fruit Punch Product', bg: '#0f0009' },
+            ].map((item, i) => (
+              <div key={i} className="insta-cell" data-delay={String(i + 1)} style={{ background: item.bg }}>
+                <Image src={item.src} alt={item.alt} fill style={{ objectFit: 'contain', padding: '12px' }} sizes="20vw" />
+                <div className="insta-hover-overlay">
+                  <span className="insta-hover-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ NEWSLETTER ═══ */}
+      <section className="news">
+        <div className="wrap news-inner">
+          <h2>Get early access to new flavours &amp; drops.</h2>
+          <form onSubmit={(e) => { e.preventDefault(); alert('Thanks — you\'re on the list!'); }}>
+            <input type="email" placeholder="you@email.com" required />
+            <button className="btn btn-yellow" type="submit">Notify Me</button>
+          </form>
+        </div>
+      </section>
+
+      {/* ═══ FOOTER ═══ */}
+      <footer id="contact">
+        <div className="wrap">
+          <div className="foot-grid">
+            <div>
+              <div className="foot-brand">
+                <span className="brand-text" style={{ fontSize: 28 }}>PURE</span>
+              </div>
+              <p style={{ maxWidth: 280, color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.7 }}>
+                India&apos;s high-intensity pre-workout, built on transparent dosing and zero-compromise formulation.
+              </p>
+            </div>
+            <div className="foot-col">
+              <h5>Shop</h5>
+              <a href="#products">PRIME X Orange</a>
+              <a href="#products">PRIME X Rocket Lollipop</a>
+              <a href="#products">PRIME X Fruit Punch</a>
+              <a href="#bundle">Trainer&apos;s Tray Bundle</a>
+            </div>
+            <div className="foot-col">
+              <h5>Company</h5>
+              <a href="#why">Why PURE</a>
+              <a href="#science">The Formula</a>
+              <a href="#journal">Journal</a>
+              <a href="#reviews">Reviews</a>
+            </div>
+            <div className="foot-col">
+              <h5>Contact</h5>
+              <a href="https://puresupps.site" target="_blank" rel="noopener noreferrer">puresupps.site</a>
+              <a href="mailto:puresupps.site@gmail.com">puresupps.site@gmail.com</a>
+              <a href="tel:+919557513017">+91 95575 13017</a>
+              <a href="https://instagram.com/puresupps.site" target="_blank" rel="noopener noreferrer">@puresupps.site</a>
+            </div>
+          </div>
+          <div className="foot-bottom">
+            <span>© 2026 PURE HEALTH SUPPS®. FSSAI Lic. No. 10824999000028. Not for medicinal use.</span>
+            <div className="foot-social">
+              <a href="https://instagram.com/puresupps.site" target="_blank" rel="noopener noreferrer" aria-label="Instagram">IG</a>
             </div>
           </div>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
