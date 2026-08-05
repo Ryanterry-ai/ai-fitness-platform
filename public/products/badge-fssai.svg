@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <circle cx="32" cy="32" r="30" fill="#FFD100" stroke="#000" stroke-width="2"/>
-  <text x="32" y="28" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="10" fill="#000">FSSAI</text>
-  <text x="32" y="40" text-anchor="middle" font-family="Arial,sans-serif" font-weight="400" font-size="6" fill="#000">Licensed</text>
-  <path d="M20 46 L32 52 L44 46" stroke="#000" stroke-width="1.5" fill="none"/>
-</svg>
