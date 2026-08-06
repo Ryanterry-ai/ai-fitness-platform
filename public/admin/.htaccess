@@ -1,0 +1,4 @@
+AuthType Basic
+AuthName "PURE HEALTH SUPPS — Restricted Admin Area"
+AuthUserFile /home/YOUR_HOSTINGER_USERNAME/public_html/admin/.htpasswd
+Require valid-user
