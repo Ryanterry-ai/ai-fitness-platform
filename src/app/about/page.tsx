@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Shield, Award, Target, Heart, Zap, Users, Factory, CheckCircle, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Award, Target, Heart, Zap, Users, Factory, CheckCircle, ArrowRight, ShoppingBag, Menu, X } from 'lucide-react';
+import CartDrawer from '../../components/CartDrawer';
+import { PARTNER_URL } from '../../components/AnnouncementBar';
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -21,8 +23,54 @@ const milestones = [
 ];
 
 export default function AboutPage() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <div className="bg-pure-black min-h-screen pt-24 pb-20">
+      {/* Nav */}
+      <header className={`nav ${scrolled ? 'scrolled' : ''}`}>
+        <div className="wrap nav-inner">
+          <a href="/" className="brand"><span className="brand-text">PURE</span></a>
+          <nav className="nav-links">
+            <a href="/shop">Products</a>
+            <a href="/formula">Formula</a>
+            <a href="/why-pure">Why PURE</a>
+            <a href="/stack-save">Stack & Save</a>
+          </nav>
+          <div className="nav-right">
+            <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
+              <ShoppingBag size={20} />
+            </a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+              Shop PRIME X
+            </a>
+            <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div className="mobile-menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Products</a>
+            <a href="/formula" onClick={() => setMobileMenuOpen(false)}>Formula</a>
+            <a href="/why-pure" onClick={() => setMobileMenuOpen(false)}>Why PURE</a>
+            <a href="/stack-save" onClick={() => setMobileMenuOpen(false)}>Stack & Save</a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hero */}
       <section className="section-padding">
         <div className="container-pure">
@@ -200,6 +248,16 @@ export default function AboutPage() {
           </motion.div>
         </div>
       </section>
+
+      <CartDrawer />
+
+      <footer>
+        <div className="wrap">
+          <div className="foot-bottom">
+            <span>© 2026 PURE HEALTH SUPPS®. FSSAI Lic. No. 10824999000028.</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

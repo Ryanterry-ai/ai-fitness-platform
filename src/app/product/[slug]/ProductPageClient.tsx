@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ShoppingBag, Menu, X } from 'lucide-react';
 import Image from '@/components/Image';
 import { useShop, Product, ProductVariant } from '@/lib/store';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
+import CartDrawer from '../../../components/CartDrawer';
 const StickyCtaBar = React.lazy(() => import('../../../components/StickyCtaBar'));
 const BackToTop = React.lazy(() => import('../../../components/BackToTop'));
 
@@ -50,9 +52,16 @@ export default function ProductPageClient({ slug }: { slug: string }) {
   const [subscribeFreq, setSubscribeFreq] = useState<'1 month' | '2 months' | '3 months'>('1 month');
   const [activeTab, setActiveTab] = useState<'details' | 'nutrition' | 'ingredients'>('details');
   const [stickyVisible, setStickyVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const stickyRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
   const handleScroll = useCallback(() => {
+    setScrolled(window.scrollY > 40);
     if (!stickyRef.current) return;
     const rect = stickyRef.current.getBoundingClientRect();
     setStickyVisible(rect.bottom < 0);
@@ -110,24 +119,47 @@ export default function ProductPageClient({ slug }: { slug: string }) {
         />
       </Suspense>
       {/* ═══ NAV ═══ */}
-      <header className="nav">
+      <header className={`nav ${scrolled ? 'scrolled' : ''}`}>
         <div className="wrap nav-inner">
           <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
-            <a href="/shop">Shop</a>
+            <a href="/shop">Products</a>
             <a href="/formula">Formula</a>
             <a href="/why-pure">Why PURE</a>
-            <a href="/stack-save">Stack &amp; Save</a>
+            <a href="/stack-save">Stack & Save</a>
           </nav>
           <div className="nav-right">
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-              </svg>
+              <ShoppingBag size={20} />
             </a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+              Shop PRIME X
+            </a>
+            <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            className="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Products</a>
+            <a href="/formula" onClick={() => setMobileMenuOpen(false)}>Formula</a>
+            <a href="/why-pure" onClick={() => setMobileMenuOpen(false)}>Why PURE</a>
+            <a href="/stack-save" onClick={() => setMobileMenuOpen(false)}>Stack & Save</a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ═══ BREADCRUMB ═══ */}
       <div className="pdp-container" style={{ maxWidth: 1200, margin: '0 auto', padding: '100px 32px 0' }}>
@@ -1043,14 +1075,12 @@ export default function ProductPageClient({ slug }: { slug: string }) {
           .pdp-cross-sell {
             grid-template-columns: 1fr !important;
           }
-        }
-        div[style*="grid-template-columns: repeat(4"] {
-          grid-template-columns: repeat(2, 1fr) !important;
-        }
-        div[style*="grid-template-columns: repeat(3"] {
-          grid-template-columns: 1fr !important;
+          .pdp-tabs {
+            gap: 0 !important;
+          }
         }
       `}</style>
+      <CartDrawer />
     </div>
   );
 }

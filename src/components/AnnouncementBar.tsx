@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 
-const PARTNER_URL = 'https://www.upgraded.co.in';
+const PARTNER_URL = 'https://www.puresupps.site';
 
 const PROMOS = [
   'FREE SHIPPING ON ALL ORDERS ABOVE ₹999',

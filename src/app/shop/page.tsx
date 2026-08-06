@@ -1,11 +1,15 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
-import { Zap, Star, ChevronRight } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ChevronRight, ShoppingBag, Menu, X } from 'lucide-react';
 import Image from '@/components/Image';
 import { useShop, Product } from '@/lib/store';
-import { motion } from 'framer-motion';
-const BackToTop = React.lazy(() => import('../../components/BackToTop'));
+import { motion, AnimatePresence } from 'framer-motion';
+import CartDrawer from '@/components/CartDrawer';
+import BackToTop from '@/components/BackToTop';
+import { PARTNER_URL } from '@/components/AnnouncementBar';
+
+const EASE = [0.23, 1, 0.32, 1] as const;
 
 const FLAVOUR_TABS = [
   { key: 'all', label: 'All Flavours' },
@@ -18,6 +22,14 @@ export default function ShopPage() {
   const { products, addToCart } = useShop();
   const [flavour, setFlavour] = useState('all');
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const filtered = useMemo(() => {
     if (flavour === 'all') return products;
@@ -34,50 +46,92 @@ export default function ShopPage() {
   const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
 
   return (
-    <>
-      <Suspense fallback={null}>
-        <BackToTop />
-      </Suspense>
+    <div style={{ background: '#000', minHeight: '100vh' }}>
       {/* ═══ NAV ═══ */}
-      <header className="nav">
+      <header className={`nav ${scrolled ? 'scrolled' : ''}`}>
         <div className="wrap nav-inner">
-          <a href="/" className="brand">
-            <span className="brand-text">PURE</span>
-          </a>
+          <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
-            <a href="/shop" style={{ color: 'var(--paper)' }}>Shop</a>
+            <a href="/shop" style={{ color: 'var(--paper)' }}>Products</a>
             <a href="/formula">Formula</a>
             <a href="/why-pure">Why PURE</a>
-            <a href="/stack-save">Stack &amp; Save</a>
+            <a href="/stack-save">Stack & Save</a>
             <a href="/journal">Journal</a>
           </nav>
           <div className="nav-right">
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-              </svg>
+              <ShoppingBag size={20} />
             </a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+              Shop PRIME X
+            </a>
+            <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
       </header>
 
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            className="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Products</a>
+            <a href="/formula" onClick={() => setMobileMenuOpen(false)}>Formula</a>
+            <a href="/why-pure" onClick={() => setMobileMenuOpen(false)}>Why PURE</a>
+            <a href="/stack-save" onClick={() => setMobileMenuOpen(false)}>Stack & Save</a>
+            <a href="/journal" onClick={() => setMobileMenuOpen(false)}>Journal</a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ HEADER ═══ */}
       <div className="shop-header">
         <div className="wrap">
-          <span className="eyebrow">PRIME X Pre-Workout</span>
-          <h1>Shop <span style={{ color: 'var(--yellow)' }}>PURE</span></h1>
-          <p>Three flavours. Zero compromise. Every ingredient and dose printed on the tub.</p>
+          <motion.span
+            className="eyebrow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE }}
+            style={{ marginBottom: 12, display: 'block' }}
+          >
+            PRIME X Pre-Workout
+          </motion.span>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+          >
+            Shop <span style={{ color: 'var(--yellow)' }}>PURE</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
+          >
+            Three flavours. Zero compromise. Every ingredient and dose printed on the tub.
+          </motion.p>
         </div>
       </div>
 
       <div className="wrap" style={{ paddingBottom: 100 }}>
         {/* ═══ FLAVOUR FILTER TABS ═══ */}
-        <div className="flavour-tabs-scroll" style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 40, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 48, flexWrap: 'wrap' }}>
           {FLAVOUR_TABS.map((tab) => (
-            <button
+            <motion.button
               key={tab.key}
               onClick={() => setFlavour(tab.key)}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               style={{
-                padding: '10px 20px',
+                padding: '12px 24px',
                 borderRadius: 999,
                 fontFamily: 'var(--mono)',
                 fontSize: 11,
@@ -85,7 +139,7 @@ export default function ShopPage() {
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.3s var(--ease-out)',
                 background: flavour === tab.key ? (tab.color || 'var(--yellow)') : 'transparent',
                 color: flavour === tab.key ? (tab.key === 'all' ? '#000' : '#fff') : 'rgba(255,255,255,0.45)',
                 border: flavour === tab.key
@@ -93,7 +147,7 @@ export default function ShopPage() {
                   : '1.5px solid rgba(255,255,255,0.1)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6,
+                gap: 8,
                 minHeight: 44,
               }}
             >
@@ -101,19 +155,19 @@ export default function ShopPage() {
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: tab.color, flexShrink: 0 }} />
               )}
               {tab.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         {/* ═══ PRODUCT GRID ═══ */}
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <h3 style={{ fontFamily: 'var(--heading)', fontWeight: 700, fontSize: 22, textTransform: 'uppercase', marginBottom: 8 }}>No products found</h3>
+            <h3 style={{ fontFamily: 'var(--heading)', fontSize: 22, textTransform: 'uppercase', marginBottom: 8 }}>No products found</h3>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>Try selecting a different flavour.</p>
           </div>
         ) : (
           <div className="product-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            {filtered.map((product) => {
+            {filtered.map((product, i) => {
               const discount = product.originalPrice > product.price
                 ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
                 : 0;
@@ -122,8 +176,9 @@ export default function ShopPage() {
                 <motion.div
                   key={product.id}
                   className="p-card"
-                  whileHover={{ y: -4 }}
-                  style={{ display: 'flex', flexDirection: 'column' }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.1, ease: EASE }}
                 >
                   <a href={`/product/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div className="p-flavor-tag">{product.flavour}</div>
@@ -136,37 +191,53 @@ export default function ShopPage() {
                         style={{ objectFit: 'contain', maxHeight: 240, width: 'auto' }}
                         loading="lazy"
                       />
+                      {discount > 0 && (
+                        <span style={{
+                          position: 'absolute', top: 16, right: 16,
+                          fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700,
+                          color: '#000', background: 'var(--yellow)',
+                          padding: '4px 10px', letterSpacing: '0.08em',
+                        }}>
+                          {discount}% OFF
+                        </span>
+                      )}
+                      {product.isBestseller && (
+                        <span style={{
+                          position: 'absolute', top: 16, left: 16,
+                          fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+                          color: '#000', background: 'var(--yellow)',
+                          padding: '4px 10px', letterSpacing: '0.1em', textTransform: 'uppercase',
+                        }}>
+                          Bestseller
+                        </span>
+                      )}
                     </div>
                     <h3>{product.name.split('—')[0]?.trim() || product.name}</h3>
                     <p className="p-desc">{product.description}</p>
                   </a>
                   <div className="p-meta">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="servings">80 SERVINGS</span>
-                      {discount > 0 && (
-                        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color: 'var(--yellow)', background: 'rgba(255,209,0,0.1)', padding: '2px 8px', borderRadius: 999 }}>
-                          {discount}% OFF
-                        </span>
-                      )}
-                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontFamily: 'var(--heading)', fontWeight: 700, fontSize: 18, color: 'var(--yellow)' }}>{fmt(product.price)}</span>
+                      <span className="servings">80 SERVINGS</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ fontFamily: 'var(--heading)', fontSize: 18, color: 'var(--yellow)' }}>{fmt(product.price)}</span>
                       {discount > 0 && (
                         <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through' }}>{fmt(product.originalPrice)}</span>
                       )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  <div style={{ display: 'flex', gap: 8, padding: '0 20px 20px' }}>
                     <a href={`/product/${product.slug}`} className="btn btn-ghost btn-sm" style={{ flex: 1, justifyContent: 'center' }}>
                       View <ChevronRight size={14} />
                     </a>
-                    <button
+                    <motion.button
                       onClick={(e) => { e.stopPropagation(); handleAdd(product); }}
                       className="btn btn-yellow btn-sm"
                       style={{ flex: 1 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       {addedId === product.id ? '✓ Added' : 'Add to Cart'}
-                    </button>
+                    </motion.button>
                   </div>
                 </motion.div>
               );
@@ -175,12 +246,18 @@ export default function ShopPage() {
         )}
 
         {/* ═══ BOTTOM CTA ═══ */}
-        <div style={{ textAlign: 'center', marginTop: 64 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: EASE }}
+          style={{ textAlign: 'center', marginTop: 64 }}
+        >
           <p style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', marginBottom: 12 }}>
             EVERY INGREDIENT. EVERY DOSE. ZERO COMPROMISE.
           </p>
           <div style={{ width: 60, height: 2, background: 'var(--yellow)', margin: '0 auto' }} />
-        </div>
+        </motion.div>
       </div>
 
       {/* ═══ FOOTER ═══ */}
@@ -188,23 +265,26 @@ export default function ShopPage() {
         <div className="wrap">
           <div className="foot-grid">
             <div>
-              <div className="foot-brand"><span className="brand-text" style={{ fontSize: 24 }}>PURE</span></div>
-              <p style={{ maxWidth: 240, color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7 }}>India&apos;s high-performance pre-workout. Transparent dosing, clinically backed formulas.</p>
+              <div className="foot-brand"><span className="brand-text" style={{ fontSize: 28 }}>PURE</span></div>
+              <p style={{ maxWidth: 240, color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7, marginTop: 12 }}>India's high-performance pre-workout. Transparent dosing, clinically backed formulas.</p>
             </div>
             <div className="foot-col">
               <h5>Shop</h5>
               <a href="/product/primex-preworkout-orange">PRIME X Orange</a>
-              <a href="/product/primex-preworkout-rocket-lollipop">PRIME X Rocket Lollipop</a>
               <a href="/product/primex-preworkout-fruit-punch">PRIME X Fruit Punch</a>
+              <a href="/product/primex-preworkout-rocket-lollipop">PRIME X Rocket Lollipop</a>
+              <a href="/stack-save">Trainer's Tray Bundle</a>
             </div>
             <div className="foot-col">
               <h5>Company</h5>
               <a href="/why-pure">Why PURE</a>
               <a href="/formula">The Formula</a>
               <a href="/journal">Journal</a>
+              <a href="/about">About Us</a>
             </div>
             <div className="foot-col">
               <h5>Contact</h5>
+              <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">puresupps.site</a>
               <a href="mailto:puresupps.site@gmail.com">puresupps.site@gmail.com</a>
               <a href="tel:+919557513017">+91 95575 13017</a>
               <a href="https://instagram.com/puresupps.site" target="_blank" rel="noopener noreferrer">@puresupps.site</a>
@@ -219,14 +299,8 @@ export default function ShopPage() {
         </div>
       </footer>
 
-      <style>{`
-        @media(max-width: 900px) {
-          .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-        }
-        @media(max-width: 480px) {
-          .product-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-        }
-      `}</style>
-    </>
+      <CartDrawer />
+      <BackToTop />
+    </div>
   );
 }

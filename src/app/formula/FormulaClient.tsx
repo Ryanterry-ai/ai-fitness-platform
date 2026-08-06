@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShoppingBag, Menu, X } from 'lucide-react';
 import Image from '@/components/Image';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
+import CartDrawer from '../../components/CartDrawer';
 const BackToTop = React.lazy(() => import('../../components/BackToTop'));
 
 const INGREDIENTS = [
@@ -28,32 +31,57 @@ export default function FormulaClient() {
   const [activeIngredient, setActiveIngredient] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'dose' | 'science' | 'timing'>('dose');
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const ing = INGREDIENTS[activeIngredient];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <>
       <Suspense fallback={null}>
         <BackToTop />
       </Suspense>
-      <header className="nav">
+      <header className={`nav ${scrolled ? 'scrolled' : ''}`}>
         <div className="wrap nav-inner">
           <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
-            <a href="/shop">Shop</a>
+            <a href="/shop">Products</a>
             <a href="/formula" style={{ color: 'var(--paper)' }}>Formula</a>
             <a href="/why-pure">Why PURE</a>
-            <a href="/stack-save">Stack &amp; Save</a>
+            <a href="/stack-save">Stack & Save</a>
           </nav>
           <div className="nav-right">
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-              </svg>
+              <ShoppingBag size={20} />
             </a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+              Shop PRIME X
+            </a>
+            <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
       </header>
+
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div className="mobile-menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Products</a>
+            <a href="/formula" onClick={() => setMobileMenuOpen(false)}>Formula</a>
+            <a href="/why-pure" onClick={() => setMobileMenuOpen(false)}>Why PURE</a>
+            <a href="/stack-save" onClick={() => setMobileMenuOpen(false)}>Stack & Save</a>
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     <div style={{ background: '#000', minHeight: '100vh', color: '#fff' }}>
       {/* ═══ HERO ═══ */}
@@ -299,6 +327,8 @@ export default function FormulaClient() {
         </div>
       </section>
       </div>
+
+      <CartDrawer />
 
       <footer>
         <div className="wrap">
