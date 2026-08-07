@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
-import { Zap, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Shield, Award, Beaker, Truck, RotateCcw, Star, ShoppingBag, Menu, X } from 'lucide-react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { ArrowRight, ChevronDown, ExternalLink, Shield, Award, Beaker, Truck, RotateCcw, Star, ShoppingBag, Menu, X } from 'lucide-react';
 import { useShop } from '../lib/store';
 import Image from '../components/Image';
 import CartDrawer from '../components/CartDrawer';
@@ -61,167 +61,99 @@ function Marquee() {
 /* ═══════════════════════════════════════════════════════════ */
 function HeroSection() {
   const ref = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const mouseXSpring = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const mouseYSpring = useSpring(mouseY, { stiffness: 50, damping: 20 });
-
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.92]);
-
-  const productX = useTransform(mouseXSpring, [-0.5, 0.5], [-25, 25]);
-  const productY = useTransform(mouseYSpring, [-0.5, 0.5], [-15, 15]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set((e.clientX / window.innerWidth - 0.5) * 2);
-      mouseY.set((e.clientY / window.innerHeight - 0.5) * 2);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
+  const bgY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
 
   return (
-    <section ref={ref} style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
-      {/* Background */}
-      <motion.div style={{ position: 'absolute', inset: 0, y, scale }}>
-        <div style={{ position: 'absolute', inset: 0 }}>
-          <Image src="/products/hero-slide.png" alt="" fill style={{ objectFit: 'cover' }} priority sizes="100vw" quality={85} />
-        </div>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.40) 100%)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 50%, rgba(255,209,0,0.08) 0%, transparent 60%)' }} />
+    <section ref={ref} style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      {/* Background — edge-to-edge lifestyle image with dark overlay */}
+      <motion.div style={{ position: 'absolute', inset: 0, y: bgY, scale }}>
+        <Image src="/products/hero-slide.png" alt="" fill style={{ objectFit: 'cover' }} priority sizes="100vw" quality={90} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0.55) 100%)' }} />
       </motion.div>
 
-      {/* Grid overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
-        backgroundSize: '64px 64px',
-        maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 70%)',
-        WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 70%)',
-        opacity: 0.5,
-      }} />
-
-      {/* Dynamic glow */}
-      <motion.div style={{
-        position: 'absolute', pointerEvents: 'none',
-        x: useTransform(mouseXSpring, [-1, 1], [-200, 200]),
-        y: useTransform(mouseYSpring, [-1, 1], [-200, 200]),
-        width: 500, height: 500,
-        background: 'radial-gradient(circle, rgba(255,215,0,0.12) 0%, transparent 70%)',
-        borderRadius: '50%', filter: 'blur(50px)',
-      }} />
-
-      {/* Content */}
-      <motion.div style={{ position: 'relative', zIndex: 10, maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center', width: '100%', opacity }}>
-        {/* Left: Copy */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: EASE }}
-          >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, background: 'rgba(255,209,0,0.08)', border: '1px solid rgba(255,209,0,0.2)', color: 'var(--yellow)', fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              <Zap size={14} /> High-Intensity Pre-Workout
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: EASE }}
-            style={{ fontFamily: 'var(--display)', fontSize: 'clamp(48px, 8vw, 80px)', textTransform: 'uppercase', lineHeight: 0.88, letterSpacing: '-0.02em' }}
-          >
-            <span style={{ display: 'block', color: '#fff' }}>FUEL</span>
-            <span style={{ display: 'block', color: '#fff' }}>FOR</span>
-            <span style={{ display: 'block', color: 'var(--yellow)', position: 'relative' }}>
-              ATHLETES
-              <motion.span
-                style={{ position: 'absolute', bottom: -4, left: 0, height: 3, background: 'var(--yellow)' }}
-                initial={{ width: 0 }}
-                animate={{ width: '100%' }}
-                transition={{ duration: 0.8, delay: 0.8, ease: EASE }}
-              />
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
-            style={{ fontSize: 17, color: 'rgba(255,255,255,0.6)', maxWidth: 420, lineHeight: 1.65 }}
-          >
-            PRIME X delivers explosive energy, massive pumps, and laser-sharp focus.
-            80 servings. 3 flavours. No compromise.
-          </motion.p>
-
-          {/* Highlight Pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}
-          >
-            {['1.5G Beta-Alanine', '750MG Arginine', '500MG L-Citrulline'].map((h, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <Zap size={14} style={{ color: 'var(--yellow)' }} />
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: '#fff' }}>{h}</span>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}
-          >
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 14, padding: '16px 32px' }}>
-              Shop Now <ExternalLink size={16} />
-            </a>
-            <a href="/shop" className="btn-pure-outline" style={{ fontSize: 14, padding: '16px 32px' }}>
-              View Products
-            </a>
-          </motion.div>
-        </div>
-
-        {/* Right: Product */}
+      {/* Content — centered, editorial */}
+      <motion.div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 32px', maxWidth: 900, opacity: contentOpacity }}>
+        {/* Eyebrow */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, rotateY: -15 }}
-          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-          transition={{ duration: 1, delay: 0.3, ease: EASE }}
-          style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', perspective: 1000, position: 'relative' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
         >
-          <motion.div style={{ x: productX, y: productY, position: 'relative' }}>
-            <Image
-              src="/products/product-3flavours.png"
-              alt="PRIME X Pre-Workout — 3 Flavours"
-              width={500}
-              height={500}
-              style={{ objectFit: 'contain', filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 80px rgba(255,209,0,0.15))' }}
-              priority
-            />
-            {/* Floating stats */}
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ position: 'absolute', top: 40, right: -20, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,209,0,0.2)', borderRadius: 12, padding: '12px 16px' }}
-            >
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 22, fontWeight: 700, color: 'var(--yellow)' }}>80</div>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Servings</div>
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-              style={{ position: 'absolute', bottom: 60, left: -10, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,209,0,0.2)', borderRadius: 12, padding: '12px 16px' }}
-            >
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 22, fontWeight: 700, color: 'var(--yellow)' }}>8</div>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Ingredients</div>
-            </motion.div>
-          </motion.div>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+            PRIME X Pre-Workout
+          </span>
+        </motion.div>
+
+        {/* Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.4, ease: EASE }}
+          style={{ fontFamily: 'var(--display)', fontSize: 'clamp(52px, 10vw, 96px)', textTransform: 'uppercase', lineHeight: 0.88, letterSpacing: '-0.03em', marginTop: 20 }}
+        >
+          <span style={{ display: 'block', color: '#fff' }}>FUEL</span>
+          <span style={{ display: 'block', color: '#fff' }}>FOR </span>
+          <span style={{ display: 'block', color: 'var(--yellow)' }}>ATHLETES</span>
+        </motion.h1>
+
+        {/* Supporting copy */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7, ease: EASE }}
+          style={{ fontFamily: 'var(--body)', fontSize: 17, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 480, margin: '24px auto 0' }}
+        >
+          8 clinically dosed ingredients. Transparent labelling.
+          Zero proprietary blends. 80 servings per tub.
+        </motion.p>
+
+        {/* Single CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.9, ease: EASE }}
+          style={{ marginTop: 36 }}
+        >
+          <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 14, padding: '18px 40px' }}>
+            Shop Now
+          </a>
+        </motion.div>
+      </motion.div>
+
+      {/* Product — centered below headline, gentle float + light sweep */}
+      <motion.div
+        initial={{ opacity: 0, y: 60, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 1.2, delay: 0.6, ease: EASE }}
+        style={{ position: 'relative', zIndex: 10, marginTop: 48 }}
+      >
+        <motion.div
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ position: 'relative' }}
+        >
+          <Image
+            src="/products/product-3flavours.png"
+            alt="PRIME X Pre-Workout — 3 Flavours"
+            width={480}
+            height={480}
+            style={{ objectFit: 'contain', filter: 'drop-shadow(0 30px 80px rgba(0,0,0,0.7)) drop-shadow(0 0 60px rgba(255,209,0,0.12))' }}
+            priority
+          />
+          {/* Subtle light sweep across product */}
+          <motion.div
+            animate={{ x: ['-120%', '220%'] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 4 }}
+            style={{
+              position: 'absolute', top: 0, left: 0, width: 80, height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)',
+              transform: 'skewX(-20deg)',
+              pointerEvents: 'none',
+            }}
+          />
         </motion.div>
       </motion.div>
 
@@ -229,23 +161,14 @@ function HeroSection() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
+        transition={{ delay: 2, duration: 1 }}
         style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
       >
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Scroll</span>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Scroll</span>
         <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-          <ChevronDown size={18} style={{ color: 'rgba(255,255,255,0.35)' }} />
+          <ChevronDown size={18} style={{ color: 'rgba(255,255,255,0.3)' }} />
         </motion.div>
       </motion.div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          section > div[style*="grid-template-columns: 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
-            text-align: center;
-          }
-        }
-      `}</style>
     </section>
   );
 }
