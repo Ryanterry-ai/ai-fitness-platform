@@ -7,6 +7,7 @@ import { useShop } from '../lib/store';
 import Image from '../components/Image';
 import CartDrawer from '../components/CartDrawer';
 import BackToTop from '../components/BackToTop';
+import WelcomePopup from '../components/WelcomePopup';
 import { PARTNER_URL } from '../components/AnnouncementBar';
 
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -68,93 +69,10 @@ function HeroSection() {
 
   return (
     <section ref={ref} style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      {/* Background — edge-to-edge lifestyle image with dark overlay */}
+      {/* Background — edge-to-edge lifestyle image, minimal overlay */}
       <motion.div style={{ position: 'absolute', inset: 0, y: bgY, scale }}>
         <Image src="/products/hero-slide.png" alt="" fill style={{ objectFit: 'cover' }} priority sizes="100vw" quality={90} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0.55) 100%)' }} />
-      </motion.div>
-
-      {/* Content — centered, editorial */}
-      <motion.div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 32px', maxWidth: 900, opacity: contentOpacity }}>
-        {/* Eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-        >
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-            PRIME X Pre-Workout
-          </span>
-        </motion.div>
-
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4, ease: EASE }}
-          style={{ fontFamily: 'var(--display)', fontSize: 'clamp(52px, 10vw, 96px)', textTransform: 'uppercase', lineHeight: 0.88, letterSpacing: '-0.03em', marginTop: 20 }}
-        >
-          <span style={{ display: 'block', color: '#fff' }}>FUEL</span>
-          <span style={{ display: 'block', color: '#fff' }}>FOR </span>
-          <span style={{ display: 'block', color: 'var(--yellow)' }}>ATHLETES</span>
-        </motion.h1>
-
-        {/* Supporting copy */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7, ease: EASE }}
-          style={{ fontFamily: 'var(--body)', fontSize: 17, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 480, margin: '24px auto 0' }}
-        >
-          8 clinically dosed ingredients. Transparent labelling.
-          Zero proprietary blends. 80 servings per tub.
-        </motion.p>
-
-        {/* Single CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9, ease: EASE }}
-          style={{ marginTop: 36 }}
-        >
-          <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 14, padding: '18px 40px' }}>
-            Shop Now
-          </a>
-        </motion.div>
-      </motion.div>
-
-      {/* Product — centered below headline, gentle float + light sweep */}
-      <motion.div
-        initial={{ opacity: 0, y: 60, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 1.2, delay: 0.6, ease: EASE }}
-        style={{ position: 'relative', zIndex: 10, marginTop: 48 }}
-      >
-        <motion.div
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ position: 'relative' }}
-        >
-          <Image
-            src="/products/product-3flavours.png"
-            alt="PRIME X Pre-Workout — 3 Flavours"
-            width={480}
-            height={480}
-            style={{ objectFit: 'contain', filter: 'drop-shadow(0 30px 80px rgba(0,0,0,0.7)) drop-shadow(0 0 60px rgba(255,209,0,0.12))' }}
-            priority
-          />
-          {/* Subtle light sweep across product */}
-          <motion.div
-            animate={{ x: ['-120%', '220%'] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 4 }}
-            style={{
-              position: 'absolute', top: 0, left: 0, width: 80, height: '100%',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)',
-              transform: 'skewX(-20deg)',
-              pointerEvents: 'none',
-            }}
-          />
-        </motion.div>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%)' }} />
       </motion.div>
 
       {/* Scroll indicator */}
@@ -162,7 +80,7 @@ function HeroSection() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2, duration: 1 }}
-        style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
+        style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 10 }}
       >
         <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Scroll</span>
         <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
@@ -361,91 +279,126 @@ function ScienceSection() {
 /*  WHY PURE SECTION                                          */
 /* ═══════════════════════════════════════════════════════════ */
 function WhyPureSection() {
-  const rows = [
-    { num: '01', title: 'Full Transparency', desc: 'Every ingredient and its exact dose printed on the tub. No proprietary blends. No hidden fillers. You know exactly what you are putting in your body.', img: '/products/tub-orange.png' },
-    { num: '02', title: 'Science-Backed Dosing', desc: 'Every ingredient at its clinically studied dose. 1.5g Beta-Alanine means 1.5g — not a dusting for the label.', img: '/products/tub-fruit-punch.png' },
-    { num: '03', title: 'Clean Formula', desc: 'Banned substance free. FSSAI licensed. Manufactured in a certified facility. No artificial colours. No compromises.', img: '/products/tub-rocket.png' },
-  ];
-
   return (
-    <section style={{ padding: '100px 0' }}>
-      <div className="wrap">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, ease: EASE }}
-          style={{ marginBottom: 56 }}
-        >
-          <span className="eyebrow" style={{ marginBottom: 12, display: 'block' }}>Why PURE</span>
-          <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(28px, 4vw, 42px)', textTransform: 'uppercase' }}>
-            Built different, by <span style={{ color: 'var(--yellow)' }}>design</span>.
-          </h2>
-        </motion.div>
-
-        {rows.map((row, i) => (
+    <section style={{ background: '#000' }}>
+      {/* Hero — Ghost Story style */}
+      <div style={{ position: 'relative', width: '100%', height: '85vh', minHeight: 500, overflow: 'hidden' }}>
+        <Image
+          src="/products/product-gym.png"
+          alt="PURE athlete in the gym"
+          fill
+          style={{ objectFit: 'cover', objectPosition: 'center 20%' }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.65) 100%)' }} />
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
           <motion.div
-            key={row.num}
-            initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: EASE }}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 60,
-              alignItems: 'center',
-              padding: '48px 0',
-              borderTop: i === 0 ? '1px solid var(--line)' : 'none',
-              borderBottom: '1px solid var(--line)',
-            }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
           >
-            <div style={{ order: i % 2 === 0 ? 1 : 2 }}>
-              <div style={{ fontFamily: 'var(--display)', fontSize: 64, color: 'var(--yellow)', opacity: 0.8, lineHeight: 1, marginBottom: 12 }}>{row.num}</div>
-              <h3 style={{ fontFamily: 'var(--heading)', fontSize: 'clamp(24px, 3vw, 36px)', textTransform: 'uppercase', marginBottom: 12 }}>{row.title}</h3>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, lineHeight: 1.65, maxWidth: 440 }}>{row.desc}</p>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
+              The PURE Story
             </div>
-            <div style={{ order: i % 2 === 0 ? 2 : 1, display: 'flex', justifyContent: 'center' }}>
-              <motion.img
-                src={row.img}
-                alt={row.title}
-                style={{ maxWidth: 280, width: '100%', objectFit: 'contain', filter: 'drop-shadow(0 20px 60px rgba(0,0,0,0.7))' }}
-                whileHover={{ scale: 1.05, rotate: -3 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-              />
+            <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(40px, 9vw, 72px)', textTransform: 'uppercase', lineHeight: 0.92, color: '#fff' }}>
+              Why We<br /><span style={{ color: 'var(--yellow)' }}>Exist</span>
+            </h2>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Editorial story — two-column Ghost style */}
+      <div className="wrap" style={{ padding: '80px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 64, alignItems: 'center' }}>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+          >
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 12 }}>
+              Our Mission
+            </div>
+            <h3 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(28px, 4vw, 42px)', textTransform: 'uppercase', lineHeight: 1.05, marginBottom: 20 }}>
+              Transparency is not a<br />marketing <span style={{ color: 'var(--yellow)' }}>strategy</span>.
+            </h3>
+            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 480 }}>
+              When we started PURE, we were tired of supplements hiding behind proprietary blends and underdosed ingredients. We believed Indian athletes deserved better — clinically dosed formulas, fully transparent labels, and zero shortcuts.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            style={{ display: 'flex', justifyContent: 'center' }}
+          >
+            <div style={{ position: 'relative', width: '100%', maxWidth: 440, aspectRatio: '4/5', borderRadius: 12, overflow: 'hidden' }}>
+              <Image src="/products/product-lifestyle.png" alt="PURE lifestyle" fill style={{ objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6) 100%)' }} />
+              <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24 }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>Founded</div>
+                <div style={{ fontFamily: 'var(--display)', fontSize: 20, textTransform: 'uppercase', color: '#fff' }}>2024, India</div>
+              </div>
             </div>
           </motion.div>
-        ))}
+        </div>
+      </div>
 
-        {/* Trust Panel */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, ease: EASE }}
-          style={{ marginTop: 56, background: 'linear-gradient(145deg, #1a1a1a, #111)', border: '1px solid var(--line)', borderRadius: 12, padding: '40px 48px' }}
-        >
-          <h3 style={{ fontFamily: 'var(--heading)', fontSize: 28, textTransform: 'uppercase', marginBottom: 28, textAlign: 'center' }}>
-            Trust, <span style={{ color: 'var(--yellow)' }}>Verified</span>.
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {TRUST_ROWS.map((row, i) => (
-              <div key={row.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: i < TRUST_ROWS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)' }}>{row.key}</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 14, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.05em' }}>{row.val}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+      {/* Values — editorial grid */}
+      <div className="wrap" style={{ padding: '0 24px 80px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+          {[
+            { num: '01', title: 'Full Transparency', desc: 'Every ingredient and its exact dose printed on the tub. No proprietary blends. No hidden fillers.' },
+            { num: '02', title: 'Clinical Dosing', desc: 'Every ingredient at its clinically studied dose. 1.5g Beta-Alanine means 1.5g — not a dusting for the label.' },
+            { num: '03', title: 'Zero Compromises', desc: 'Banned substance free. FSSAI licensed. Manufactured in a certified facility. No artificial colours.' },
+          ].map((item, i) => (
+            <motion.div
+              key={item.num}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.1, ease: [0.23, 1, 0.32, 1] }}
+              style={{
+                padding: '40px 32px',
+                background: i === 1 ? 'rgba(255,209,0,0.04)' : 'transparent',
+                borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              }}
+            >
+              <div style={{ fontFamily: 'var(--display)', fontSize: 48, color: 'var(--yellow)', opacity: 0.7, lineHeight: 1, marginBottom: 12 }}>{item.num}</div>
+              <h4 style={{ fontFamily: 'var(--heading)', fontSize: 18, textTransform: 'uppercase', marginBottom: 10, color: '#fff' }}>{item.title}</h4>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.65 }}>{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Trust strip */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', padding: '24px', gap: 16, flexWrap: 'wrap' }}>
+          {TRUST_ROWS.map((row) => (
+            <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{row.key}</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.05em' }}>{row.val}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <style>{`
         @media (max-width: 768px) {
-          div[style*="grid-template-columns: 1fr 1fr"] {
+          div[style*="grid-template-columns: 1.1fr"] {
             grid-template-columns: 1fr !important;
-            gap: 32px !important;
+            gap: 40px !important;
           }
-          div[style*="order: 2"] { order: 2 !important; }
+          div[style*="grid-template-columns: repeat(3"] {
+            grid-template-columns: 1fr !important;
+            gap: 0 !important;
+          }
+          div[style*="grid-template-columns: repeat(3"] > div {
+            border-left: none !important;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+          }
         }
       `}</style>
     </section>
@@ -678,11 +631,9 @@ export default function HomePage() {
         <div className="wrap nav-inner">
           <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
-            <a href="/shop">Products</a>
-            <a href="/formula">Formula</a>
-            <a href="/why-pure">Why PURE</a>
-            <a href="/stack-save">Stack & Save</a>
-            <a href="/journal">Journal</a>
+            <a href="/wholesale">Wholesale &amp; Retails</a>
+            <a href="/contact">Contact Us</a>
+            <a href="/athletes">Our Athletes</a>
           </nav>
           <div className="nav-right">
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
@@ -708,11 +659,9 @@ export default function HomePage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Products</a>
-            <a href="/formula" onClick={() => setMobileMenuOpen(false)}>Formula</a>
-            <a href="/why-pure" onClick={() => setMobileMenuOpen(false)}>Why PURE</a>
-            <a href="/stack-save" onClick={() => setMobileMenuOpen(false)}>Stack & Save</a>
-            <a href="/journal" onClick={() => setMobileMenuOpen(false)}>Journal</a>
+            <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
+            <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
+            <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
             <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
           </motion.div>
         )}
@@ -726,6 +675,56 @@ export default function HomePage() {
 
       {/* Products */}
       <ProductsSection />
+
+      {/* Cinematic — Subscribe & Save */}
+      <section style={{ position: 'relative', width: '100%', height: '100vh', minHeight: 600, overflow: 'hidden' }}>
+        <Image
+          src="/products/product-gym.png"
+          alt="Athlete in the gym"
+          fill
+          style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.7) 100%)' }} />
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
+              Subscribe &amp; Save
+            </div>
+            <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(36px, 8vw, 64px)', textTransform: 'uppercase', lineHeight: 0.95, marginBottom: 20, color: '#fff' }}>
+              Save 25%<br />
+              <span style={{ color: 'var(--yellow)' }}>Every Month</span>
+            </h2>
+            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, maxWidth: 460, margin: '0 auto 32px' }}>
+              Never run out of PRIME X. Subscribe to your favourite flavour and save 25% on every order. Free shipping, cancel anytime.
+            </p>
+            <a
+              href={PARTNER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '16px 36px',
+                background: 'var(--yellow)',
+                color: '#000',
+                fontFamily: 'var(--display)',
+                fontSize: 13,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                borderRadius: 10,
+                fontWeight: 700,
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 0 30px rgba(255,209,0,0.3)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              Start Saving <ArrowRight size={16} />
+            </a>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Parallax Break 1 */}
       <ParallaxBreak
@@ -747,6 +746,55 @@ export default function HomePage() {
 
       {/* Why PURE */}
       <WhyPureSection />
+
+      {/* Cinematic — Discover the Details */}
+      <section style={{ position: 'relative', width: '100%', height: '100vh', minHeight: 600, overflow: 'hidden' }}>
+        <Image
+          src="/products/product-lifestyle.png"
+          alt="PRIME X lifestyle shot"
+          fill
+          style={{ objectFit: 'cover', objectPosition: 'center center' }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.55) 100%)' }} />
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
+              Discover the Details
+            </div>
+            <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(36px, 8vw, 64px)', textTransform: 'uppercase', lineHeight: 0.95, marginBottom: 20, color: '#fff' }}>
+              The Formula<br />
+              <span style={{ color: 'var(--yellow)' }}>Behind the Focus</span>
+            </h2>
+            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, maxWidth: 460, margin: '0 auto 32px' }}>
+              8 clinically dosed ingredients. Zero proprietary blends. Every scoop engineered for clean energy, razor-sharp focus, and pumps that do not quit.
+            </p>
+            <a
+              href="/formula"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '16px 36px',
+                background: 'transparent',
+                color: '#fff',
+                fontFamily: 'var(--display)',
+                fontSize: 13,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                borderRadius: 10,
+                fontWeight: 700,
+                border: '1px solid rgba(255,255,255,0.25)',
+                transition: 'border-color 0.2s, background 0.2s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--yellow)'; e.currentTarget.style.background = 'rgba(255,209,0,0.06)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'transparent'; }}
+            >
+              View Full Formula <ArrowRight size={16} />
+            </a>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Bundle */}
       <BundleSection />
@@ -809,6 +857,7 @@ export default function HomePage() {
 
       <CartDrawer />
       <BackToTop />
+      <WelcomePopup />
     </div>
   );
 }

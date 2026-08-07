@@ -40,10 +40,9 @@ export default function AboutPage() {
         <div className="wrap nav-inner">
           <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
-            <a href="/shop">Products</a>
-            <a href="/formula">Formula</a>
-            <a href="/why-pure">Why PURE</a>
-            <a href="/stack-save">Stack & Save</a>
+            <a href="/wholesale">Wholesale &amp; Retails</a>
+            <a href="/contact">Contact Us</a>
+            <a href="/athletes">Our Athletes</a>
           </nav>
           <div className="nav-right">
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
@@ -62,10 +61,9 @@ export default function AboutPage() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div className="mobile-menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-            <a href="/shop" onClick={() => setMobileMenuOpen(false)}>Products</a>
-            <a href="/formula" onClick={() => setMobileMenuOpen(false)}>Formula</a>
-            <a href="/why-pure" onClick={() => setMobileMenuOpen(false)}>Why PURE</a>
-            <a href="/stack-save" onClick={() => setMobileMenuOpen(false)}>Stack & Save</a>
+            <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
+            <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
+            <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
             <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
           </motion.div>
         )}
