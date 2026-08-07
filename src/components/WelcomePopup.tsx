@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Copy, Check } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 import { PARTNER_URL } from './AnnouncementBar';
 import Image from './Image';
 
@@ -11,6 +11,8 @@ const COUPON_CODE = 'PRIMEX10';
 export default function WelcomePopup() {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [name, setName] = useState('');
+  const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -22,11 +24,6 @@ export default function WelcomePopup() {
     }
   }, []);
 
-  const handleClose = () => {
-    setIsOpen(false);
-    sessionStorage.setItem('welcome-popup-dismissed', '1');
-  };
-
   const handleCopy = async () => {
     await navigator.clipboard.writeText(COUPON_CODE);
     setCopied(true);
@@ -35,7 +32,12 @@ export default function WelcomePopup() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) setSubmitted(true);
+    if (name && mobile && email) setSubmitted(true);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    sessionStorage.setItem('welcome-popup-dismissed', '1');
   };
 
   return (
@@ -52,182 +54,256 @@ export default function WelcomePopup() {
             zIndex: 9999,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-end',
-            flexDirection: 'column',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(6px)',
           }}
         >
-          {/* Background image */}
-          <div style={{ position: 'absolute', inset: 0 }}>
-            <Image src="/products/popup-bg.png" alt="" fill style={{ objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.75) 40%, #000 78%)' }} />
-          </div>
-
-          {/* Close button */}
-          <button
-            onClick={handleClose}
+          {/* Card */}
+          <motion.div
+            initial={{ scale: 0.92, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
             style={{
+              position: 'relative',
+              width: '92%',
+              maxWidth: 820,
+              minHeight: 460,
+              borderRadius: 16,
+              overflow: 'visible',
+              display: 'flex',
+              flexDirection: 'row',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.6)',
+            }}
+          >
+            {/* Logo — floating above the card, centered */}
+            <div style={{
               position: 'absolute',
-              top: 20,
-              right: 20,
+              top: -48,
+              left: '50%',
+              transform: 'translateX(-50%)',
               zIndex: 20,
-              width: 40,
-              height: 40,
+              width: 96,
+              height: 96,
               borderRadius: '50%',
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              color: '#fff',
-              cursor: 'pointer',
+              background: 'var(--yellow)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-          >
-            <X size={20} />
-          </button>
+              boxShadow: '0 8px 32px rgba(255,209,0,0.35)',
+            }}>
+              <span style={{
+                fontFamily: 'var(--display)',
+                fontSize: 34,
+                color: '#000',
+                letterSpacing: '0.04em',
+                lineHeight: 1,
+              }}>PURE</span>
+            </div>
 
-          {/* Form panel — slides up from bottom */}
-          <motion.div
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            style={{
-              position: 'relative',
-              zIndex: 10,
-              width: '100%',
-              maxWidth: 520,
-              margin: '0 auto',
-              padding: '40px 32px calc(32px + env(safe-area-inset-bottom, 0px))',
+            {/* LEFT — Form panel */}
+            <div style={{
+              flex: '0 0 42%',
+              background: '#111',
+              borderRadius: '16px 0 0 16px',
+              padding: '60px 36px 36px',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-end',
-              maxHeight: '82vh',
-            }}
-          >
-            {!submitted ? (
-              <>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 12 }}>
-                  Welcome to PURE
-                </div>
-                <h2 className="popup-title" style={{ fontFamily: 'var(--display)', fontSize: 'clamp(32px, 7vw, 44px)', textTransform: 'uppercase', lineHeight: 1, marginBottom: 16, color: '#fff' }}>
-                  Get <span style={{ color: 'var(--yellow)' }}>10% OFF</span><br />Your First Order
-                </h2>
-                <p className="popup-subtitle" style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 28 }}>
-                  Enter your email to receive your exclusive discount code. Use it at checkout on puresupps.site.
-                </p>
+              justifyContent: 'center',
+              position: 'relative',
+              zIndex: 2,
+            }}>
+              {!submitted ? (
+                <>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 10 }}>
+                    Welcome to PURE
+                  </div>
+                  <h2 style={{
+                    fontFamily: 'var(--display)',
+                    fontSize: 'clamp(26px, 4vw, 34px)',
+                    textTransform: 'uppercase',
+                    lineHeight: 1.05,
+                    marginBottom: 12,
+                    color: '#fff',
+                  }}>
+                    Subscribe &amp; Get<br />
+                    <span style={{ color: 'var(--yellow)' }}>10% OFF</span><br />
+                    On First Order
+                  </h2>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, marginBottom: 24 }}>
+                    Enter your details to receive your exclusive discount code.
+                  </p>
 
-                {/* Coupon code */}
-                <div
-                  onClick={handleCopy}
-                  className="popup-coupon"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '18px 24px',
-                    background: 'rgba(255,209,0,0.06)',
-                    border: '2px dashed rgba(255,209,0,0.3)',
-                    borderRadius: 10,
-                    cursor: 'pointer',
-                    marginBottom: 24,
-                    transition: 'border-color 0.2s',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255,209,0,0.6)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255,209,0,0.3)')}
-                >
-                  <span style={{ fontFamily: 'var(--display)', fontSize: 30, letterSpacing: '0.1em', color: 'var(--yellow)' }}>
-                    {COUPON_CODE}
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--mono)', fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>
-                    {copied ? <><Check size={14} style={{ color: '#22c55e' }} /> Copied</> : <><Copy size={14} /> Copy</>}
-                  </span>
-                </div>
+                  <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '13px 14px',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: 8,
+                        color: '#fff',
+                        fontFamily: 'var(--body)',
+                        fontSize: 13,
+                        outline: 'none',
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = 'var(--yellow)')}
+                      onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Mobile Number"
+                      required
+                      value={mobile}
+                      onChange={(e) => setMobile(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '13px 14px',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: 8,
+                        color: '#fff',
+                        fontFamily: 'var(--body)',
+                        fontSize: 13,
+                        outline: 'none',
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = 'var(--yellow)')}
+                      onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '13px 14px',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: 8,
+                        color: '#fff',
+                        fontFamily: 'var(--body)',
+                        fontSize: 13,
+                        outline: 'none',
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={(e) => (e.target.style.borderColor = 'var(--yellow)')}
+                      onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
+                    />
+                    <button
+                      type="submit"
+                      style={{
+                        width: '100%',
+                        padding: '14px 24px',
+                        background: 'var(--yellow)',
+                        color: '#000',
+                        fontFamily: 'var(--display)',
+                        fontSize: 12,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        marginTop: 4,
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255,209,0,0.3)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                      Send Discount Code
+                    </button>
+                  </form>
+                </>
+              ) : (
+                /* After submit — reveal coupon */
+                <div>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 10 }}>
+                    Your Exclusive Code
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--display)', fontSize: 28, textTransform: 'uppercase', marginBottom: 16, color: '#fff' }}>
+                    You&apos;re In, {name.split(' ')[0]}!
+                  </h3>
 
-                {/* Email form */}
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <input
-                    type="email"
-                    placeholder="your@email.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                  <div
+                    onClick={handleCopy}
                     style={{
-                      width: '100%',
-                      padding: '16px 18px',
-                      background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '16px 20px',
+                      background: 'rgba(255,209,0,0.08)',
+                      border: '2px dashed rgba(255,209,0,0.4)',
                       borderRadius: 10,
-                      color: '#fff',
-                      fontFamily: 'var(--body)',
-                      fontSize: 15,
-                      outline: 'none',
+                      cursor: 'pointer',
+                      marginBottom: 20,
                       transition: 'border-color 0.2s',
                     }}
-                    onFocus={(e) => (e.target.style.borderColor = 'rgba(255,209,0,0.4)')}
-                    onBlur={(e) => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
-                  />
-                  <button
-                    type="submit"
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255,209,0,0.8)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255,209,0,0.4)')}
+                  >
+                    <span style={{ fontFamily: 'var(--display)', fontSize: 30, letterSpacing: '0.1em', color: 'var(--yellow)' }}>
+                      {COUPON_CODE}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                      {copied ? <><Check size={14} style={{ color: '#22c55e' }} /> Copied</> : <><Copy size={14} /> Copy</>}
+                    </span>
+                  </div>
+
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 20 }}>
+                    Use this code at checkout on puresupps.site.
+                  </p>
+
+                  <a
+                    href={PARTNER_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handleClose}
                     style={{
+                      display: 'block',
                       width: '100%',
-                      padding: '16px 24px',
+                      textAlign: 'center',
+                      padding: '14px 24px',
                       background: 'var(--yellow)',
                       color: '#000',
                       fontFamily: 'var(--display)',
-                      fontSize: 14,
+                      fontSize: 12,
                       letterSpacing: '0.06em',
                       textTransform: 'uppercase',
-                      border: 'none',
-                      borderRadius: 10,
-                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      borderRadius: 8,
                       fontWeight: 700,
-                      transition: 'transform 0.2s, box-shadow 0.2s',
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 0 24px rgba(255,209,0,0.3)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
-                    Get My Discount
-                  </button>
-                </form>
+                    Continue Shopping
+                  </a>
+                </div>
+              )}
+            </div>
 
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 16 }}>
-                  No spam. Just performance updates and exclusive offers.
-                </p>
-              </>
-            ) : (
-              <div className="popup-success" style={{ textAlign: 'center', padding: '24px 0' }}>
-                <div className="popup-success-icon" style={{ fontSize: 56, marginBottom: 16 }}>✓</div>
-                <h3 style={{ fontFamily: 'var(--display)', fontSize: 28, textTransform: 'uppercase', marginBottom: 10, color: '#fff' }}>
-                  You&apos;re In!
-                </h3>
-                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
-                  Your discount code <strong style={{ color: 'var(--yellow)' }}>{COUPON_CODE}</strong> is ready. Use it at checkout.
-                </p>
-                <a
-                  href={PARTNER_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={handleClose}
-                  style={{
-                    display: 'inline-block',
-                    padding: '16px 36px',
-                    background: 'var(--yellow)',
-                    color: '#000',
-                    fontFamily: 'var(--display)',
-                    fontSize: 14,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    textDecoration: 'none',
-                    borderRadius: 10,
-                    fontWeight: 700,
-                  }}
-                >
-                  Shop Now
-                </a>
-              </div>
-            )}
+            {/* RIGHT — Background image */}
+            <div style={{
+              flex: '1 1 58%',
+              borderRadius: '0 16px 16px 0',
+              overflow: 'hidden',
+              position: 'relative',
+              minHeight: 460,
+            }}>
+              <Image
+                src="/products/product-3flavours.png"
+                alt="PRIME X Pre-Workout — All 3 Flavours"
+                fill
+                style={{ objectFit: 'cover', objectPosition: 'center center' }}
+              />
+            </div>
           </motion.div>
         </motion.div>
       )}

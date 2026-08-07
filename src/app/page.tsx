@@ -149,45 +149,7 @@ function ProductsSection() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PARALLAX BREAK                                            */
-/* ═══════════════════════════════════════════════════════════ */
-function ParallaxBreak({ title, accent, subtext, productImg }: { title: string; accent: string; subtext: string; productImg?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ['-15%', '15%']);
-  const contentOpacity = useTransform(scrollYProgress, [0.2, 0.5, 0.8], [0, 1, 0]);
-  const contentY = useTransform(scrollYProgress, [0.2, 0.5, 0.8], [40, 0, -40]);
 
-  return (
-    <div ref={ref} style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)', height: '70vh', minHeight: 500, overflow: 'hidden' }}>
-      <motion.div style={{ position: 'absolute', inset: '-20% 0', y: bgY }}>
-        <Image src="/products/hero-slide.png" alt="" fill style={{ objectFit: 'cover', transform: 'scale(1.15)' }} sizes="100vw" />
-      </motion.div>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.72)' }} />
-
-      <motion.div style={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', opacity: contentOpacity, y: contentY, padding: '0 32px' }}>
-        <div style={{ maxWidth: 600 }}>
-          <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(36px, 6vw, 56px)', textTransform: 'uppercase', lineHeight: 0.95 }}>
-            {title.split(accent)[0]}
-            <span style={{ color: 'var(--yellow)' }}>{accent}</span>
-            {title.split(accent)[1]}
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginTop: 16, lineHeight: 1.6 }}>{subtext}</p>
-          {productImg && (
-            <motion.img
-              src={productImg}
-              alt=""
-              style={{ width: 160, height: 'auto', margin: '32px auto 0', filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))' }}
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          )}
-        </div>
-      </motion.div>
-    </div>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════════ */
 /*  SCIENCE / INGREDIENTS SECTION                             */
@@ -278,132 +240,7 @@ function ScienceSection() {
 /* ═══════════════════════════════════════════════════════════ */
 /*  WHY PURE SECTION                                          */
 /* ═══════════════════════════════════════════════════════════ */
-function WhyPureSection() {
-  return (
-    <section style={{ background: '#000' }}>
-      {/* Hero — Ghost Story style */}
-      <div style={{ position: 'relative', width: '100%', height: '85vh', minHeight: 500, overflow: 'hidden' }}>
-        <Image
-          src="/products/product-gym.png"
-          alt="PURE athlete in the gym"
-          fill
-          style={{ objectFit: 'cover', objectPosition: 'center 20%' }}
-        />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.65) 100%)' }} />
-        <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-          >
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
-              The PURE Story
-            </div>
-            <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(40px, 9vw, 72px)', textTransform: 'uppercase', lineHeight: 0.92, color: '#fff' }}>
-              Why We<br /><span style={{ color: 'var(--yellow)' }}>Exist</span>
-            </h2>
-          </motion.div>
-        </div>
-      </div>
 
-      {/* Editorial story — two-column Ghost style */}
-      <div className="wrap" style={{ padding: '80px 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 64, alignItems: 'center' }}>
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
-          >
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 12 }}>
-              Our Mission
-            </div>
-            <h3 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(28px, 4vw, 42px)', textTransform: 'uppercase', lineHeight: 1.05, marginBottom: 20 }}>
-              Transparency is not a<br />marketing <span style={{ color: 'var(--yellow)' }}>strategy</span>.
-            </h3>
-            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 480 }}>
-              When we started PURE, we were tired of supplements hiding behind proprietary blends and underdosed ingredients. We believed Indian athletes deserved better — clinically dosed formulas, fully transparent labels, and zero shortcuts.
-            </p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
-            style={{ display: 'flex', justifyContent: 'center' }}
-          >
-            <div style={{ position: 'relative', width: '100%', maxWidth: 440, aspectRatio: '4/5', borderRadius: 12, overflow: 'hidden' }}>
-              <Image src="/products/product-lifestyle.png" alt="PURE lifestyle" fill style={{ objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6) 100%)' }} />
-              <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24 }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>Founded</div>
-                <div style={{ fontFamily: 'var(--display)', fontSize: 20, textTransform: 'uppercase', color: '#fff' }}>2024, India</div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Values — editorial grid */}
-      <div className="wrap" style={{ padding: '0 24px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
-          {[
-            { num: '01', title: 'Full Transparency', desc: 'Every ingredient and its exact dose printed on the tub. No proprietary blends. No hidden fillers.' },
-            { num: '02', title: 'Clinical Dosing', desc: 'Every ingredient at its clinically studied dose. 1.5g Beta-Alanine means 1.5g — not a dusting for the label.' },
-            { num: '03', title: 'Zero Compromises', desc: 'Banned substance free. FSSAI licensed. Manufactured in a certified facility. No artificial colours.' },
-          ].map((item, i) => (
-            <motion.div
-              key={item.num}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.1, ease: [0.23, 1, 0.32, 1] }}
-              style={{
-                padding: '40px 32px',
-                background: i === 1 ? 'rgba(255,209,0,0.04)' : 'transparent',
-                borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-              }}
-            >
-              <div style={{ fontFamily: 'var(--display)', fontSize: 48, color: 'var(--yellow)', opacity: 0.7, lineHeight: 1, marginBottom: 12 }}>{item.num}</div>
-              <h4 style={{ fontFamily: 'var(--heading)', fontSize: 18, textTransform: 'uppercase', marginBottom: 10, color: '#fff' }}>{item.title}</h4>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.65 }}>{item.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Trust strip */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="wrap" style={{ display: 'flex', justifyContent: 'space-between', padding: '24px', gap: 16, flexWrap: 'wrap' }}>
-          {TRUST_ROWS.map((row) => (
-            <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{row.key}</span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.05em' }}>{row.val}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          div[style*="grid-template-columns: 1.1fr"] {
-            grid-template-columns: 1fr !important;
-            gap: 40px !important;
-          }
-          div[style*="grid-template-columns: repeat(3"] {
-            grid-template-columns: 1fr !important;
-            gap: 0 !important;
-          }
-          div[style*="grid-template-columns: repeat(3"] > div {
-            border-left: none !important;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-          }
-        }
-      `}</style>
-    </section>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════════ */
 /*  BUNDLE SECTION                                            */
@@ -687,26 +524,35 @@ export default function HomePage() {
         />
       </section>
 
-      {/* Parallax Break 1 */}
-      <ParallaxBreak
-        title="Explosive Energy"
-        accent="Energy"
-        subtext="Clinically dosed for explosive power. Beta-Alanine, Arginine HCl, and L-Citrulline work together to push your limits."
-      />
+      {/* Banner — Explosive Energy */}
+      <section style={{ width: '100%', overflow: 'hidden' }}>
+        <img
+          src="/products/explosive energy.png"
+          alt="Explosive Energy. Zero Limits."
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+        />
+      </section>
 
       {/* Science */}
       <ScienceSection />
 
-      {/* Parallax Break 2 */}
-      <ParallaxBreak
-        title="Built Different"
-        accent="Different"
-        subtext="FSSAI licensed. Banned substance free. Manufactured in a certified facility. No shortcuts."
-        productImg="/products/Fruit Punch.png"
-      />
+      {/* Banner — Built Different */}
+      <section style={{ width: '100%', overflow: 'hidden' }}>
+        <img
+          src="/products/Built different.png"
+          alt="Built Different — FSSAI Licensed, Banned Substance Free"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+        />
+      </section>
 
-      {/* Why PURE */}
-      <WhyPureSection />
+      {/* Banner — Why We Exist */}
+      <section style={{ width: '100%', overflow: 'hidden' }}>
+        <img
+          src="/products/why we exists.png"
+          alt="Why We Exist — Focus, Pumps, Energy, Quality"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+        />
+      </section>
 
       {/* Banner — Orange */}
       <section style={{ width: '100%', overflow: 'hidden' }}>
@@ -720,13 +566,14 @@ export default function HomePage() {
       {/* Bundle */}
       <BundleSection />
 
-      {/* Parallax Break 3 */}
-      <ParallaxBreak
-        title="Never Finished"
-        accent="Finished"
-        subtext="Focus that lasts. Energy that does not crash. Pump that does not quit. Every rep, every set."
-        productImg="/products/Rocket Lolli pop.png"
-      />
+      {/* Banner — Never Finished */}
+      <section style={{ width: '100%', overflow: 'hidden' }}>
+        <img
+          src="/products/Never Finished.png"
+          alt="Never Finished — Focus, Pump, Energy, Performance"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+        />
+      </section>
 
       {/* Athlete Banner */}
       <AthleteBanner />
