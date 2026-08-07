@@ -123,6 +123,7 @@ export default function ProductPageClient({ slug }: { slug: string }) {
         <div className="wrap nav-inner">
           <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
+            <a href="/">Home</a>
             <a href="/wholesale">Wholesale &amp; Retails</a>
             <a href="/contact">Contact Us</a>
             <a href="/athletes">Our Athletes</a>
@@ -151,6 +152,7 @@ export default function ProductPageClient({ slug }: { slug: string }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <a href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>

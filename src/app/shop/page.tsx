@@ -52,6 +52,7 @@ export default function ShopPage() {
         <div className="wrap nav-inner">
           <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
+            <a href="/">Home</a>
             <a href="/wholesale">Wholesale &amp; Retails</a>
             <a href="/contact">Contact Us</a>
             <a href="/athletes">Our Athletes</a>
@@ -80,6 +81,7 @@ export default function ShopPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <a href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
@@ -274,8 +276,8 @@ export default function ShopPage() {
             <div className="foot-col">
               <h5>Company</h5>
               <a href="/why-pure">Why PURE</a>
-              <a href="/formula">The Formula</a>
-              <a href="/journal">Journal</a>
+              <a href="/wholesale">Wholesale</a>
+              <a href="/athletes">Our Athletes</a>
               <a href="/about">About Us</a>
             </div>
             <div className="foot-col">

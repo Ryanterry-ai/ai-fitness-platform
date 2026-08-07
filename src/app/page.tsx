@@ -631,6 +631,7 @@ export default function HomePage() {
         <div className="wrap nav-inner">
           <a href="/" className="brand"><span className="brand-text">PURE</span></a>
           <nav className="nav-links">
+            <a href="/">Home</a>
             <a href="/wholesale">Wholesale &amp; Retails</a>
             <a href="/contact">Contact Us</a>
             <a href="/athletes">Our Athletes</a>
@@ -659,6 +660,7 @@ export default function HomePage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <a href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
@@ -676,54 +678,13 @@ export default function HomePage() {
       {/* Products */}
       <ProductsSection />
 
-      {/* Cinematic — Subscribe & Save */}
-      <section style={{ position: 'relative', width: '100%', height: '100vh', minHeight: 600, overflow: 'hidden' }}>
-        <Image
-          src="/products/product-gym.png"
-          alt="Athlete in the gym"
-          fill
-          style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+      {/* Banner — Fruit Punch */}
+      <section style={{ width: '100%', overflow: 'hidden' }}>
+        <img
+          src="/products/banner-fruit-punch.jpg"
+          alt="PRIME X Fruit Punch — Explosive Energy, Enhanced Focus, Muscle Pump"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.7) 100%)' }} />
-        <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
-              Subscribe &amp; Save
-            </div>
-            <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(36px, 8vw, 64px)', textTransform: 'uppercase', lineHeight: 0.95, marginBottom: 20, color: '#fff' }}>
-              Save 25%<br />
-              <span style={{ color: 'var(--yellow)' }}>Every Month</span>
-            </h2>
-            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, maxWidth: 460, margin: '0 auto 32px' }}>
-              Never run out of PRIME X. Subscribe to your favourite flavour and save 25% on every order. Free shipping, cancel anytime.
-            </p>
-            <a
-              href={PARTNER_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '16px 36px',
-                background: 'var(--yellow)',
-                color: '#000',
-                fontFamily: 'var(--display)',
-                fontSize: 13,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                textDecoration: 'none',
-                borderRadius: 10,
-                fontWeight: 700,
-                transition: 'transform 0.2s, box-shadow 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 0 30px rgba(255,209,0,0.3)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              Start Saving <ArrowRight size={16} />
-            </a>
-          </motion.div>
-        </div>
       </section>
 
       {/* Parallax Break 1 */}
@@ -747,53 +708,13 @@ export default function HomePage() {
       {/* Why PURE */}
       <WhyPureSection />
 
-      {/* Cinematic — Discover the Details */}
-      <section style={{ position: 'relative', width: '100%', height: '100vh', minHeight: 600, overflow: 'hidden' }}>
-        <Image
-          src="/products/product-lifestyle.png"
-          alt="PRIME X lifestyle shot"
-          fill
-          style={{ objectFit: 'cover', objectPosition: 'center center' }}
+      {/* Banner — Orange */}
+      <section style={{ width: '100%', overflow: 'hidden' }}>
+        <img
+          src="/products/banner-orange.jpg"
+          alt="PRIME X Orange — Light, Juicy & Refreshing"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.55) 100%)' }} />
-        <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>
-              Discover the Details
-            </div>
-            <h2 style={{ fontFamily: 'var(--display)', fontSize: 'clamp(36px, 8vw, 64px)', textTransform: 'uppercase', lineHeight: 0.95, marginBottom: 20, color: '#fff' }}>
-              The Formula<br />
-              <span style={{ color: 'var(--yellow)' }}>Behind the Focus</span>
-            </h2>
-            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, maxWidth: 460, margin: '0 auto 32px' }}>
-              8 clinically dosed ingredients. Zero proprietary blends. Every scoop engineered for clean energy, razor-sharp focus, and pumps that do not quit.
-            </p>
-            <a
-              href="/formula"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '16px 36px',
-                background: 'transparent',
-                color: '#fff',
-                fontFamily: 'var(--display)',
-                fontSize: 13,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                textDecoration: 'none',
-                borderRadius: 10,
-                fontWeight: 700,
-                border: '1px solid rgba(255,255,255,0.25)',
-                transition: 'border-color 0.2s, background 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--yellow)'; e.currentTarget.style.background = 'rgba(255,209,0,0.06)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'transparent'; }}
-            >
-              View Full Formula <ArrowRight size={16} />
-            </a>
-          </motion.div>
-        </div>
       </section>
 
       {/* Bundle */}
@@ -834,8 +755,8 @@ export default function HomePage() {
             <div className="foot-col">
               <h5>Company</h5>
               <a href="/why-pure">Why PURE</a>
-              <a href="/formula">The Formula</a>
-              <a href="/journal">Journal</a>
+              <a href="/wholesale">Wholesale</a>
+              <a href="/athletes">Our Athletes</a>
               <a href="/about">About Us</a>
             </div>
             <div className="foot-col">
