@@ -16,7 +16,7 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   unoptimized?: boolean;
 }
 
-export default function Image({ src, alt, width, height, fill, style, priority, quality, placeholder, blurDataURL, loader, sizes, unoptimized, ...rest }: ImageProps) {
+export default function Image({ src, alt, width, height, fill, style, priority, quality, placeholder, blurDataURL, loader, sizes, unoptimized, loading = 'lazy', ...rest }: ImageProps) {
   const finalSrc = loader ? loader({ src: Number(width) || 0, quality: quality ? Number(quality) : undefined }) : src;
 
   if (fill) {
@@ -24,6 +24,7 @@ export default function Image({ src, alt, width, height, fill, style, priority, 
       <img
         src={finalSrc}
         alt={alt}
+        loading={priority ? 'eager' : loading}
         style={{
           position: 'absolute',
           top: 0,
@@ -44,6 +45,7 @@ export default function Image({ src, alt, width, height, fill, style, priority, 
       alt={alt}
       width={width}
       height={height}
+      loading={priority ? 'eager' : loading}
       style={style}
       {...rest}
     />

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+Disallow: /3d-pack
+
+Sitemap: https://puresupps.site/sitemap.xml

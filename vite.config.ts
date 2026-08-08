@@ -17,9 +17,14 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           store: ['zustand'],
+          animations: ['framer-motion'],
+          three: ['three'],
         },
       },
     },
+    chunkSizeWarningLimit: 1000,
+    target: 'es2020',
+    minify: 'esbuild',
   },
   server: {
     port: 3000,

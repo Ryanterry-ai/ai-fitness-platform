@@ -650,16 +650,16 @@ export default function HomePage() {
       {/* Navigation */}
       <header className={`nav ${scrolled ? 'scrolled' : ''}`} style={{ top: 40 }}>
         <div className="wrap nav-inner">
-          <a href="/" className="brand"><span className="brand-text">PURE</span></a>
-          <nav className="nav-links">
+          <a href="/" className="brand" aria-label="PURE HEALTH SUPPS Home"><span className="brand-text">PURE</span></a>
+          <nav className="nav-links" aria-label="Main navigation">
             <a href="/">Home</a>
             <a href="/wholesale">Wholesale &amp; Retails</a>
             <a href="/contact">Contact Us</a>
             <a href="/athletes">Our Athletes</a>
           </nav>
           <div className="nav-right">
-            <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
-              <ShoppingBag size={20} />
+            <a href="/cart" className="nav-icon" aria-label="Shopping cart" style={{ position: 'relative' }}>
+              <ShoppingBag size={20} aria-hidden="true" />
             </a>
             <button
               onClick={() => purchaseProduct('default', { showLoading: true })}
@@ -668,8 +668,13 @@ export default function HomePage() {
             >
               Shop PRIME X
             </button>
-            <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <button 
+              className="nav-mobile-toggle" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
             </button>
           </div>
         </div>
@@ -685,6 +690,9 @@ export default function HomePage() {
             exit={{ opacity: 0, x: '100%' }}
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             style={{ position: 'fixed', top: 0, right: 0, width: '80%', maxWidth: 320, height: '100vh', background: 'var(--ink)', zIndex: 999, padding: '80px 32px 32px', display: 'flex', flexDirection: 'column', gap: 8 }}
+            role="dialog"
+            aria-label="Mobile navigation"
+            aria-modal="true"
           >
             <a href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
@@ -708,16 +716,16 @@ export default function HomePage() {
       <HeroSection />
 
       {/* Official Partner Trust Bar */}
-      <section style={{ padding: '32px 0', background: 'linear-gradient(180deg, rgba(255,209,0,0.06) 0%, transparent 100%)', borderTop: '1px solid rgba(255,209,0,0.15)', borderBottom: '1px solid rgba(255,209,0,0.15)' }}>
+      <section aria-label="Official partner information" style={{ padding: '32px 0', background: 'linear-gradient(180deg, rgba(255,209,0,0.06) 0%, transparent 100%)', borderTop: '1px solid rgba(255,209,0,0.15)', borderBottom: '1px solid rgba(255,209,0,0.15)' }}>
         <div className="wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, flexWrap: 'wrap', textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Shield size={20} style={{ color: 'var(--yellow)' }} />
+            <Shield size={20} style={{ color: 'var(--yellow)' }} aria-hidden="true" />
             <div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Official Distribution Partner</div>
               <div style={{ fontFamily: 'var(--body)', fontSize: 14, color: '#fff', fontWeight: 600 }}>Upgraded Health Supplement Store</div>
             </div>
           </div>
-          <div style={{ width: 1, height: 32, background: 'rgba(255,209,0,0.2)' }} />
+          <div style={{ width: 1, height: 32, background: 'rgba(255,209,0,0.2)' }} aria-hidden="true" />
           <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
             PAN India Shipping · Genuine Products · Secure Checkout
           </div>
@@ -731,20 +739,22 @@ export default function HomePage() {
       <ProductsSection />
 
       {/* Banner — Fruit Punch */}
-      <section style={{ width: '100%', overflow: 'hidden' }}>
+      <section aria-label="PRIME X Fruit Punch promotional banner" style={{ width: '100%', overflow: 'hidden' }}>
         <img
           src="/products/banner-fruit-punch.jpg"
           alt="PRIME X Fruit Punch — Explosive Energy, Enhanced Focus, Muscle Pump"
           style={{ width: '100%', height: 'auto', display: 'block' }}
+          loading="lazy"
         />
       </section>
 
       {/* Banner — Explosive Energy */}
-      <section style={{ width: '100%', overflow: 'hidden' }}>
+      <section aria-label="Explosive energy promotional banner" style={{ width: '100%', overflow: 'hidden' }}>
         <img
           src="/products/explosive energy.png"
           alt="Explosive Energy. Zero Limits."
           style={{ width: '100%', height: 'auto', display: 'block' }}
+          loading="lazy"
         />
       </section>
 
@@ -752,29 +762,32 @@ export default function HomePage() {
       <ScienceSection />
 
       {/* Banner — Built Different */}
-      <section style={{ width: '100%', overflow: 'hidden' }}>
+      <section aria-label="Built Different promotional banner" style={{ width: '100%', overflow: 'hidden' }}>
         <img
           src="/products/Built different.png"
           alt="Built Different — FSSAI Licensed, Banned Substance Free"
           style={{ width: '100%', height: 'auto', display: 'block' }}
+          loading="lazy"
         />
       </section>
 
       {/* Banner — Why We Exist */}
-      <section style={{ width: '100%', overflow: 'hidden' }}>
+      <section aria-label="Why We Exist promotional banner" style={{ width: '100%', overflow: 'hidden' }}>
         <img
           src="/products/why we exists.png"
           alt="Why We Exist — Focus, Pumps, Energy, Quality"
           style={{ width: '100%', height: 'auto', display: 'block' }}
+          loading="lazy"
         />
       </section>
 
       {/* Banner — Orange */}
-      <section style={{ width: '100%', overflow: 'hidden' }}>
+      <section aria-label="PRIME X Orange promotional banner" style={{ width: '100%', overflow: 'hidden' }}>
         <img
           src="/products/banner-orange.jpg"
           alt="PRIME X Orange — Light, Juicy & Refreshing"
           style={{ width: '100%', height: 'auto', display: 'block' }}
+          loading="lazy"
         />
       </section>
 
@@ -782,11 +795,12 @@ export default function HomePage() {
       <BundleSection />
 
       {/* Banner — Never Finished */}
-      <section style={{ width: '100%', overflow: 'hidden' }}>
+      <section aria-label="Never Finished promotional banner" style={{ width: '100%', overflow: 'hidden' }}>
         <img
           src="/products/Never Finished.png"
           alt="Never Finished — Focus, Pump, Energy, Performance"
           style={{ width: '100%', height: 'auto', display: 'block' }}
+          loading="lazy"
         />
       </section>
 
@@ -800,7 +814,7 @@ export default function HomePage() {
       <NewsletterSection />
 
       {/* Footer */}
-      <footer>
+      <footer role="contentinfo">
         <div className="wrap">
           <div className="foot-grid">
             <div>
@@ -813,27 +827,27 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="foot-col">
+            <nav className="foot-col" aria-label="Shop links">
               <h5>Shop</h5>
               <a href="/product/primex-preworkout-orange">PRIME X Orange</a>
               <a href="/product/primex-preworkout-fruit-punch">PRIME X Fruit Punch</a>
               <a href="/product/primex-preworkout-rocket-lollipop">PRIME X Rocket Lollipop</a>
               <a href="/stack-save">Trainer's Tray Bundle</a>
-            </div>
-            <div className="foot-col">
+            </nav>
+            <nav className="foot-col" aria-label="Company links">
               <h5>Company</h5>
               <a href="/why-pure">Why PURE</a>
               <a href="/wholesale">Wholesale</a>
               <a href="/athletes">Our Athletes</a>
               <a href="/about">About Us</a>
-            </div>
-            <div className="foot-col">
+            </nav>
+            <nav className="foot-col" aria-label="Contact links">
               <h5>Contact</h5>
               <a href="https://www.upgraded.co.in" target="_blank" rel="noopener noreferrer">Upgraded Health Store</a>
               <a href="mailto:puresupps.site@gmail.com">puresupps.site@gmail.com</a>
               <a href="tel:+919557513017">+91 95575 13017</a>
               <a href="https://instagram.com/puresupps.site" target="_blank" rel="noopener noreferrer">@puresupps.site</a>
-            </div>
+            </nav>
           </div>
           <div className="foot-bottom">
             <span>© 2026 PURE HEALTH SUPPS®. FSSAI Lic. No. 10824999000028.</span>
