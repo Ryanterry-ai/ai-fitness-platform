@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CartDrawer from '@/components/CartDrawer';
 import BackToTop from '@/components/BackToTop';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
+import { purchaseProduct } from '@/lib/purchase';
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -36,11 +37,8 @@ export default function ShopPage() {
     return products.filter(p => p.flavour === flavour);
   }, [products, flavour]);
 
-  const handleAdd = (product: Product) => {
-    const variant = product.variants[0];
-    addToCart(product, variant, 1);
-    setAddedId(product.id);
-    setTimeout(() => setAddedId(null), 1500);
+  const handleAdd = async (product: Product) => {
+    await purchaseProduct(product.slug, { showLoading: true });
   };
 
   const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
@@ -61,9 +59,13 @@ export default function ShopPage() {
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
               <ShoppingBag size={20} />
             </a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+            <button
+              onClick={() => purchaseProduct('default', { showLoading: true })}
+              className="btn-pure"
+              style={{ fontSize: 11, padding: '10px 20px' }}
+            >
               Shop PRIME X
-            </a>
+            </button>
             <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -85,7 +87,16 @@ export default function ShopPage() {
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                purchaseProduct('default', { showLoading: true });
+              }}
+              className="btn-pure"
+              style={{ marginTop: 16, width: '100%', justifyContent: 'center' }}
+            >
+              Shop PRIME X
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -234,7 +245,7 @@ export default function ShopPage() {
                       style={{ flex: 1 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      {addedId === product.id ? '✓ Added' : 'Add to Cart'}
+                      Buy Now
                     </motion.button>
                   </div>
                 </motion.div>
@@ -282,7 +293,7 @@ export default function ShopPage() {
             </div>
             <div className="foot-col">
               <h5>Contact</h5>
-              <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">puresupps.site</a>
+              <a href="https://www.upgraded.co.in" target="_blank" rel="noopener noreferrer">Upgraded Health Store</a>
               <a href="mailto:puresupps.site@gmail.com">puresupps.site@gmail.com</a>
               <a href="tel:+919557513017">+91 95575 13017</a>
               <a href="https://instagram.com/puresupps.site" target="_blank" rel="noopener noreferrer">@puresupps.site</a>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Menu, X } from 'lucide-react';
-import { PARTNER_URL } from '../../components/AnnouncementBar';
+import { purchaseProduct } from '../../lib/purchase';
 import CartDrawer from '../../components/CartDrawer';
 const BackToTop = React.lazy(() => import('../../components/BackToTop'));
 
@@ -51,9 +51,9 @@ export default function ContactClient() {
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
               <ShoppingBag size={20} />
             </a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+            <button onClick={() => purchaseProduct('default', { showLoading: true })} className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
               Shop PRIME X
-            </a>
+            </button>
             <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -68,7 +68,7 @@ export default function ContactClient() {
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+            <button onClick={() => purchaseProduct('default', { showLoading: true })} className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</button>
           </motion.div>
         )}
       </AnimatePresence>

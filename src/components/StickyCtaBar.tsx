@@ -3,16 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
+import { purchaseProduct } from '../lib/purchase';
 
 interface StickyCtaBarProps {
   price: number;
   originalPrice?: number;
-  onAddToCart: () => void;
-  added: boolean;
+  productSlug?: string;
 }
 
-export default function StickyCtaBar({ price, originalPrice, onAddToCart, added }: StickyCtaBarProps) {
+export default function StickyCtaBar({ price, originalPrice, productSlug = 'default' }: StickyCtaBarProps) {
   const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -26,6 +27,12 @@ export default function StickyCtaBar({ price, originalPrice, onAddToCart, added 
 
   const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
 
+  const handlePurchase = async () => {
+    setLoading(true);
+    await purchaseProduct(productSlug, { showLoading: true });
+    setLoading(false);
+  };
+
   return (
     <div className={`sticky-cta-bar ${visible ? 'visible' : ''}`}>
       <div className="sticky-cta-bar-inner">
@@ -36,11 +43,12 @@ export default function StickyCtaBar({ price, originalPrice, onAddToCart, added 
           )}
         </div>
         <button
-          className={`sticky-cta-btn ${added ? 'added' : ''}`}
-          onClick={onAddToCart}
+          className={`sticky-cta-btn ${loading ? 'loading' : ''}`}
+          onClick={handlePurchase}
+          disabled={loading}
         >
           <ShoppingBag className="w-4 h-4" />
-          {added ? '✓ Added' : 'Add to Cart'}
+          {loading ? 'Redirecting...' : 'Buy Now'}
         </button>
       </div>
     </div>

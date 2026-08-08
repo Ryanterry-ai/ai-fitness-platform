@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag, Truck, ShieldCheck, Check, ExternalLink } from 'lucide-react';
 import { useShop } from '@/lib/store';
 import { PARTNER_URL } from './AnnouncementBar';
+import { purchaseProduct } from '../lib/purchase';
 
 export default function CartDrawer() {
   const { cart, isCartOpen, setCartOpen, updateQuantity, removeFromCart, subtotal, discountAmount, shippingFee, gstAmount, grandTotal, appliedCoupon, applyCoupon, removeCoupon } = useShop();
@@ -176,15 +177,13 @@ export default function CartDrawer() {
                 </div>
 
                 {/* View Products → upgraded.co.in */}
-                <a
-                  href={PARTNER_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => purchaseProduct('default', { showLoading: true })}
                   className="w-full btn-pure flex items-center justify-center gap-2 text-center"
                 >
                   <span>View Products on Upgraded</span>
                   <ExternalLink className="w-4 h-4" />
-                </a>
+                </button>
                 <div className="flex items-center justify-center gap-1 text-[10px] text-gray-500">
                   <ShieldCheck className="w-3 h-3" />
                   <span>Official PAN India Authorised Partner</span>

@@ -7,6 +7,7 @@ import Image from '@/components/Image';
 import { useShop, CartItem } from '@/lib/store';
 import ScrollReveal from '@/components/ScrollReveal';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
+import { purchaseProduct } from '@/lib/purchase';
 const BackToTop = React.lazy(() => import('../../components/BackToTop'));
 
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -200,14 +201,17 @@ export default function CartPage() {
                 </div>
               )}
 
-              {/* Buy Now → puresupps.site */}
-              <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-center">
-                Buy Now on puresupps.site <ExternalLink className="w-4 h-4" />
-              </a>
+              {/* Buy Now → upgraded.co.in */}
+              <button
+                onClick={() => purchaseProduct('default', { showLoading: true })}
+                className="btn-pure w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 text-center"
+              >
+                Buy Now on Upgraded Store <ExternalLink className="w-4 h-4" />
+              </button>
 
               {/* Trust */}
               <div className="flex items-center justify-center gap-4 text-[10px] text-gray-500 pt-2">
-                <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Official Store</span>
+                <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Official Distribution Partner</span>
                 <span className="flex items-center gap-1"><Truck className="w-3 h-3" /> PAN India Delivery</span>
               </div>
             </div>

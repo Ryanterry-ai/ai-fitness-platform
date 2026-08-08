@@ -6,6 +6,7 @@ import { ShoppingBag, Menu, X } from 'lucide-react';
 import Image from '@/components/Image';
 import { useShop, Product, ProductVariant } from '@/lib/store';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
+import { purchaseProduct } from '@/lib/purchase';
 import CartDrawer from '../../../components/CartDrawer';
 const StickyCtaBar = React.lazy(() => import('../../../components/StickyCtaBar'));
 const BackToTop = React.lazy(() => import('../../../components/BackToTop'));
@@ -83,10 +84,8 @@ export default function ProductPageClient({ slug }: { slug: string }) {
     );
   }
 
-  const handleAddToCart = () => {
-    addToCart(product, selectedVariant, quantity);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1800);
+  const handleAddToCart = async () => {
+    await purchaseProduct(slug, { showLoading: true });
   };
 
   const otherFlavours = products.filter((p) => p.id !== product.id);
@@ -114,8 +113,7 @@ export default function ProductPageClient({ slug }: { slug: string }) {
         <StickyCtaBar
           price={selectedVariant?.price || product.price}
           originalPrice={selectedVariant?.originalPrice || product.originalPrice}
-          onAddToCart={handleAddToCart}
-          added={added}
+          productSlug={slug}
         />
       </Suspense>
       {/* ═══ NAV ═══ */}
@@ -132,9 +130,13 @@ export default function ProductPageClient({ slug }: { slug: string }) {
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
               <ShoppingBag size={20} />
             </a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+            <button
+              onClick={() => purchaseProduct(slug, { showLoading: true })}
+              className="btn-pure"
+              style={{ fontSize: 11, padding: '10px 20px' }}
+            >
               Shop PRIME X
-            </a>
+            </button>
             <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -156,7 +158,16 @@ export default function ProductPageClient({ slug }: { slug: string }) {
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                purchaseProduct(slug, { showLoading: true });
+              }}
+              className="btn-pure"
+              style={{ marginTop: 16, width: '100%', justifyContent: 'center' }}
+            >
+              Shop PRIME X
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -588,8 +599,8 @@ export default function ProductPageClient({ slug }: { slug: string }) {
                 style={{
                   flex: 1,
                   padding: '18px 24px',
-                  background: added ? '#22c55e' : 'var(--yellow)',
-                  color: added ? '#fff' : '#000',
+                  background: 'var(--yellow)',
+                  color: '#000',
                   fontFamily: 'var(--display)',
                   fontSize: 17,
                   letterSpacing: '0.06em',
@@ -602,15 +613,13 @@ export default function ProductPageClient({ slug }: { slug: string }) {
                   minHeight: 52,
                 }}
               >
-                {added ? '✓ ADDED TO CART' : isSubscribe ? 'SUBSCRIBE NOW' : 'ADD TO CART'}
+                {isSubscribe ? 'SUBSCRIBE NOW' : 'BUY NOW'}
               </motion.button>
             </div>
 
             {/* Buy Now */}
-            <a
-              href={PARTNER_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={handleAddToCart}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -630,10 +639,11 @@ export default function ProductPageClient({ slug }: { slug: string }) {
                 borderRadius: 'var(--r-button)',
                 transition: 'all 0.25s ease',
                 minHeight: 52,
+                cursor: 'pointer',
               }}
             >
-              BUY NOW ON PURE SUPPS
-            </a>
+              BUY NOW ON UPGRADED STORE
+            </button>
 
             {/* ── TRUST BADGES ── */}
             <div
@@ -1021,8 +1031,8 @@ export default function ProductPageClient({ slug }: { slug: string }) {
           onClick={handleAddToCart}
           style={{
             padding: '14px 32px',
-            background: added ? '#22c55e' : 'var(--yellow)',
-            color: added ? '#fff' : '#000',
+            background: 'var(--yellow)',
+            color: '#000',
             fontFamily: 'var(--display)',
             fontSize: 15,
             letterSpacing: '0.06em',
@@ -1034,7 +1044,7 @@ export default function ProductPageClient({ slug }: { slug: string }) {
             transition: 'all 0.25s ease',
           }}
         >
-          {added ? '✓ ADDED' : 'ADD TO CART'}
+          BUY NOW
         </button>
       </div>
 

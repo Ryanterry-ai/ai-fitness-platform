@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, ExternalLink } from 'lucide-react';
+import { purchaseProduct } from '../lib/purchase';
 
 const PARTNER_URL = 'https://www.puresupps.site';
 
@@ -33,14 +34,12 @@ export default function AnnouncementBar() {
         <div className="announce-track" style={{ animation: 'none', transform: 'translateX(0)' }}>
           <span>{PROMOS[currentPromo]}</span>
         </div>
-        <a
-          href={PARTNER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={() => purchaseProduct('default', { showLoading: true })}
           className="announce-link"
         >
           Shop Now
-        </a>
+        </button>
         <button
           onClick={() => setIsVisible(false)}
           className="announce-close"

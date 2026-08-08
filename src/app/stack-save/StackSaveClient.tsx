@@ -6,6 +6,7 @@ import { ShoppingBag, Menu, X } from 'lucide-react';
 import Image from '@/components/Image';
 import { PARTNER_URL } from '@/components/AnnouncementBar';
 import { useShop } from '@/lib/store';
+import { purchaseProduct } from '@/lib/purchase';
 import CartDrawer from '../../components/CartDrawer';
 const BackToTop = React.lazy(() => import('../../components/BackToTop'));
 
@@ -68,19 +69,8 @@ export default function StackSaveClient() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleAdd = (tier: typeof BUNDLE_TIERS[0]) => {
-    const products = useShop.getState().products;
-    // Add each image's product
-    if (tier.id === 'trainer-tray') {
-      products.forEach(p => addToCart(p, p.variants[2], 1)); // bundle of 3
-    } else if (tier.id === 'duo') {
-      addToCart(products[1], products[1].variants[1], 1);
-      addToCart(products[2], products[2].variants[1], 1);
-    } else {
-      addToCart(products[0], products[0].variants[0], 1);
-    }
-    setAddedId(tier.id);
-    setTimeout(() => setAddedId(null), 1800);
+  const handleAdd = async (tier: typeof BUNDLE_TIERS[0]) => {
+    await purchaseProduct('default', { showLoading: true });
   };
 
   return (
@@ -101,9 +91,13 @@ export default function StackSaveClient() {
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
               <ShoppingBag size={20} />
             </a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+            <button
+              onClick={() => purchaseProduct('default', { showLoading: true })}
+              className="btn-pure"
+              style={{ fontSize: 11, padding: '10px 20px' }}
+            >
               Shop PRIME X
-            </a>
+            </button>
             <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -118,7 +112,16 @@ export default function StackSaveClient() {
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                purchaseProduct('default', { showLoading: true });
+              }}
+              className="btn-pure"
+              style={{ marginTop: 16, width: '100%', justifyContent: 'center' }}
+            >
+              Shop PRIME X
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -234,12 +237,10 @@ export default function StackSaveClient() {
                       transition: 'all 0.25s ease',
                     }}
                   >
-                    {addedId === tier.id ? '✓ ADDED' : 'ADD TO CART'}
+                    {addedId === tier.id ? '✓ REDIRECTING...' : 'BUY NOW'}
                   </button>
-                  <a
-                    href={PARTNER_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => purchaseProduct('default', { showLoading: true })}
                     style={{
                       display: 'block',
                       width: '100%',
@@ -255,10 +256,11 @@ export default function StackSaveClient() {
                       textDecoration: 'none',
                       borderRadius: 6,
                       transition: 'all 0.25s ease',
+                      cursor: 'pointer',
                     }}
                   >
                     Buy Now
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -303,14 +305,12 @@ export default function StackSaveClient() {
         <p style={{ fontFamily: 'var(--body)', fontSize: 17, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, maxWidth: 480, margin: '0 auto 36px' }}>
           Every flavour. Same 8-ingredient formula. Zero compromise. The Trainer&apos;s Tray is the best value way to fuel your training.
         </p>
-        <a
-          href={PARTNER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'inline-block', padding: '18px 44px', background: 'var(--yellow)', color: '#000', fontFamily: 'var(--display)', fontSize: 16, letterSpacing: '0.06em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 6, fontWeight: 700 }}
+        <button
+          onClick={() => purchaseProduct('default', { showLoading: true })}
+          style={{ display: 'inline-block', padding: '18px 44px', background: 'var(--yellow)', color: '#000', fontFamily: 'var(--display)', fontSize: 16, letterSpacing: '0.06em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', border: 'none' }}
         >
           Order Trainer's Tray
-        </a>
+        </button>
       </section>
       </div>
 

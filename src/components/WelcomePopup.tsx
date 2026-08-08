@@ -261,10 +261,7 @@ export default function WelcomePopup() {
                       Use this code at checkout on puresupps.site.
                     </p>
 
-                    <a
-                      href={PARTNER_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
                       onClick={handleClose}
                       style={{
                         display: 'block',
@@ -280,10 +277,12 @@ export default function WelcomePopup() {
                         textDecoration: 'none',
                         borderRadius: 8,
                         fontWeight: 700,
+                        border: 'none',
+                        cursor: 'pointer',
                       }}
                     >
                       Continue Shopping
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>
@@ -296,7 +295,7 @@ export default function WelcomePopup() {
                 minHeight: 460,
               }}>
                 <Image
-                  src="/products/product-3flavours.png"
+                  src="/products/Image Aug 5, 2026, 01_26_24 AM.png"
                   alt="PRIME X Pre-Workout — All 3 Flavours"
                   fill
                   style={{ objectFit: 'contain', objectPosition: 'center center' }}

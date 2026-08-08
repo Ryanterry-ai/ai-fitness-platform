@@ -9,6 +9,7 @@ import CartDrawer from '../components/CartDrawer';
 import BackToTop from '../components/BackToTop';
 import WelcomePopup from '../components/WelcomePopup';
 import { PARTNER_URL } from '../components/AnnouncementBar';
+import { purchaseProduct } from '../lib/purchase';
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -66,6 +67,11 @@ function HeroSection() {
   const bgY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
   return (
     <section ref={ref} style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -73,6 +79,152 @@ function HeroSection() {
       <motion.div style={{ position: 'absolute', inset: 0, y: bgY, scale }}>
         <Image src="/products/hero-slide.png" alt="" fill style={{ objectFit: 'cover' }} priority sizes="100vw" quality={90} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%)' }} />
+      </motion.div>
+
+      {/* Hero Content - Premium Typography */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
+        style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 24px', maxWidth: 900 }}
+      >
+        {/* Eyebrow */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          style={{ marginBottom: 20 }}
+        >
+          <span style={{
+            fontFamily: 'var(--mono)',
+            fontSize: 12,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'var(--yellow)',
+            padding: '8px 16px',
+            border: '1px solid rgba(255, 209, 0, 0.3)',
+            background: 'rgba(255, 209, 0, 0.08)'
+          }}>
+            PRE-WORKOUT FORMULA
+          </span>
+        </motion.div>
+
+        {/* Main Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          style={{
+            fontFamily: 'var(--display)',
+            fontSize: 'clamp(48px, 10vw, 120px)',
+            textTransform: 'uppercase',
+            lineHeight: 0.95,
+            marginBottom: 24,
+            letterSpacing: '-0.02em'
+          }}
+        >
+          PURE <span style={{ color: 'var(--yellow)' }}>PRIME X</span>
+        </motion.h1>
+
+        {/* Subheadline */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          style={{
+            fontFamily: 'var(--body)',
+            fontSize: 'clamp(16px, 2.5vw, 20px)',
+            color: 'rgba(255, 255, 255, 0.7)',
+            lineHeight: 1.6,
+            maxWidth: 600,
+            margin: '0 auto 40px'
+          }}
+        >
+          8 clinically dosed ingredients. Zero proprietary blends. The transparent pre-workout for serious athletes.
+        </motion.p>
+
+        {/* CTA Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 1.0 }}
+          style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}
+        >
+          <button
+            onClick={() => purchaseProduct('default', { showLoading: true })}
+            className="btn-pure"
+            style={{
+              fontSize: 14,
+              padding: '18px 40px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              minWidth: 200,
+              justifyContent: 'center'
+            }}
+          >
+            Shop PRIME X <ArrowRight size={18} />
+          </button>
+          <a
+            href="/shop"
+            style={{
+              fontFamily: 'var(--mono)',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: '#fff',
+              padding: '18px 32px',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              background: 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              textDecoration: 'none',
+              transition: 'all 0.3s ease',
+              minWidth: 180,
+              justifyContent: 'center'
+            }}
+          >
+            View All Flavours
+          </a>
+        </motion.div>
+
+        {/* Trust Badges */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          style={{
+            display: 'flex',
+            gap: 32,
+            justifyContent: 'center',
+            marginTop: 48,
+            flexWrap: 'wrap'
+          }}
+        >
+          {[
+            { icon: <Shield size={16} />, text: 'FSSAI Licensed' },
+            { icon: <Award size={16} />, text: '8 Ingredients' },
+            { icon: <Beaker size={16} />, text: 'Zero Fillers' }
+          ].map((badge, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                fontFamily: 'var(--mono)',
+                fontSize: 11,
+                color: 'rgba(255, 255, 255, 0.6)',
+                letterSpacing: '0.05em'
+              }}
+            >
+              <span style={{ color: 'var(--yellow)' }}>{badge.icon}</span>
+              {badge.text}
+            </div>
+          ))}
+        </motion.div>
       </motion.div>
 
       {/* Scroll indicator */}
@@ -95,7 +247,7 @@ function HeroSection() {
 /*  PRODUCT CARDS SECTION                                     */
 /* ═══════════════════════════════════════════════════════════ */
 function ProductsSection() {
-  const { products, addToCart } = useShop();
+  const { products } = useShop();
 
   return (
     <section style={{ padding: '100px 0' }}>
@@ -126,6 +278,7 @@ function ProductsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: i * 0.1, ease: EASE }}
+              whileHover={{ y: -8 }}
             >
               <a href={`/product/${products[i]?.slug || 'primex-preworkout-' + p.flavor}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <div className="p-flavor-tag">{p.label}</div>
@@ -137,9 +290,27 @@ function ProductsSection() {
               </a>
               <div className="p-meta">
                 <span className="servings">80 SERVINGS · 280G</span>
-                <a href={`/product/${products[i]?.slug || 'primex-preworkout-' + p.flavor}`} style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  View Details →
-                </a>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    purchaseProduct(products[i]?.slug || 'primex-preworkout-' + p.flavor, { showLoading: true });
+                  }}
+                  style={{
+                    fontFamily: 'var(--mono)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: 'var(--yellow)',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    transition: 'color 0.25s ease'
+                  }}
+                >
+                  Buy Now →
+                </button>
               </div>
             </motion.div>
           ))}
@@ -270,9 +441,13 @@ function BundleSection() {
               <span style={{ fontFamily: 'var(--display)', fontSize: 44, color: 'var(--yellow)', lineHeight: 1 }}>₹3,299</span>
               <span style={{ fontFamily: 'var(--mono)', fontSize: 16, color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through' }}>₹3,897</span>
             </div>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 14, padding: '16px 36px' }}>
+            <button
+              onClick={() => purchaseProduct('default', { showLoading: true })}
+              className="btn-pure"
+              style={{ fontSize: 14, padding: '16px 36px', display: 'flex', alignItems: 'center', gap: 8 }}
+            >
               Order Bundle <ExternalLink size={16} />
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -314,9 +489,13 @@ function AthleteBanner() {
             PRIME X is built for the 9-to-5 athlete. The one who trains before sunrise or after sunset.
             Who demands performance from every supplement. Who refuses to compromise.
           </p>
-          <a href="/shop" className="btn-pure" style={{ fontSize: 14, padding: '16px 32px' }}>
+          <button
+            onClick={() => purchaseProduct('default', { showLoading: true })}
+            className="btn-pure"
+            style={{ fontSize: 14, padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 8 }}
+          >
             Get PRIME X <ArrowRight size={16} />
-          </a>
+          </button>
         </motion.div>
       </div>
     </section>
@@ -459,7 +638,12 @@ export default function HomePage() {
           <div className="announce-track">
             <span>FREE SHIPPING ON ALL ORDERS ABOVE ₹999 ● PRIME X — 8 CLINICALLY DOSED INGREDIENTS ● ZERO PROPRIETARY BLENDS</span>
           </div>
-          <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="announce-link">Shop Now</a>
+          <button
+            onClick={() => purchaseProduct('default', { showLoading: true })}
+            className="announce-link"
+          >
+            Shop Now
+          </button>
         </div>
       </div>
 
@@ -477,9 +661,13 @@ export default function HomePage() {
             <a href="/cart" className="nav-icon" style={{ position: 'relative' }}>
               <ShoppingBag size={20} />
             </a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ fontSize: 11, padding: '10px 20px' }}>
+            <button
+              onClick={() => purchaseProduct('default', { showLoading: true })}
+              className="btn-pure"
+              style={{ fontSize: 11, padding: '10px 20px' }}
+            >
               Shop PRIME X
-            </a>
+            </button>
             <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -492,22 +680,49 @@ export default function HomePage() {
         {mobileMenuOpen && (
           <motion.div
             className="mobile-menu"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            style={{ position: 'fixed', top: 0, right: 0, width: '80%', maxWidth: 320, height: '100vh', background: 'var(--ink)', zIndex: 999, padding: '80px 32px 32px', display: 'flex', flexDirection: 'column', gap: 8 }}
           >
             <a href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
             <a href="/wholesale" onClick={() => setMobileMenuOpen(false)}>Wholesale &amp; Retails</a>
             <a href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
             <a href="/athletes" onClick={() => setMobileMenuOpen(false)}>Our Athletes</a>
-            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer" className="btn-pure" style={{ marginTop: 16 }}>Shop PRIME X</a>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                purchaseProduct('default', { showLoading: true });
+              }}
+              className="btn-pure"
+              style={{ marginTop: 16, width: '100%', justifyContent: 'center' }}
+            >
+              Shop PRIME X
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Hero */}
       <HeroSection />
+
+      {/* Official Partner Trust Bar */}
+      <section style={{ padding: '32px 0', background: 'linear-gradient(180deg, rgba(255,209,0,0.06) 0%, transparent 100%)', borderTop: '1px solid rgba(255,209,0,0.15)', borderBottom: '1px solid rgba(255,209,0,0.15)' }}>
+        <div className="wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, flexWrap: 'wrap', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Shield size={20} style={{ color: 'var(--yellow)' }} />
+            <div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Official Distribution Partner</div>
+              <div style={{ fontFamily: 'var(--body)', fontSize: 14, color: '#fff', fontWeight: 600 }}>Upgraded Health Supplement Store</div>
+            </div>
+          </div>
+          <div style={{ width: 1, height: 32, background: 'rgba(255,209,0,0.2)' }} />
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+            PAN India Shipping · Genuine Products · Secure Checkout
+          </div>
+        </div>
+      </section>
 
       {/* Marquee */}
       <Marquee />
@@ -591,6 +806,12 @@ export default function HomePage() {
             <div>
               <div className="foot-brand"><span className="brand-text" style={{ fontSize: 28 }}>PURE</span></div>
               <p style={{ maxWidth: 240, color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.7, marginTop: 12 }}>India's high-performance pre-workout. Transparent dosing, clinically backed formulas.</p>
+              <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(255,209,0,0.08)', border: '1px solid rgba(255,209,0,0.2)', borderRadius: 8 }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--yellow)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Official Distribution Partner</div>
+                <div style={{ fontFamily: 'var(--body)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+                  <a href="https://www.upgraded.co.in" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'none' }}>Upgraded Health Supplement Store</a>
+                </div>
+              </div>
             </div>
             <div className="foot-col">
               <h5>Shop</h5>
@@ -608,7 +829,7 @@ export default function HomePage() {
             </div>
             <div className="foot-col">
               <h5>Contact</h5>
-              <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">puresupps.site</a>
+              <a href="https://www.upgraded.co.in" target="_blank" rel="noopener noreferrer">Upgraded Health Store</a>
               <a href="mailto:puresupps.site@gmail.com">puresupps.site@gmail.com</a>
               <a href="tel:+919557513017">+91 95575 13017</a>
               <a href="https://instagram.com/puresupps.site" target="_blank" rel="noopener noreferrer">@puresupps.site</a>
