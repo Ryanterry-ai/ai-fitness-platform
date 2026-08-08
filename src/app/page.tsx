@@ -65,179 +65,13 @@ function HeroSection() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const bgY = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   return (
     <section ref={ref} style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      {/* Background — edge-to-edge lifestyle image, minimal overlay */}
+      {/* Full-screen hero image — text is baked into the slide */}
       <motion.div style={{ position: 'absolute', inset: 0, y: bgY, scale }}>
-        <Image src="/products/hero-slide.png" alt="" fill style={{ objectFit: 'cover' }} priority sizes="100vw" quality={90} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%)' }} />
-      </motion.div>
-
-      {/* Hero Content - Premium Typography */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
-        style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 24px', maxWidth: 900 }}
-      >
-        {/* Eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          style={{ marginBottom: 20 }}
-        >
-          <span style={{
-            fontFamily: 'var(--mono)',
-            fontSize: 12,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: 'var(--yellow)',
-            padding: '8px 16px',
-            border: '1px solid rgba(255, 209, 0, 0.3)',
-            background: 'rgba(255, 209, 0, 0.08)'
-          }}>
-            PRE-WORKOUT FORMULA
-          </span>
-        </motion.div>
-
-        {/* Main Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          style={{
-            fontFamily: 'var(--display)',
-            fontSize: 'clamp(48px, 10vw, 120px)',
-            textTransform: 'uppercase',
-            lineHeight: 0.95,
-            marginBottom: 24,
-            letterSpacing: '-0.02em'
-          }}
-        >
-          PURE <span style={{ color: 'var(--yellow)' }}>PRIME X</span>
-        </motion.h1>
-
-        {/* Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          style={{
-            fontFamily: 'var(--body)',
-            fontSize: 'clamp(16px, 2.5vw, 20px)',
-            color: 'rgba(255, 255, 255, 0.7)',
-            lineHeight: 1.6,
-            maxWidth: 600,
-            margin: '0 auto 40px'
-          }}
-        >
-          8 clinically dosed ingredients. Zero proprietary blends. The transparent pre-workout for serious athletes.
-        </motion.p>
-
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 1.0 }}
-          style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}
-        >
-          <button
-            onClick={() => purchaseProduct('default', { showLoading: true })}
-            className="btn-pure"
-            style={{
-              fontSize: 14,
-              padding: '18px 40px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              minWidth: 200,
-              justifyContent: 'center'
-            }}
-          >
-            Shop PRIME X <ArrowRight size={18} />
-          </button>
-          <a
-            href="/shop"
-            style={{
-              fontFamily: 'var(--mono)',
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: '#fff',
-              padding: '18px 32px',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              background: 'transparent',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              textDecoration: 'none',
-              transition: 'all 0.3s ease',
-              minWidth: 180,
-              justifyContent: 'center'
-            }}
-          >
-            View All Flavours
-          </a>
-        </motion.div>
-
-        {/* Trust Badges */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 1.2 }}
-          style={{
-            display: 'flex',
-            gap: 32,
-            justifyContent: 'center',
-            marginTop: 48,
-            flexWrap: 'wrap'
-          }}
-        >
-          {[
-            { icon: <Shield size={16} />, text: 'FSSAI Licensed' },
-            { icon: <Award size={16} />, text: '8 Ingredients' },
-            { icon: <Beaker size={16} />, text: 'Zero Fillers' }
-          ].map((badge, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                fontFamily: 'var(--mono)',
-                fontSize: 11,
-                color: 'rgba(255, 255, 255, 0.6)',
-                letterSpacing: '0.05em'
-              }}
-            >
-              <span style={{ color: 'var(--yellow)' }}>{badge.icon}</span>
-              {badge.text}
-            </div>
-          ))}
-        </motion.div>
-      </motion.div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1 }}
-        style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 10 }}
-      >
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Scroll</span>
-        <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-          <ChevronDown size={18} style={{ color: 'rgba(255,255,255,0.3)' }} />
-        </motion.div>
+        <Image src="/products/hero-slide.png" alt="PURE PRIME X Pre-Workout — NEW PRODUCT DROPS ARE NOW LIVE" fill style={{ objectFit: 'cover' }} priority sizes="100vw" quality={90} />
       </motion.div>
     </section>
   );
@@ -280,7 +114,12 @@ function ProductsSection() {
               transition={{ duration: 0.6, delay: i * 0.1, ease: EASE }}
               whileHover={{ y: -8 }}
             >
-              <a href={`/product/${products[i]?.slug || 'primex-preworkout-' + p.flavor}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <a
+                href="https://www.upgraded.co.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1, cursor: 'pointer' }}
+              >
                 <div className="p-flavor-tag">{p.label}</div>
                 <div className="p-canvas-wrap">
                   <img src={p.img} alt={`PRIME X ${p.name}`} style={{ objectFit: 'contain', maxHeight: 240, width: 'auto', filter: 'drop-shadow(0 8px 30px rgba(0,0,0,0.5))' }} />
@@ -291,9 +130,8 @@ function ProductsSection() {
               <div className="p-meta">
                 <span className="servings">80 SERVINGS · 280G</span>
                 <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    purchaseProduct(products[i]?.slug || 'primex-preworkout-' + p.flavor, { showLoading: true });
+                  onClick={() => {
+                    purchaseProduct('default', { showLoading: true });
                   }}
                   style={{
                     fontFamily: 'var(--mono)',

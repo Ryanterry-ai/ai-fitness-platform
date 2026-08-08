@@ -17,7 +17,7 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 export default function Image({ src, alt, width, height, fill, style, priority, quality, placeholder, blurDataURL, loader, sizes, unoptimized, loading = 'lazy', ...rest }: ImageProps) {
-  const finalSrc = loader ? loader({ src: Number(width) || 0, quality: quality ? Number(quality) : undefined }) : src;
+  const finalSrc = loader ? loader({ src: src || '', width: Number(width) || 0, quality: quality ? Number(quality) : undefined }) : src;
 
   if (fill) {
     return (
