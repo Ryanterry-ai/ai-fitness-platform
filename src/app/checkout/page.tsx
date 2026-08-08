@@ -127,7 +127,7 @@ export default function CheckoutPage() {
         </a>
 
         {/* Progress */}
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-4 mb-6">
           {(['address', 'payment', 'confirm'] as const).map((s, i) => (
             <React.Fragment key={s}>
               <div className="flex items-center gap-2">
@@ -142,6 +142,31 @@ export default function CheckoutPage() {
               </div>
               {i < 2 && <div className={`flex-1 h-0.5 rounded-full ${i < ['address', 'payment', 'confirm'].indexOf(step) ? 'bg-green-500' : 'bg-white/10'}`} />}
             </React.Fragment>
+          ))}
+        </div>
+
+        {/* Trust Bar */}
+        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 32, flexWrap: 'wrap' }}>
+          {[
+            { icon: <Lock className="w-3 h-3" />, text: 'Secure Checkout' },
+            { icon: <ShieldCheck className="w-3 h-3" />, text: 'Official Distribution Partner' },
+            { icon: <Truck className="w-3 h-3" />, text: 'PAN India Delivery' }
+          ].map((badge, i) => (
+            <div
+              key={i}
+              style={{
+                fontFamily: 'var(--mono)',
+                fontSize: 11,
+                color: 'rgba(255, 255, 255, 0.6)',
+                letterSpacing: '0.05em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              <span style={{ color: 'var(--yellow)' }}>{badge.icon}</span>
+              {badge.text}
+            </div>
           ))}
         </div>
 

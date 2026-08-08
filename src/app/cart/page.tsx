@@ -32,12 +32,39 @@ export default function CartPage() {
     return (
       <div className="bg-pure-black min-h-screen pt-24 pb-20">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <img src="/products/empty-cart.svg" alt="Empty Cart" className="w-48 h-48 mx-auto mb-6 opacity-60" />
-          <h1 className="text-3xl font-black text-white uppercase mb-3">Your Cart is Empty</h1>
-          <p className="text-gray-500 mb-8">No PRIME X yet. Time to fix that.</p>
-          <a href="/shop" className="btn-pure inline-flex items-center gap-2 px-8 py-3">
-            <ShoppingBag className="w-4 h-4" /> Start Shopping
-          </a>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <img src="/products/empty-cart.svg" alt="Empty Cart" className="w-48 h-48 mx-auto mb-6 opacity-60" />
+            <h1 className="text-3xl font-black text-white uppercase mb-3">Your Cart is Empty</h1>
+            <p className="text-gray-500 mb-4">No PRIME X yet. Time to fix that.</p>
+            <p className="text-gray-500 text-sm mb-8">Browse our pre-workout range and find your flavour.</p>
+            <a href="/shop" className="btn-pure inline-flex items-center gap-2 px-8 py-3">
+              <ShoppingBag className="w-4 h-4" /> Start Shopping
+            </a>
+            {/* Trust Badges */}
+            <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
+              {['FSSAI Licensed', 'Free Shipping ₹999+', 'PAN India Delivery'].map((badge, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontFamily: 'var(--mono)',
+                    fontSize: 11,
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    letterSpacing: '0.05em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
+                >
+                  <span style={{ color: 'var(--yellow)' }}>✓</span>
+                  {badge}
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     );

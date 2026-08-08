@@ -688,6 +688,25 @@ export default function ProductPageClient({ slug }: { slug: string }) {
               ))}
             </div>
 
+            {/* ── OFFICIAL PARTNER ── */}
+            <div
+              style={{
+                marginTop: 16,
+                padding: '16px',
+                background: 'rgba(255, 209, 0, 0.08)',
+                border: '1px solid rgba(255, 209, 0, 0.2)',
+                borderRadius: 'var(--r)',
+                textAlign: 'center'
+              }}
+            >
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--yellow)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
+                Official Distribution Partner
+              </div>
+              <div style={{ fontFamily: 'var(--body)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+                Upgraded Health Supplement Store — PAN India
+              </div>
+            </div>
+
             {/* ── KEY BENEFITS ── */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 24 }}>
               {[

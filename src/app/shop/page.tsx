@@ -127,6 +127,36 @@ export default function ShopPage() {
           >
             Three flavours. Zero compromise. Every ingredient and dose printed on the tub.
           </motion.p>
+          {/* Trust Badges */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: EASE }}
+            style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}
+          >
+            {[
+              { text: 'FSSAI Licensed' },
+              { text: '8 Ingredients' },
+              { text: 'Zero Fillers' },
+              { text: 'Free Shipping ₹999+' }
+            ].map((badge, i) => (
+              <div
+                key={i}
+                style={{
+                  fontFamily: 'var(--mono)',
+                  fontSize: 11,
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  letterSpacing: '0.05em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <span style={{ color: 'var(--yellow)' }}>✓</span>
+                {badge.text}
+              </div>
+            ))}
+          </motion.div>
         </div>
       </div>
 
@@ -188,6 +218,7 @@ export default function ShopPage() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.1, ease: EASE }}
+                  whileHover={{ y: -8 }}
                 >
                   <a href={`/product/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div className="p-flavor-tag">{product.flavour}</div>
@@ -237,12 +268,13 @@ export default function ShopPage() {
                   </div>
                   <div style={{ display: 'flex', gap: 8, padding: '0 20px 20px' }}>
                     <a href={`/product/${product.slug}`} className="btn btn-ghost btn-sm" style={{ flex: 1, justifyContent: 'center' }}>
-                      View <ChevronRight size={14} />
+                      View Details <ChevronRight size={14} />
                     </a>
                     <motion.button
                       onClick={(e) => { e.stopPropagation(); handleAdd(product); }}
                       className="btn btn-yellow btn-sm"
                       style={{ flex: 1 }}
+                      whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       Buy Now
